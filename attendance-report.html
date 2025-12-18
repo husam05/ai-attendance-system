@@ -342,7 +342,10 @@
                 🖨️ طباعة التقرير
             </button>
             <button class="btn" onclick="exportReport()">
-                💾 تصدير التقرير
+                💾 تصدير التقرير (CSV/PDF)
+            </button>
+            <button class="btn" onclick="downloadDetailedReport()">
+                📊 تنزيل تقرير مفصل
             </button>
         </div>
         
@@ -475,6 +478,25 @@
                         <div class="summary-card">
                             <div class="summary-value">${overallPercentage}%</div>
                             <div class="summary-label">نسبة الحضور الكلية</div>
+                        </div>
+                    </div>
+                    
+                    <div class="report-info" style="margin-bottom: 20px;">
+                        <div class="info-box">
+                            <div class="info-label">إجمالي سجلات الحضور</div>
+                            <div class="info-value">${filteredRecords.length}</div>
+                        </div>
+                        <div class="info-box">
+                            <div class="info-label">متوسط الحضور لكل محاضرة</div>
+                            <div class="info-value">${dates.length > 0 ? Math.round(filteredRecords.length / dates.length) : 0} طالب</div>
+                        </div>
+                        <div class="info-box">
+                            <div class="info-label">الطلاب الملتزمون (90%+)</div>
+                            <div class="info-value">${studentStats.filter(s => s.percentage >= 90).length} طالب</div>
+                        </div>
+                        <div class="info-box">
+                            <div class="info-label">يحتاجون متابعة (<60%)</div>
+                            <div class="info-value">${studentStats.filter(s => s.percentage < 60).length} طالب</div>
                         </div>
                     </div>
                     
@@ -738,8 +760,57 @@
         }
         
         function exportReport() {
-            alert('💾 لحفظ التقرير، استخدم وظيفة الطباعة واحفظه كملف PDF');
-            window.print();
+            const reportContainer = document.getElementById('reportContainer');
+            if (!reportContainer.innerHTML) {
+                alert('⚠️ يرجى إنشاء تقرير أولاً');
+                return;
+            }
+            
+            const reportType = document.getElementById('reportType').value;
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            
+            // Export as CSV for Excel
+            if (confirm('هل تريد تصدير البيانات إلى Excel (CSV)؟\nاضغط OK للتصدير، Cancel للطباعة فقط')) {
+                exportToCSV(reportType, startDate, endDate);
+            } else {
+                window.print();
+            }
+        }
+        
+        function exportToCSV(reportType, startDate, endDate) {
+            let csv = '\uFEFF'; // UTF-8 BOM
+            const filteredRecords = filterRecordsByDate(allRecords, startDate, endDate);
+            
+            if (reportType === 'all') {
+                csv += 'التقرير الشامل للحضور\n';
+                csv += `الفترة: ${startDate} - ${endDate}\n\n`;
+                csv += 'الرقم,اسم الطالب,رقم الطالب,عدد مرات الحضور,إجمالي المحاضرات,نسبة الحضور,التقييم\n';
+                
+                const dates = [...new Set(filteredRecords.map(r => r.date))].sort();
+                students.forEach((student, index) => {
+                    const studentId = generateStudentId(index);
+                    const studentRecords = filteredRecords.filter(r => r.studentName === student);
+                    const attendanceCount = studentRecords.length;
+                    const totalClasses = dates.length;
+                    const percentage = totalClasses > 0 ? Math.round((attendanceCount / totalClasses) * 100) : 0;
+                    
+                    let rating = 'ضعيف';
+                    if (percentage >= 90) rating = 'ممتاز';
+                    else if (percentage >= 75) rating = 'جيد';
+                    else if (percentage >= 60) rating = 'مقبول';
+                    
+                    csv += `${index + 1},${student},${studentId},${attendanceCount},${totalClasses},${percentage}%,${rating}\n`;
+                });
+            }
+            
+            // Download CSV
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', `تقرير_الحضور_${startDate}_${endDate}.csv`);
+            link.click();
         }
         
         function setDefaultDates() {
@@ -751,6 +822,71 @@
             document.getElementById('endDate').valueAsDate = today;
         }
         
+        function downloadDetailedReport() {
+            if (allRecords.length === 0) {
+                alert('⚠️ لا توجد بيانات لتصديرها');
+                return;
+            }
+            
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            const filteredRecords = filterRecordsByDate(allRecords, startDate, endDate);
+            
+            if (filteredRecords.length === 0) {
+                alert('⚠️ لا توجد سجلات في الفترة المحددة');
+                return;
+            }
+            
+            let csv = '\uFEFF'; // UTF-8 BOM
+            csv += 'التقرير التفصيلي الكامل للحضور\n';
+            csv += `الفترة: ${startDate} - ${endDate}\n`;
+            csv += `تاريخ التقرير: ${new Date().toLocaleDateString('ar-EG')}\n\n`;
+            
+            // Summary section
+            csv += '=== الملخص الإحصائي ===\n';
+            csv += `عدد الطلاب,${students.length}\n`;
+            csv += `عدد السجلات,${filteredRecords.length}\n`;
+            const dates = [...new Set(filteredRecords.map(r => r.date))].sort();
+            csv += `أيام الدراسة,${dates.length}\n`;
+            const subjects = [...new Set(filteredRecords.map(r => r.subject))];
+            csv += `المواد الدراسية,${subjects.length}\n\n`;
+            
+            // Detailed records
+            csv += '=== سجلات الحضور التفصيلية ===\n';
+            csv += 'اسم الطالب,رقم الطالب,المادة,نوع المحاضرة,التاريخ,الوقت\n';
+            
+            filteredRecords.forEach(record => {
+                csv += `${record.studentName},${record.studentId},${record.subject},${record.lectureType},${record.date},${record.time}\n`;
+            });
+            
+            csv += '\n=== تقرير الطلاب الفردي ===\n';
+            csv += 'الرقم,اسم الطالب,رقم الطالب,عدد مرات الحضور,إجمالي المحاضرات,نسبة الحضور,التقييم\n';
+            
+            students.forEach((student, index) => {
+                const studentId = generateStudentId(index);
+                const studentRecords = filteredRecords.filter(r => r.studentName === student);
+                const attendanceCount = studentRecords.length;
+                const totalClasses = dates.length;
+                const percentage = totalClasses > 0 ? Math.round((attendanceCount / totalClasses) * 100) : 0;
+                
+                let rating = 'ضعيف';
+                if (percentage >= 90) rating = 'ممتاز';
+                else if (percentage >= 75) rating = 'جيد';
+                else if (percentage >= 60) rating = 'مقبول';
+                
+                csv += `${index + 1},${student},${studentId},${attendanceCount},${totalClasses},${percentage}%,${rating}\n`;
+            });
+            
+            // Download
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', `تقرير_حضور_تفصيلي_${new Date().toISOString().split('T')[0]}.csv`);
+            link.click();
+            URL.revokeObjectURL(url);
+        }
+        
         window.onload = () => {
             loadData();
             populateSelects();
@@ -759,6 +895,21 @@
             // Generate initial report
             if (allRecords.length > 0) {
                 generateReport();
+            } else {
+                document.getElementById('reportContainer').innerHTML = `
+                    <div class="report-section">
+                        <div style="text-align: center; padding: 60px; color: #718096;">
+                            <div style="font-size: 4rem; margin-bottom: 20px;">📊</div>
+                            <h2 style="color: #2d3748; margin-bottom: 10px;">لا توجد بيانات حضور</h2>
+                            <p style="font-size: 1.2rem;">لم يتم تسجيل أي حضور بعد</p>
+                            <p style="margin-top: 20px;">
+                                <a href="teacher-qr-scanner.html" style="color: #667eea; text-decoration: none; font-weight: bold;">
+                                    ← ابدأ بتسجيل الحضور
+                                </a>
+                            </p>
+                        </div>
+                    </div>
+                `;
             }
         };
     </script>
