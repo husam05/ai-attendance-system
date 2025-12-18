@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>رموز QR للطلاب - قسم الذكاء الاصطناعي</title>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" integrity="sha512-CNgIRecGo7nphbeZ04Sc13ka07paqdeTu0WR1IM4kNcpmBAUSHSQX0FslNhTDadL4O5SAGapGt4FodqL8CdIGQQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <style>
         * {
             margin: 0;
@@ -245,22 +245,38 @@
             const grid = document.getElementById('studentsGrid');
             grid.innerHTML = '';
             
+            // Check if QRCode library is loaded
+            if (typeof QRCode === 'undefined') {
+                grid.innerHTML = '<div style="padding: 40px; text-align: center; color: red; font-size: 1.5rem;">❌ خطأ: مكتبة QR Code لم يتم تحميلها. يرجى التحقق من اتصال الإنترنت وإعادة تحميل الصفحة.</div>';
+                return;
+            }
+            
             students.forEach((student, index) => {
                 const { card, qrData, qrId } = createStudentCard(student, index);
                 grid.appendChild(card);
                 
                 // Generate QR code after DOM insertion
                 setTimeout(() => {
-                    const qrContainer = document.getElementById(qrId);
-                    qrContainer.innerHTML = '';
-                    new QRCode(qrContainer, {
-                        text: qrData,
-                        width: 150,
-                        height: 150,
-                        colorDark: "#000000",
-                        colorLight: "#ffffff",
-                        correctLevel: QRCode.CorrectLevel.H
-                    });
+                    try {
+                        const qrContainer = document.getElementById(qrId);
+                        if (!qrContainer) return;
+                        
+                        qrContainer.innerHTML = '';
+                        new QRCode(qrContainer, {
+                            text: qrData,
+                            width: 150,
+                            height: 150,
+                            colorDark: "#000000",
+                            colorLight: "#ffffff",
+                            correctLevel: QRCode.CorrectLevel.H
+                        });
+                    } catch (error) {
+                        console.error('Error generating QR code:', error);
+                        const qrContainer = document.getElementById(qrId);
+                        if (qrContainer) {
+                            qrContainer.innerHTML = '<div style="color: red; padding: 10px;">خطأ في التوليد</div>';
+                        }
+                    }
                 }, 100 * index);
             });
         }
@@ -270,10 +286,19 @@
             window.print();
         }
 
+        // Show loading message
+        document.addEventListener('DOMContentLoaded', () => {
+            const grid = document.getElementById('studentsGrid');
+            grid.innerHTML = '<div style="padding: 40px; text-align: center; color: #667eea; font-size: 1.5rem;">⏳ جاري تحميل رموز QR...</div>';
+        });
+        
         // Generate QR codes on page load
-        window.onload = () => {
-            generateAllQRCodes();
-        };
+        window.addEventListener('load', () => {
+            // Wait a bit to ensure library is loaded
+            setTimeout(() => {
+                generateAllQRCodes();
+            }, 500);
+        });
     </script>
 </body>
 </html>
