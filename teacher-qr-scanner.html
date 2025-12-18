@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ماسح الحضور - قسم الذكاء الاصطناعي</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            direction: rtl;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            color: #1e3c72;
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            color: #718096;
+            font-size: 1.1rem;
+        }
+        
+        .session-info {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            margin-bottom: 20px;
+        }
+        
+        .session-info h2 {
+            color: #1e3c72;
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #2d3748;
+            font-weight: 600;
+        }
+        
+        .form-group select,
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-family: 'Tajawal', sans-serif;
+            font-size: 1rem;
+            transition: border 0.3s;
+        }
+        
+        .form-group select:focus,
+        .form-group input:focus {
+            outline: none;
+            border-color: #1e3c72;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .scanner-section {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .scanner-section h2 {
+            color: #1e3c72;
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+        
+        #reader {
+            border: 3px solid #e2e8f0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 15px;
+        }
+        
+        .btn {
+            background: #1e3c72;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1.1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: 'Tajawal', sans-serif;
+            transition: all 0.3s;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        
+        .btn:hover {
+            background: #152a54;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(30, 60, 114, 0.4);
+        }
+        
+        .btn-stop {
+            background: #e53e3e;
+        }
+        
+        .btn-stop:hover {
+            background: #c53030;
+        }
+        
+        .btn-export {
+            background: #48bb78;
+        }
+        
+        .btn-export:hover {
+            background: #38a169;
+        }
+        
+        .attendance-list {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .attendance-list h2 {
+            color: #1e3c72;
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            color: white;
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        
+        .attendance-items {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        
+        .attendance-item {
+            background: #f7fafc;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border-right: 4px solid #48bb78;
+            transition: transform 0.2s;
+        }
+        
+        .attendance-item:hover {
+            transform: translateX(-5px);
+        }
+        
+        .attendance-item.new {
+            animation: slideIn 0.5s ease;
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateX(50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        .student-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        
+        .student-name {
+            font-weight: 600;
+            color: #2d3748;
+            font-size: 1.1rem;
+        }
+        
+        .student-id {
+            color: #718096;
+            font-size: 0.9rem;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .attendance-time {
+            color: #48bb78;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            text-align: center;
+            font-weight: 600;
+        }
+        
+        .alert-success {
+            background: #c6f6d5;
+            color: #22543d;
+            border: 2px solid #48bb78;
+        }
+        
+        .alert-error {
+            background: #fed7d7;
+            color: #742a2a;
+            border: 2px solid #e53e3e;
+        }
+        
+        .alert-warning {
+            background: #feebc8;
+            color: #744210;
+            border: 2px solid #ed8936;
+        }
+        
+        .hidden {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📸 نظام مسح الحضور بالـ QR</h1>
+            <p>قسم علوم الذكاء الاصطناعي - جامعة المصطفى</p>
+        </div>
+        
+        <div class="session-info">
+            <h2>⚙️ معلومات الجلسة</h2>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>المادة الدراسية</label>
+                    <select id="subject">
+                        <option value="">اختر المادة...</option>
+                        <option value="المعامل">المعامل</option>
+                        <option value="الرياضيات I">الرياضيات I</option>
+                        <option value="مبادئ الذكاء الاصطناعي">مبادئ الذكاء الاصطناعي</option>
+                        <option value="الديمقراطية وحقوق الإنسان">الديمقراطية وحقوق الإنسان</option>
+                        <option value="أساسيات البرمجة">أساسيات البرمجة</option>
+                        <option value="الإحصاء والاحتمالات">الإحصاء والاحتمالات</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>نوع المحاضرة</label>
+                    <select id="lectureType">
+                        <option value="نظري">نظري</option>
+                        <option value="عملي">عملي</option>
+                        <option value="مختبر">مختبر</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>التاريخ</label>
+                    <input type="date" id="date">
+                </div>
+                <div class="form-group">
+                    <label>الوقت</label>
+                    <input type="time" id="time">
+                </div>
+            </div>
+        </div>
+        
+        <div id="alertContainer"></div>
+        
+        <div class="main-content">
+            <div class="scanner-section">
+                <h2>📷 ماسح الـ QR</h2>
+                <div id="reader"></div>
+                <button class="btn" id="startBtn" onclick="startScanner()">
+                    🎬 بدء المسح
+                </button>
+                <button class="btn btn-stop hidden" id="stopBtn" onclick="stopScanner()">
+                    ⏹️ إيقاف المسح
+                </button>
+            </div>
+            
+            <div class="attendance-list">
+                <h2>✅ قائمة الحضور</h2>
+                
+                <div class="stats">
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalPresent">0</div>
+                        <div class="stat-label">حاضر</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalAbsent">18</div>
+                        <div class="stat-label">غائب</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="percentage">0%</div>
+                        <div class="stat-label">نسبة الحضور</div>
+                    </div>
+                </div>
+                
+                <button class="btn btn-export" onclick="exportAttendance()">
+                    💾 حفظ وتصدير البيانات
+                </button>
+                
+                <div class="attendance-items" id="attendanceList"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let html5QrCode = null;
+        let attendanceRecords = [];
+        const totalStudents = 18;
+        
+        // Set current date and time
+        document.getElementById('date').valueAsDate = new Date();
+        document.getElementById('time').value = new Date().toTimeString().slice(0, 5);
+        
+        // Load existing attendance from localStorage
+        function loadAttendance() {
+            const saved = localStorage.getItem('attendanceRecords');
+            if (saved) {
+                attendanceRecords = JSON.parse(saved);
+                updateAttendanceDisplay();
+            }
+        }
+        
+        function showAlert(message, type) {
+            const alertContainer = document.getElementById('alertContainer');
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type}`;
+            alert.textContent = message;
+            alertContainer.appendChild(alert);
+            
+            setTimeout(() => {
+                alert.remove();
+            }, 3000);
+        }
+        
+        function startScanner() {
+            const subject = document.getElementById('subject').value;
+            if (!subject) {
+                showAlert('⚠️ يرجى اختيار المادة الدراسية أولاً', 'warning');
+                return;
+            }
+            
+            html5QrCode = new Html5Qrcode("reader");
+            
+            html5QrCode.start(
+                { facingMode: "environment" },
+                {
+                    fps: 10,
+                    qrbox: { width: 250, height: 250 }
+                },
+                onScanSuccess,
+                onScanError
+            ).then(() => {
+                document.getElementById('startBtn').classList.add('hidden');
+                document.getElementById('stopBtn').classList.remove('hidden');
+                showAlert('✅ بدأ المسح - يمكنك مسح رموز QR الآن', 'success');
+            }).catch(err => {
+                showAlert('❌ خطأ في تشغيل الكاميرا: ' + err, 'error');
+            });
+        }
+        
+        function stopScanner() {
+            if (html5QrCode) {
+                html5QrCode.stop().then(() => {
+                    document.getElementById('startBtn').classList.remove('hidden');
+                    document.getElementById('stopBtn').classList.add('hidden');
+                    showAlert('⏹️ تم إيقاف المسح', 'success');
+                }).catch(err => {
+                    console.error('Error stopping scanner:', err);
+                });
+            }
+        }
+        
+        function onScanSuccess(decodedText, decodedResult) {
+            try {
+                const studentData = JSON.parse(decodedText);
+                
+                // Check if student already marked present
+                const existing = attendanceRecords.find(r => r.studentId === studentData.id);
+                if (existing) {
+                    showAlert('⚠️ الطالب مسجل مسبقاً: ' + studentData.name, 'warning');
+                    return;
+                }
+                
+                // Add attendance record
+                const record = {
+                    studentId: studentData.id,
+                    studentName: studentData.name,
+                    subject: document.getElementById('subject').value,
+                    lectureType: document.getElementById('lectureType').value,
+                    date: document.getElementById('date').value,
+                    time: new Date().toLocaleTimeString('ar-EG'),
+                    timestamp: new Date().toISOString()
+                };
+                
+                attendanceRecords.push(record);
+                saveAttendance();
+                updateAttendanceDisplay();
+                
+                showAlert('✅ تم تسجيل حضور: ' + studentData.name, 'success');
+                
+                // Play success sound (optional)
+                playSuccessSound();
+                
+            } catch (error) {
+                showAlert('❌ رمز QR غير صالح', 'error');
+            }
+        }
+        
+        function onScanError(errorMessage) {
+            // Ignore scan errors (they happen frequently during scanning)
+        }
+        
+        function updateAttendanceDisplay() {
+            const listContainer = document.getElementById('attendanceList');
+            listContainer.innerHTML = '';
+            
+            // Get current session records
+            const subject = document.getElementById('subject').value;
+            const date = document.getElementById('date').value;
+            const sessionRecords = attendanceRecords.filter(r => 
+                r.subject === subject && r.date === date
+            );
+            
+            sessionRecords.reverse().forEach(record => {
+                const item = document.createElement('div');
+                item.className = 'attendance-item';
+                item.innerHTML = `
+                    <div class="student-info">
+                        <span class="student-name">${record.studentName}</span>
+                        <span class="student-id">${record.studentId}</span>
+                    </div>
+                    <div class="attendance-time">⏰ ${record.time}</div>
+                `;
+                listContainer.appendChild(item);
+                
+                // Add animation
+                setTimeout(() => item.classList.add('new'), 10);
+            });
+            
+            // Update statistics
+            const presentCount = sessionRecords.length;
+            const absentCount = totalStudents - presentCount;
+            const percentage = Math.round((presentCount / totalStudents) * 100);
+            
+            document.getElementById('totalPresent').textContent = presentCount;
+            document.getElementById('totalAbsent').textContent = absentCount;
+            document.getElementById('percentage').textContent = percentage + '%';
+        }
+        
+        function saveAttendance() {
+            localStorage.setItem('attendanceRecords', JSON.stringify(attendanceRecords));
+        }
+        
+        function exportAttendance() {
+            if (attendanceRecords.length === 0) {
+                showAlert('⚠️ لا توجد سجلات لتصديرها', 'warning');
+                return;
+            }
+            
+            // Export as JSON
+            const dataStr = JSON.stringify(attendanceRecords, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `attendance_${new Date().toISOString().split('T')[0]}.json`;
+            link.click();
+            
+            showAlert('✅ تم تصدير البيانات بنجاح', 'success');
+        }
+        
+        function playSuccessSound() {
+            // Create a simple beep sound
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.value = 800;
+            oscillator.type = 'sine';
+            
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.1);
+        }
+        
+        // Update display when subject or date changes
+        document.getElementById('subject').addEventListener('change', updateAttendanceDisplay);
+        document.getElementById('date').addEventListener('change', updateAttendanceDisplay);
+        
+        // Load attendance on page load
+        window.onload = () => {
+            loadAttendance();
+        };
+        
+        // Cleanup on page unload
+        window.onbeforeunload = () => {
+            if (html5QrCode) {
+                stopScanner();
+            }
+        };
+    </script>
+</body>
+</html>

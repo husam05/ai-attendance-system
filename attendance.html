@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>استمارة مباشرة الطلبة - قسم الذكاء الاصطناعي</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --border-color: #000;
+        }
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background-color: #e9ecef;
+            margin: 0;
+            padding: 20px;
+            direction: rtl;
+            color: #000;
+        }
+        .page {
+            width: 210mm;
+            height: 297mm; /* Fixed A4 height */
+            padding: 15mm;
+            margin: 0 auto;
+            background: white;
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+            box-sizing: border-box;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Header Section */
+        .header-section {
+            text-align: center;
+            border-bottom: 2px solid #000;
+            padding-bottom: 10px;
+            margin-bottom: 10px;
+            flex-shrink: 0;
+        }
+        h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 800;
+            line-height: 1.3;
+            color: #000;
+        }
+        h2 {
+            margin: 5px 0 0;
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        /* Info Bar */
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+            border: 2px solid #000;
+            padding: 15px;
+            background-color: #fff;
+            flex-shrink: 0;
+            font-size: 15px;
+            border-radius: 4px;
+        }
+        .info-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .info-label {
+            font-weight: bold;
+            white-space: nowrap;
+        }
+        .info-input {
+            border: none;
+            border-bottom: 1px dotted #000;
+            width: 100%;
+            font-family: 'Tajawal', sans-serif;
+            font-size: 15px;
+            background: transparent;
+            padding-bottom: 2px;
+        }
+        .info-input:focus {
+            outline: none;
+            border-bottom: 1px solid #000;
+        }
+
+        /* Table Styling */
+        .table-container {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 10px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 15px;
+            height: 100%; /* Force table to fill container */
+        }
+        tbody {
+            display: table-row-group;
+        }
+        th, td {
+            border: 1px solid #000;
+            padding: 0 10px; /* Reduced vertical padding, let height distribute */
+            text-align: center;
+            vertical-align: middle;
+        }
+        tr {
+            height: 1px; /* Distribute height evenly */
+        }
+        th {
+            background-color: #e9ecef !important;
+            font-weight: 800;
+            font-size: 15px;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+            padding: 8px;
+            height: 40px; /* Fixed header height */
+        }
+        .col-id { width: 40px; font-weight: bold; }
+        .col-name { 
+            text-align: right; 
+            padding-right: 20px; 
+            font-weight: 700; 
+            font-size: 16px; 
+            white-space: nowrap; /* Prevent wrapping for consistent look */
+        }
+        .col-date { width: 110px; }
+        .col-sign { width: 110px; }
+        .col-note { width: 130px; }
+
+        tr:nth-child(even) {
+            background-color: #f8f9fa;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+        
+        /* Footer Section */
+        .footer-section {
+            margin-top: 15px;
+            display: flex;
+            justify-content: space-around;
+            flex-shrink: 0;
+        }
+        .signature-box {
+            text-align: center;
+        }
+        .signature-title {
+            font-weight: bold;
+            margin-bottom: 40px;
+            font-size: 16px;
+        }
+        .signature-line {
+            width: 200px;
+            border-top: 1px solid #000;
+            margin: 0 auto;
+        }
+
+        /* Controls */
+        .controls {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .btn {
+            padding: 10px 25px;
+            background-color: #2c3e50;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: 'Tajawal', sans-serif;
+            font-size: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn:hover {
+            background-color: #1a252f;
+            transform: translateY(-2px);
+        }
+
+        /* Print Specifics */
+        @media print {
+            body {
+                background: none;
+                padding: 0;
+                margin: 0;
+            }
+            .page {
+                box-shadow: none;
+                margin: 0;
+                width: 100%;
+                height: 100vh;
+                padding: 10mm;
+                border: none;
+            }
+            .controls {
+                display: none;
+            }
+            .info-grid {
+                background-color: transparent !important;
+            }
+            @page {
+                margin: 0;
+                size: A4;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="controls">
+        <button class="btn" onclick="window.print()">
+            <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+            طباعة الاستمارة
+        </button>
+    </div>
+
+    <div class="page">
+        <header class="header-section">
+            <h1>قسم علوم الذكاء الاصطناعي</h1>
+            <h2>استمارة مباشرة الطلبة - العام الدراسي 2025-2026</h2>
+        </header>
+
+        <div class="info-grid">
+            <div class="info-item">
+                <span class="info-label">المرحلة الدراسية:</span>
+                <input type="text" class="info-input" placeholder="...................................">
+            </div>
+            <div class="info-item">
+                <span class="info-label">تاريخ المباشرة:</span>
+                <input type="text" class="info-input" placeholder="2025 / ..... / .....">
+            </div>
+            <div class="info-item">
+                <span class="info-label">الدراسة:</span>
+                <input type="text" class="info-input" placeholder="صباحي / مسائي">
+            </div>
+            <div class="info-item">
+                <span class="info-label">اسم المشرف/المقرر:</span>
+                <input type="text" class="info-input" placeholder="...................................">
+            </div>
+        </div>
+
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th class="col-id">ت</th>
+                        <th class="col-name">الاسم الرباعي</th>
+                        <th class="col-date">تاريخ المباشرة</th>
+                        <th class="col-sign">توقيع الطالب</th>
+                        <th class="col-note">ملاحظات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>1</td><td class="col-name">بنين ديار رحيم صفر</td><td contenteditable="true"></td><td></td><td contenteditable="true"></td></tr>
+                    <tr><td>2</td><td class="col-name">حسين علي دوشان كاظم</td><td contenteditable="true"></td><td></td><td contenteditable="true"></td></tr>
+                    <tr><td>3</td><td class="col-name">داليا كريم ليلو منصور</td><td contenteditable="true"></td><td></td><td contenteditable="true"></td></tr>
+                    <tr><td>4</td><td class="col-name">رقيه اثير احمد مطلق</td><td contenteditable="true"></td><td></td><td contenteditable="true"></td></tr>
+                    <tr><td>5</td><td class="col-name">زهراء ابراهيم مهدي خضير</td><td contenteditable="true"></td><td></td><td contenteditable="true"></td></tr>
+                    <tr><td>6</td><td class="col-name">زهراء محمد سريح عبد الحسن</td><td contenteditable="true"></td><td></td><td contenteditable="true"></td></tr>
+                    <tr><td>7</td><td class="col-name">سبأ محمد صبري سلطان</td><td contenteditable="true"></td><td></td><td contenteditable="true"></td></tr>
+                    <tr><td>8</td><td class="col-name">ضحى حيدر كمال جوده</td><td contenteditable="true"></td><td></td><td contenteditable="true"></td></tr>
+                    <tr><td>9</td><td class="col-name">علي جمال خلف فعيل</td><td contenteditable="true"></td><td></td><td contenteditable="true"></td></tr>
+                    <tr><td>10</td><td class="col-name">علي محمد جبار حسين</td><td contenteditable="true"></td><td></td><td contenteditable="true"></td></tr>
+                    <tr><td>11</td><td class="col-name">مؤمل سعدون جبار لفته</td><td contenteditable="true"></td><td></td><td contenteditable="true"></td></tr>
+                    <tr><td>12</td><td class="col-name">مصطفى فؤاد فاضل عبد الامير</td><td contenteditable="true"></td><td></td><td contenteditable="true"></td></tr>
+                    <tr><td>13</td><td class="col-name">مصطفى محمد مردان حسن</td><td contenteditable="true"></td><td></td><td contenteditable="true"></td></tr>
+                    <tr><td>14</td><td class="col-name">معصومة عبد الحسين جبار عبدالله</td><td contenteditable="true"></td><td></td><td contenteditable="true"></td></tr>
+                    <tr><td>15</td><td class="col-name">منتظر حميد عذاب ضاحي</td><td contenteditable="true"></td><td></td><td contenteditable="true"></td></tr>
+                    <tr><td>16</td><td class="col-name">نبأ جاسم رحمه شايع</td><td contenteditable="true"></td><td></td><td contenteditable="true"></td></tr>
+                    <tr><td>17</td><td class="col-name">نورالحسن باسم عبدالرزاق حسين</td><td contenteditable="true"></td><td></td><td contenteditable="true"></td></tr>
+                    <tr><td>18</td><td class="col-name">يوسف ميثاق طالب عجيل</td><td contenteditable="true"></td><td></td><td contenteditable="true"></td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="footer-section">
+            <div class="signature-box">
+                <div class="signature-title">لجنة المباشرة</div>
+                <div class="signature-line"></div>
+            </div>
+            <div class="signature-box">
+                <div class="signature-title">رئيس القسم</div>
+                <div class="signature-line"></div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تقرير الحضور الشهري - قسم الذكاء الاصطناعي</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            direction: rtl;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            color: #667eea;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            color: #718096;
+            font-size: 1.2rem;
+        }
+        
+        .controls {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            margin-bottom: 20px;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #2d3748;
+            font-weight: 600;
+        }
+        
+        .form-group select,
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-family: 'Tajawal', sans-serif;
+            font-size: 1rem;
+        }
+        
+        .btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: 'Tajawal', sans-serif;
+            transition: all 0.3s;
+            margin: 5px;
+        }
+        
+        .btn:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-success {
+            background: #48bb78;
+        }
+        
+        .btn-success:hover {
+            background: #38a169;
+        }
+        
+        .report-section {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            margin-bottom: 20px;
+        }
+        
+        .report-header {
+            text-align: center;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .report-header h2 {
+            color: #2d3748;
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+        
+        .report-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .info-box {
+            background: #f7fafc;
+            padding: 15px;
+            border-radius: 10px;
+            border-right: 4px solid #667eea;
+        }
+        
+        .info-label {
+            color: #718096;
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+        }
+        
+        .info-value {
+            color: #2d3748;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+        
+        .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .summary-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .summary-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .summary-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        
+        th, td {
+            padding: 12px;
+            text-align: center;
+            border: 1px solid #e2e8f0;
+        }
+        
+        th {
+            background: #667eea;
+            color: white;
+            font-weight: 600;
+        }
+        
+        .student-name-cell {
+            text-align: right;
+            font-weight: 600;
+        }
+        
+        .present {
+            background: #c6f6d5;
+            color: #22543d;
+            font-weight: bold;
+        }
+        
+        .absent {
+            background: #fed7d7;
+            color: #742a2a;
+        }
+        
+        .attendance-rate {
+            font-weight: bold;
+        }
+        
+        .rate-excellent {
+            color: #22543d;
+        }
+        
+        .rate-good {
+            color: #2c7a7b;
+        }
+        
+        .rate-warning {
+            color: #c05621;
+        }
+        
+        .rate-danger {
+            color: #742a2a;
+        }
+        
+        .student-report {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            margin-bottom: 20px;
+            page-break-inside: avoid;
+        }
+        
+        .student-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .student-name {
+            font-size: 1.8rem;
+            font-weight: bold;
+        }
+        
+        .student-id {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 30px;
+            background: #e2e8f0;
+            border-radius: 15px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #48bb78 0%, #38ef7d 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            transition: width 0.5s ease;
+        }
+        
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+            
+            .controls {
+                display: none;
+            }
+            
+            .report-section, .student-report {
+                box-shadow: none;
+                page-break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 تقارير الحضور الذكية</h1>
+            <p>قسم علوم الذكاء الاصطناعي - جامعة المصطفى</p>
+        </div>
+        
+        <div class="controls">
+            <h3 style="margin-bottom: 15px; color: #2d3748;">إعدادات التقرير</h3>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>نوع التقرير</label>
+                    <select id="reportType" onchange="updateReportOptions()">
+                        <option value="all">تقرير شامل لجميع الطلاب</option>
+                        <option value="student">تقرير فردي لطالب محدد</option>
+                        <option value="subject">تقرير حسب المادة</option>
+                    </select>
+                </div>
+                <div class="form-group" id="studentSelectGroup" style="display: none;">
+                    <label>اختر الطالب</label>
+                    <select id="studentSelect"></select>
+                </div>
+                <div class="form-group" id="subjectSelectGroup" style="display: none;">
+                    <label>اختر المادة</label>
+                    <select id="subjectSelect"></select>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>من تاريخ</label>
+                    <input type="date" id="startDate">
+                </div>
+                <div class="form-group">
+                    <label>إلى تاريخ</label>
+                    <input type="date" id="endDate">
+                </div>
+            </div>
+            <button class="btn" onclick="generateReport()">
+                📈 إنشاء التقرير
+            </button>
+            <button class="btn btn-success" onclick="window.print()">
+                🖨️ طباعة التقرير
+            </button>
+            <button class="btn" onclick="exportReport()">
+                💾 تصدير التقرير
+            </button>
+        </div>
+        
+        <div id="reportContainer"></div>
+    </div>
+
+    <script>
+        const students = [
+            "يوسف ميثاق طالب عجيل",
+            "حسين علي دوشان كاظم",
+            "نورالحسن باسم عبدالرزاق حسين",
+            "مصطفى فؤاد فاضل عبد الامير",
+            "علي جمال خلف فعيل",
+            "مصطفى محمد مردان حسن",
+            "ضحى حيدر كمال جوده",
+            "علي محمد جبار حسين",
+            "بنين ديار رحيم صفر",
+            "زهراء محمد سريح عبد الحسن",
+            "زهراء ابراهيم مهدي خضير",
+            "منتظر حميد عذاب ضاحي",
+            "نبأ جاسم رحمه شايع",
+            "معصومة عبد الحسين جبار عبدالله",
+            "داليا كريم ليلو منصور",
+            "مؤمل سعدون جبار لفته",
+            "سبأ محمد صبري سلطان",
+            "رقيه اثير احمد مطلق"
+        ];
+        
+        let allRecords = [];
+        
+        function generateStudentId(index) {
+            return `2025-AI-${String(index + 1).padStart(3, '0')}`;
+        }
+        
+        function loadData() {
+            const saved = localStorage.getItem('attendanceRecords');
+            if (saved) {
+                allRecords = JSON.parse(saved);
+            }
+        }
+        
+        function updateReportOptions() {
+            const reportType = document.getElementById('reportType').value;
+            document.getElementById('studentSelectGroup').style.display = 
+                reportType === 'student' ? 'block' : 'none';
+            document.getElementById('subjectSelectGroup').style.display = 
+                reportType === 'subject' ? 'block' : 'none';
+        }
+        
+        function populateSelects() {
+            // Populate students
+            const studentSelect = document.getElementById('studentSelect');
+            studentSelect.innerHTML = '';
+            students.forEach((student, index) => {
+                const option = document.createElement('option');
+                option.value = student;
+                option.textContent = `${student} (${generateStudentId(index)})`;
+                studentSelect.appendChild(option);
+            });
+            
+            // Populate subjects
+            const subjects = [...new Set(allRecords.map(r => r.subject))];
+            const subjectSelect = document.getElementById('subjectSelect');
+            subjectSelect.innerHTML = '';
+            subjects.forEach(subject => {
+                const option = document.createElement('option');
+                option.value = subject;
+                option.textContent = subject;
+                subjectSelect.appendChild(option);
+            });
+        }
+        
+        function filterRecordsByDate(records, startDate, endDate) {
+            return records.filter(r => {
+                if (startDate && r.date < startDate) return false;
+                if (endDate && r.date > endDate) return false;
+                return true;
+            });
+        }
+        
+        function generateAllStudentsReport(filteredRecords) {
+            const container = document.getElementById('reportContainer');
+            
+            // Get unique dates and subjects
+            const dates = [...new Set(filteredRecords.map(r => r.date))].sort();
+            const subjects = [...new Set(filteredRecords.map(r => r.subject))];
+            
+            // Calculate statistics per student
+            const studentStats = students.map((student, index) => {
+                const studentId = generateStudentId(index);
+                const studentRecords = filteredRecords.filter(r => r.studentName === student);
+                const attendanceCount = studentRecords.length;
+                const totalClasses = dates.length;
+                const percentage = totalClasses > 0 ? Math.round((attendanceCount / totalClasses) * 100) : 0;
+                
+                return {
+                    name: student,
+                    id: studentId,
+                    attendanceCount,
+                    totalClasses,
+                    percentage,
+                    records: studentRecords
+                };
+            });
+            
+            const totalPresent = filteredRecords.length;
+            const totalPossible = students.length * dates.length;
+            const overallPercentage = totalPossible > 0 ? Math.round((totalPresent / totalPossible) * 100) : 0;
+            
+            container.innerHTML = `
+                <div class="report-section">
+                    <div class="report-header">
+                        <h2>📊 التقرير الشامل للحضور</h2>
+                        <p>الفترة: ${document.getElementById('startDate').value || 'البداية'} - ${document.getElementById('endDate').value || 'النهاية'}</p>
+                    </div>
+                    
+                    <div class="summary-cards">
+                        <div class="summary-card">
+                            <div class="summary-value">${students.length}</div>
+                            <div class="summary-label">عدد الطلاب</div>
+                        </div>
+                        <div class="summary-card">
+                            <div class="summary-value">${dates.length}</div>
+                            <div class="summary-label">أيام الدراسة</div>
+                        </div>
+                        <div class="summary-card">
+                            <div class="summary-value">${subjects.length}</div>
+                            <div class="summary-label">المواد الدراسية</div>
+                        </div>
+                        <div class="summary-card">
+                            <div class="summary-value">${overallPercentage}%</div>
+                            <div class="summary-label">نسبة الحضور الكلية</div>
+                        </div>
+                    </div>
+                    
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>اسم الطالب</th>
+                                <th>رقم الطالب</th>
+                                <th>عدد مرات الحضور</th>
+                                <th>إجمالي المحاضرات</th>
+                                <th>نسبة الحضور</th>
+                                <th>التقييم</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${studentStats.map((stat, index) => {
+                                let rateClass = 'rate-danger';
+                                let rating = 'ضعيف';
+                                if (stat.percentage >= 90) {
+                                    rateClass = 'rate-excellent';
+                                    rating = 'ممتاز';
+                                } else if (stat.percentage >= 75) {
+                                    rateClass = 'rate-good';
+                                    rating = 'جيد';
+                                } else if (stat.percentage >= 60) {
+                                    rateClass = 'rate-warning';
+                                    rating = 'مقبول';
+                                }
+                                
+                                return `
+                                    <tr>
+                                        <td>${index + 1}</td>
+                                        <td class="student-name-cell">${stat.name}</td>
+                                        <td>${stat.id}</td>
+                                        <td class="present">${stat.attendanceCount}</td>
+                                        <td>${stat.totalClasses}</td>
+                                        <td class="attendance-rate ${rateClass}">${stat.percentage}%</td>
+                                        <td class="${rateClass}">${rating}</td>
+                                    </tr>
+                                `;
+                            }).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
+        
+        function generateStudentReport(studentName, filteredRecords) {
+            const container = document.getElementById('reportContainer');
+            const studentIndex = students.indexOf(studentName);
+            const studentId = generateStudentId(studentIndex);
+            
+            const studentRecords = filteredRecords.filter(r => r.studentName === studentName);
+            const dates = [...new Set(filteredRecords.map(r => r.date))].sort();
+            const subjects = [...new Set(filteredRecords.map(r => r.subject))];
+            
+            const attendanceCount = studentRecords.length;
+            const totalClasses = dates.length;
+            const percentage = totalClasses > 0 ? Math.round((attendanceCount / totalClasses) * 100) : 0;
+            
+            // Group by subject
+            const subjectStats = subjects.map(subject => {
+                const subjectRecords = studentRecords.filter(r => r.subject === subject);
+                const subjectDates = [...new Set(filteredRecords.filter(r => r.subject === subject).map(r => r.date))];
+                const subjectPercentage = subjectDates.length > 0 ? 
+                    Math.round((subjectRecords.length / subjectDates.length) * 100) : 0;
+                
+                return {
+                    subject,
+                    present: subjectRecords.length,
+                    total: subjectDates.length,
+                    percentage: subjectPercentage
+                };
+            });
+            
+            container.innerHTML = `
+                <div class="student-report">
+                    <div class="student-header">
+                        <div>
+                            <div class="student-name">${studentName}</div>
+                            <div class="student-id">رقم الطالب: ${studentId}</div>
+                        </div>
+                        <div style="text-align: left;">
+                            <div style="font-size: 3rem; font-weight: bold;">${percentage}%</div>
+                            <div>نسبة الحضور</div>
+                        </div>
+                    </div>
+                    
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: ${percentage}%">${percentage}%</div>
+                    </div>
+                    
+                    <div class="report-info">
+                        <div class="info-box">
+                            <div class="info-label">عدد مرات الحضور</div>
+                            <div class="info-value">${attendanceCount}</div>
+                        </div>
+                        <div class="info-box">
+                            <div class="info-label">إجمالي المحاضرات</div>
+                            <div class="info-value">${totalClasses}</div>
+                        </div>
+                        <div class="info-box">
+                            <div class="info-label">عدد الغيابات</div>
+                            <div class="info-value">${totalClasses - attendanceCount}</div>
+                        </div>
+                        <div class="info-box">
+                            <div class="info-label">الفترة</div>
+                            <div class="info-value">${dates.length} يوم</div>
+                        </div>
+                    </div>
+                    
+                    <h3 style="margin: 20px 0; color: #2d3748;">📚 الحضور حسب المواد</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>المادة</th>
+                                <th>الحضور</th>
+                                <th>إجمالي المحاضرات</th>
+                                <th>النسبة</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${subjectStats.map(stat => `
+                                <tr>
+                                    <td class="student-name-cell">${stat.subject}</td>
+                                    <td class="present">${stat.present}</td>
+                                    <td>${stat.total}</td>
+                                    <td class="attendance-rate ${
+                                        stat.percentage >= 90 ? 'rate-excellent' :
+                                        stat.percentage >= 75 ? 'rate-good' :
+                                        stat.percentage >= 60 ? 'rate-warning' : 'rate-danger'
+                                    }">${stat.percentage}%</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                    
+                    <h3 style="margin: 20px 0; color: #2d3748;">📋 سجل الحضور التفصيلي</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>التاريخ</th>
+                                <th>المادة</th>
+                                <th>نوع المحاضرة</th>
+                                <th>الوقت</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${studentRecords.reverse().map((record, index) => `
+                                <tr>
+                                    <td>${index + 1}</td>
+                                    <td>${record.date}</td>
+                                    <td>${record.subject}</td>
+                                    <td>${record.lectureType}</td>
+                                    <td>${record.time}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
+        
+        function generateSubjectReport(subject, filteredRecords) {
+            const container = document.getElementById('reportContainer');
+            const subjectRecords = filteredRecords.filter(r => r.subject === subject);
+            const dates = [...new Set(subjectRecords.map(r => r.date))].sort();
+            
+            const studentStats = students.map((student, index) => {
+                const studentId = generateStudentId(index);
+                const studentRecords = subjectRecords.filter(r => r.studentName === student);
+                const percentage = dates.length > 0 ? 
+                    Math.round((studentRecords.length / dates.length) * 100) : 0;
+                
+                return {
+                    name: student,
+                    id: studentId,
+                    present: studentRecords.length,
+                    total: dates.length,
+                    percentage
+                };
+            });
+            
+            container.innerHTML = `
+                <div class="report-section">
+                    <div class="report-header">
+                        <h2>📚 تقرير حضور مادة: ${subject}</h2>
+                        <p>الفترة: ${document.getElementById('startDate').value || 'البداية'} - ${document.getElementById('endDate').value || 'النهاية'}</p>
+                    </div>
+                    
+                    <div class="summary-cards">
+                        <div class="summary-card">
+                            <div class="summary-value">${dates.length}</div>
+                            <div class="summary-label">عدد المحاضرات</div>
+                        </div>
+                        <div class="summary-card">
+                            <div class="summary-value">${subjectRecords.length}</div>
+                            <div class="summary-label">إجمالي الحضور</div>
+                        </div>
+                        <div class="summary-card">
+                            <div class="summary-value">${Math.round((subjectRecords.length / (students.length * dates.length)) * 100)}%</div>
+                            <div class="summary-label">نسبة الحضور</div>
+                        </div>
+                    </div>
+                    
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>اسم الطالب</th>
+                                <th>رقم الطالب</th>
+                                <th>الحضور</th>
+                                <th>المحاضرات</th>
+                                <th>النسبة</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${studentStats.map((stat, index) => `
+                                <tr>
+                                    <td>${index + 1}</td>
+                                    <td class="student-name-cell">${stat.name}</td>
+                                    <td>${stat.id}</td>
+                                    <td class="present">${stat.present}</td>
+                                    <td>${stat.total}</td>
+                                    <td class="attendance-rate ${
+                                        stat.percentage >= 90 ? 'rate-excellent' :
+                                        stat.percentage >= 75 ? 'rate-good' :
+                                        stat.percentage >= 60 ? 'rate-warning' : 'rate-danger'
+                                    }">${stat.percentage}%</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
+        
+        function generateReport() {
+            const reportType = document.getElementById('reportType').value;
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            
+            const filteredRecords = filterRecordsByDate(allRecords, startDate, endDate);
+            
+            if (filteredRecords.length === 0) {
+                alert('⚠️ لا توجد سجلات في الفترة المحددة');
+                return;
+            }
+            
+            if (reportType === 'all') {
+                generateAllStudentsReport(filteredRecords);
+            } else if (reportType === 'student') {
+                const studentName = document.getElementById('studentSelect').value;
+                generateStudentReport(studentName, filteredRecords);
+            } else if (reportType === 'subject') {
+                const subject = document.getElementById('subjectSelect').value;
+                generateSubjectReport(subject, filteredRecords);
+            }
+        }
+        
+        function exportReport() {
+            alert('💾 لحفظ التقرير، استخدم وظيفة الطباعة واحفظه كملف PDF');
+            window.print();
+        }
+        
+        function setDefaultDates() {
+            const today = new Date();
+            const threeMonthsAgo = new Date(today);
+            threeMonthsAgo.setMonth(today.getMonth() - 3);
+            
+            document.getElementById('startDate').valueAsDate = threeMonthsAgo;
+            document.getElementById('endDate').valueAsDate = today;
+        }
+        
+        window.onload = () => {
+            loadData();
+            populateSelects();
+            setDefaultDates();
+            
+            // Generate initial report
+            if (allRecords.length > 0) {
+                generateReport();
+            }
+        };
+    </script>
+</body>
+</html>

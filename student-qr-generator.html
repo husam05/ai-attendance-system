@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>رموز QR للطلاب - قسم الذكاء الاصطناعي</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            direction: rtl;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        .controls {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+        }
+        
+        .btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1.1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: 'Tajawal', sans-serif;
+            transition: all 0.3s;
+            margin: 5px;
+        }
+        
+        .btn:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-success {
+            background: #48bb78;
+        }
+        
+        .btn-success:hover {
+            background: #38a169;
+        }
+        
+        .students-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+        
+        .student-card {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            text-align: center;
+            transition: transform 0.3s;
+            page-break-inside: avoid;
+        }
+        
+        .student-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        }
+        
+        .student-number {
+            background: #667eea;
+            color: white;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .student-name {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 15px;
+            min-height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .qr-container {
+            margin: 15px auto;
+            padding: 15px;
+            background: #f7fafc;
+            border-radius: 10px;
+            display: inline-block;
+        }
+        
+        .student-id {
+            color: #718096;
+            font-size: 0.9rem;
+            margin-top: 10px;
+            font-family: 'Courier New', monospace;
+        }
+        
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+            
+            .controls {
+                display: none;
+            }
+            
+            .students-grid {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 15px;
+            }
+            
+            .student-card {
+                box-shadow: none;
+                border: 1px solid #e2e8f0;
+                break-inside: avoid;
+            }
+            
+            .header {
+                color: #2d3748;
+                margin-bottom: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎓 رموز QR للطلاب</h1>
+            <p>قسم علوم الذكاء الاصطناعي - جامعة المصطفى</p>
+        </div>
+        
+        <div class="controls">
+            <button class="btn" onclick="generateAllQRCodes()">
+                🔄 إنشاء جميع رموز QR
+            </button>
+            <button class="btn btn-success" onclick="window.print()">
+                🖨️ طباعة الرموز
+            </button>
+            <button class="btn" onclick="downloadAllQRCodes()">
+                💾 تحميل جميع الرموز
+            </button>
+        </div>
+        
+        <div class="students-grid" id="studentsGrid"></div>
+    </div>
+
+    <script>
+        const students = [
+            "يوسف ميثاق طالب عجيل",
+            "حسين علي دوشان كاظم",
+            "نورالحسن باسم عبدالرزاق حسين",
+            "مصطفى فؤاد فاضل عبد الامير",
+            "علي جمال خلف فعيل",
+            "مصطفى محمد مردان حسن",
+            "ضحى حيدر كمال جوده",
+            "علي محمد جبار حسين",
+            "بنين ديار رحيم صفر",
+            "زهراء محمد سريح عبد الحسن",
+            "زهراء ابراهيم مهدي خضير",
+            "منتظر حميد عذاب ضاحي",
+            "نبأ جاسم رحمه شايع",
+            "معصومة عبد الحسين جبار عبدالله",
+            "داليا كريم ليلو منصور",
+            "مؤمل سعدون جبار لفته",
+            "سبأ محمد صبري سلطان",
+            "رقيه اثير احمد مطلق"
+        ];
+
+        function generateStudentId(index, name) {
+            const year = "2025";
+            const dept = "AI";
+            const num = String(index + 1).padStart(3, '0');
+            return `${year}-${dept}-${num}`;
+        }
+
+        function createStudentCard(student, index) {
+            const studentId = generateStudentId(index, student);
+            
+            const card = document.createElement('div');
+            card.className = 'student-card';
+            card.id = `student-${index}`;
+            
+            const qrData = JSON.stringify({
+                id: studentId,
+                name: student,
+                department: "الذكاء الاصطناعي",
+                university: "جامعة المصطفى"
+            });
+            
+            card.innerHTML = `
+                <div class="student-number">${index + 1}</div>
+                <div class="student-name">${student}</div>
+                <div class="qr-container" id="qr-${index}"></div>
+                <div class="student-id">ID: ${studentId}</div>
+            `;
+            
+            return { card, qrData, qrId: `qr-${index}` };
+        }
+
+        function generateAllQRCodes() {
+            const grid = document.getElementById('studentsGrid');
+            grid.innerHTML = '';
+            
+            students.forEach((student, index) => {
+                const { card, qrData, qrId } = createStudentCard(student, index);
+                grid.appendChild(card);
+                
+                // Generate QR code after DOM insertion
+                setTimeout(() => {
+                    const qrContainer = document.getElementById(qrId);
+                    qrContainer.innerHTML = '';
+                    new QRCode(qrContainer, {
+                        text: qrData,
+                        width: 150,
+                        height: 150,
+                        colorDark: "#000000",
+                        colorLight: "#ffffff",
+                        correctLevel: QRCode.CorrectLevel.H
+                    });
+                }, 100 * index);
+            });
+        }
+
+        function downloadAllQRCodes() {
+            alert('لتحميل الرموز، يمكنك استخدام وظيفة الطباعة وحفظها كملف PDF');
+            window.print();
+        }
+
+        // Generate QR codes on page load
+        window.onload = () => {
+            generateAllQRCodes();
+        };
+    </script>
+</body>
+</html>
