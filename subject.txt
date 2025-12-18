@@ -1,11 +1,4 @@
-المعامل
-
-الرياضيات I
-
-مبادئ الذكاء الاصطناعي
-
-الديمقراطية وحقوق الإنسان
-
-أساسيات البرمجة
-
-الإحصاء والاحتمالات
+cd /home/jet/Desktop/Ai-Dept
+git add .
+git commit -m "Update: description of changes"
+git push
