@@ -137,6 +137,25 @@
             font-family: 'Courier New', monospace;
         }
         
+        .download-btn {
+            background: #48bb78;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: 'Tajawal', sans-serif;
+            font-size: 0.9rem;
+            margin-top: 10px;
+            transition: all 0.3s;
+            width: 100%;
+        }
+        
+        .download-btn:hover {
+            background: #38a169;
+            transform: translateY(-2px);
+        }
+        
         @media print {
             body {
                 background: white;
@@ -144,6 +163,10 @@
             }
             
             .controls {
+                display: none;
+            }
+            
+            .download-btn {
                 display: none;
             }
             
@@ -235,6 +258,7 @@
                 <div class="student-name">${student}</div>
                 <div class="qr-container" id="qr-${index}"></div>
                 <div class="student-id">ID: ${studentId}</div>
+                <button class="download-btn" onclick="downloadStudentQR(${index}, '${student.replace(/'/g, "\\'")}', '${studentId}')">💾 تحميل QR</button>
             `;
             
             return { card, qrData, qrId: `qr-${index}` };
@@ -277,6 +301,27 @@
             });
         }
 
+        function downloadStudentQR(index, studentName, studentId) {
+            const qrData = JSON.stringify({
+                id: studentId,
+                name: studentName,
+                department: "الذكاء الاصطناعي",
+                university: "جامعة المصطفى"
+            });
+            
+            // Generate high-quality QR code (500x500)
+            const qrImageUrl = generateQRCodeImage(qrData, 500);
+            
+            // Create a temporary link and trigger download
+            const link = document.createElement('a');
+            link.href = qrImageUrl;
+            link.download = `QR_${studentId}_${studentName}.png`;
+            link.target = '_blank';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+        
         function downloadAllQRCodes() {
             alert('لتحميل الرموز، يمكنك استخدام وظيفة الطباعة وحفظها كملف PDF');
             window.print();
