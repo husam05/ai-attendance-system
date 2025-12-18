@@ -10,6 +10,7 @@
     <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <style>
         * {
             margin: 0;
@@ -307,7 +308,12 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>📸 نظام مسح الحضور بالـ QR</h1>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h1>📸 نظام مسح الحضور بالـ QR</h1>
+                <button onclick="logout()" class="btn"
+                    style="width: auto; margin: 0; background: #e53e3e; font-size: 0.9rem; padding: 8px 15px;">تسجيل
+                    خروج</button>
+            </div>
             <p>قسم علوم الذكاء الاصطناعي - جامعة المصطفى</p>
         </div>
 
@@ -645,10 +651,24 @@
             });
         }
 
-        // Load attendance on page load
-        window.onload = () => {
-            loadAttendance();
-        };
+        // Auth Protection & Logic
+        function logout() {
+            firebase.auth().signOut().then(() => {
+                window.location.href = 'login.html';
+            });
+        }
+
+        // Check auth status
+        firebase.auth().onAuthStateChanged((user) => {
+            if (!user) {
+                window.location.href = 'login.html';
+            } else {
+                loadAttendance();
+            }
+        });
+
+        // Removed window.onload as it is replaced by onAuthStateChanged
+        // window.onload = () => { ... };
 
         // Cleanup on page unload
         window.onbeforeunload = () => {

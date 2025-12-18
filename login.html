@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تسجيل الدخول - نظام الحضور الذكي</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            direction: rtl;
+            padding: 20px;
+        }
+
+        .login-card {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 450px;
+            text-align: center;
+        }
+
+        .logo {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        h1 {
+            color: #1e3c72;
+            margin-bottom: 10px;
+            font-size: 1.8rem;
+        }
+
+        p {
+            color: #718096;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            text-align: right;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #4a5568;
+            font-weight: 600;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-family: 'Tajawal', sans-serif;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #1e3c72;
+            box-shadow: 0 0 0 3px rgba(30, 60, 114, 0.1);
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.1rem;
+            border-radius: 10px;
+            cursor: pointer;
+            width: 100%;
+            font-family: 'Tajawal', sans-serif;
+            font-weight: bold;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-bottom: 15px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(30, 60, 114, 0.4);
+        }
+
+        .btn:disabled {
+            background: #cbd5e0;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .alert {
+            background-color: #fed7d7;
+            border: 1px solid #f56565;
+            color: #c53030;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+            font-size: 0.9rem;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(0px);
+            }
+
+            50% {
+                transform: translateY(-10px);
+            }
+
+            100% {
+                transform: translateY(0px);
+            }
+        }
+
+        .demo-credentials {
+            background: #ebf8ff;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            color: #2b6cb0;
+            margin-top: 20px;
+            border: 1px solid #bee3f8;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="login-card">
+        <div class="logo">🔐</div>
+        <h1>تسجيل دخول الأساتذة</h1>
+        <p>قسم علوم الذكاء الاصطناعي - جامعة المصطفى</p>
+
+        <div id="errorAlert" class="alert"></div>
+
+        <form id="loginForm" onsubmit="handleLogin(event)">
+            <div class="form-group">
+                <label>البريد الإلكتروني</label>
+                <input type="email" id="email" required placeholder="example@university.edu"
+                    value="teacher@ai-dept.com">
+            </div>
+
+            <div class="form-group">
+                <label>كلمة المرور</label>
+                <input type="password" id="password" required placeholder="••••••••" value="password123">
+            </div>
+
+            <button type="submit" id="loginBtn" class="btn">تسجيل الدخول</button>
+        </form>
+
+        <div class="demo-credentials">
+            <strong>للتجربة:</strong> teacher@ai-dept.com / password123
+        </div>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyDLSX6DY_79BD8ZEYBRYh_jtmP0mHslzkE",
+            authDomain: "ai-attendance-husam.firebaseapp.com",
+            databaseURL: "https://ai-attendance-husam-default-rtdb.firebaseio.com",
+            projectId: "ai-attendance-husam",
+            storageBucket: "ai-attendance-husam.firebasestorage.app",
+            messagingSenderId: "305903941972",
+            appId: "1:305903941972:web:d914431aab5a1cc6b5b0c1",
+            measurementId: "G-EJEKCTT2M9"
+        };
+
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+
+        // Check if already logged in
+        firebase.auth().onAuthStateChanged((user) => {
+            if (user) {
+                window.location.href = 'teacher-qr-scanner.html';
+            }
+        });
+
+        function handleLogin(e) {
+            e.preventDefault();
+
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const btn = document.getElementById('loginBtn');
+            const alert = document.getElementById('errorAlert');
+
+            btn.disabled = true;
+            btn.textContent = 'جاري التحقق...';
+            alert.style.display = 'none';
+
+            firebase.auth().signInWithEmailAndPassword(email, password)
+                .then((userCredential) => {
+                    // Success
+                    window.location.href = 'teacher-qr-scanner.html';
+                })
+                .catch((error) => {
+                    // Error
+                    btn.disabled = false;
+                    btn.textContent = 'تسجيل الدخول';
+                    alert.style.display = 'block';
+
+                    let msg = 'حدث خطأ في تسجيل الدخول';
+                    if (error.code === 'auth/wrong-password') msg = 'كلمة المرور غير صحيحة';
+                    if (error.code === 'auth/user-not-found') msg = 'المستخدم غير موجود';
+                    if (error.code === 'auth/invalid-email') msg = 'البريد الإلكتروني غير صالح';
+
+                    alert.textContent = `❌ ${msg}`;
+                    console.error(error);
+                });
+        }
+    </script>
+</body>
+
+</html>
