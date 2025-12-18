@@ -1,6 +1,9 @@
 # نظام الحضور الذكي بتقنية QR Code
 ## قسم علوم الذكاء الاصطناعي - جامعة المصطفى
 
+[![Live Demo](https://img.shields.io/badge/demo-online-green.svg)](https://ai-attendance-husam.web.app)
+[![GitHub](https://img.shields.io/badge/github-repo-blue.svg)](https://github.com/husam05/ai-attendance-system)
+
 ---
 
 ## 📋 نظرة عامة
