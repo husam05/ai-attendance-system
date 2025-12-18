@@ -6,6 +6,9 @@
     <title>إدارة سجلات الحضور - قسم الذكاء الاصطناعي</title>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
     <style>
         * {
             margin: 0;
@@ -551,6 +554,77 @@
                 filteredRecords = [];
                 alert('✅ تم حذف جميع البيانات');
                 loadData();
+            }
+        }
+        
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDqC9X6K8yZ5nF0mR3tL7wH4pJ2vB8uE9g",
+            authDomain: "ai-attendance-husam.firebaseapp.com",
+            databaseURL: "https://ai-attendance-husam-default-rtdb.firebaseio.com",
+            projectId: "ai-attendance-husam",
+            storageBucket: "ai-attendance-husam.appspot.com",
+            messagingSenderId: "123456789012",
+            appId: "1:123456789012:web:abc123def456ghi789"
+        };
+        
+        // Initialize Firebase
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        const database = firebase.database();
+        
+        // Modified loadData to use Firebase
+        function loadData() {
+            database.ref('attendanceRecords').once('value', (snapshot) => {
+                allRecords = [];
+                snapshot.forEach((childSnapshot) => {
+                    const record = childSnapshot.val();
+                    record.firebaseId = childSnapshot.key;
+                    allRecords.push(record);
+                });
+                
+                if (allRecords.length === 0) {
+                    // Fallback to localStorage
+                    const stored = localStorage.getItem('attendanceRecords');
+                    if (stored) {
+                        allRecords = JSON.parse(stored);
+                    }
+                }
+                
+                filteredRecords = [...allRecords];
+                populateFilters();
+                displayRecords();
+                createChart();
+            }).catch(error => {
+                console.error('Firebase error:', error);
+                // Fallback to localStorage
+                const stored = localStorage.getItem('attendanceRecords');
+                if (stored) {
+                    allRecords = JSON.parse(stored);
+                    filteredRecords = [...allRecords];
+                    populateFilters();
+                    displayRecords();
+                    createChart();
+                }
+            });
+        }
+        
+        // Modified clearAllData to use Firebase
+        function clearAllData() {
+            if (confirm('⚠️ هل أنت متأكد من حذف جميع البيانات؟ لا يمكن التراجع عن هذا الإجراء!')) {
+                database.ref('attendanceRecords').remove()
+                    .then(() => {
+                        localStorage.removeItem('attendanceRecords');
+                        allRecords = [];
+                        filteredRecords = [];
+                        alert('✅ تم حذف جميع البيانات من السحابة');
+                        loadData();
+                    })
+                    .catch(error => {
+                        console.error('Firebase error:', error);
+                        alert('❌ خطأ في حذف البيانات');
+                    });
             }
         }
         

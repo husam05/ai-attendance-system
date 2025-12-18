@@ -6,6 +6,9 @@
     <title>ماسح الحضور - قسم الذكاء الاصطناعي</title>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/html5-qrcode"></script>
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
     <style>
         * {
             margin: 0;
@@ -571,6 +574,72 @@
         // Update display when subject or date changes
         document.getElementById('subject').addEventListener('change', updateAttendanceDisplay);
         document.getElementById('date').addEventListener('change', updateAttendanceDisplay);
+        
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDqC9X6K8yZ5nF0mR3tL7wH4pJ2vB8uE9g",
+            authDomain: "ai-attendance-husam.firebaseapp.com",
+            databaseURL: "https://ai-attendance-husam-default-rtdb.firebaseio.com",
+            projectId: "ai-attendance-husam",
+            storageBucket: "ai-attendance-husam.appspot.com",
+            messagingSenderId: "123456789012",
+            appId: "1:123456789012:web:abc123def456ghi789"
+        };
+        
+        // Initialize Firebase
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        const database = firebase.database();
+        
+        // Modified functions to use Firebase instead of localStorage
+        function saveAttendance() {
+            // Save to Firebase
+            attendanceRecords.forEach(record => {
+                if (!record.firebaseId) {
+                    const newRef = database.ref('attendanceRecords').push();
+                    record.firebaseId = newRef.key;
+                    newRef.set(record);
+                }
+            });
+            
+            // Also keep localStorage as backup
+            localStorage.setItem('attendanceRecords', JSON.stringify(attendanceRecords));
+        }
+        
+        function loadAttendance() {
+            // Load from Firebase
+            database.ref('attendanceRecords').once('value', (snapshot) => {
+                const records = [];
+                snapshot.forEach((childSnapshot) => {
+                    const record = childSnapshot.val();
+                    record.firebaseId = childSnapshot.key;
+                    records.push(record);
+                });
+                
+                if (records.length > 0) {
+                    attendanceRecords = records;
+                } else {
+                    // Fallback to localStorage if Firebase is empty
+                    const stored = localStorage.getItem('attendanceRecords');
+                    if (stored) {
+                        attendanceRecords = JSON.parse(stored);
+                    }
+                }
+                
+                updateAttendanceDisplay();
+                showAlert('✅ تم تحميل البيانات من السحابة', 'success');
+            }).catch(error => {
+                console.error('Firebase error:', error);
+                // Fallback to localStorage
+                const stored = localStorage.getItem('attendanceRecords');
+                if (stored) {
+                    attendanceRecords = JSON.parse(stored);
+                }
+                updateAttendanceDisplay();
+                showAlert('⚠️ تم التحميل من التخزين المحلي', 'warning');
+            });
+        }
         
         // Load attendance on page load
         window.onload = () => {
