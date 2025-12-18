@@ -309,17 +309,61 @@
                 university: "جامعة المصطفى"
             });
             
-            // Generate high-quality QR code (500x500)
-            const qrImageUrl = generateQRCodeImage(qrData, 500);
+            // Generate high-quality QR code (400x400)
+            const qrImageUrl = generateQRCodeImage(qrData, 400);
             
-            // Create a temporary link and trigger download
-            const link = document.createElement('a');
-            link.href = qrImageUrl;
-            link.download = `QR_${studentId}_${studentName}.png`;
-            link.target = '_blank';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+            // Create canvas to add student name and info
+            const canvas = document.createElement('canvas');
+            canvas.width = 500;
+            canvas.height = 600;
+            const ctx = canvas.getContext('2d');
+            
+            // White background
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Load QR code image
+            const img = new Image();
+            img.crossOrigin = 'anonymous';
+            img.onload = function() {
+                // Draw QR code centered
+                ctx.drawImage(img, 50, 80, 400, 400);
+                
+                // Add border around QR
+                ctx.strokeStyle = '#667eea';
+                ctx.lineWidth = 3;
+                ctx.strokeRect(48, 78, 404, 404);
+                
+                // Add student name (top)
+                ctx.fillStyle = '#2d3748';
+                ctx.font = 'bold 24px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(studentName, canvas.width / 2, 50);
+                
+                // Add student ID (below QR)
+                ctx.fillStyle = '#667eea';
+                ctx.font = 'bold 20px Arial';
+                ctx.fillText(studentId, canvas.width / 2, 520);
+                
+                // Add department (bottom)
+                ctx.fillStyle = '#718096';
+                ctx.font = '16px Arial';
+                ctx.fillText('قسم علوم الذكاء الاصطناعي', canvas.width / 2, 550);
+                ctx.fillText('جامعة المصطفى', canvas.width / 2, 575);
+                
+                // Convert canvas to blob and download
+                canvas.toBlob(function(blob) {
+                    const url = URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = `QR_${studentId}_${studentName}.png`;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    URL.revokeObjectURL(url);
+                });
+            };
+            img.src = qrImageUrl;
         }
         
         function downloadAllQRCodes() {
