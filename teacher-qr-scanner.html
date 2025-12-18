@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -15,7 +16,7 @@
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
             font-family: 'Tajawal', sans-serif;
             background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
@@ -23,57 +24,57 @@
             direction: rtl;
             padding: 20px;
         }
-        
+
         .container {
             max-width: 1400px;
             margin: 0 auto;
         }
-        
+
         .header {
             background: white;
             padding: 25px;
             border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
             margin-bottom: 20px;
             text-align: center;
         }
-        
+
         .header h1 {
             color: #1e3c72;
             font-size: 2.2rem;
             margin-bottom: 10px;
         }
-        
+
         .header p {
             color: #718096;
             font-size: 1.1rem;
         }
-        
+
         .session-info {
             background: white;
             padding: 20px;
             border-radius: 15px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
             margin-bottom: 20px;
         }
-        
+
         .session-info h2 {
             color: #1e3c72;
             margin-bottom: 15px;
             font-size: 1.5rem;
         }
-        
+
         .form-group {
             margin-bottom: 15px;
         }
-        
+
         .form-group label {
             display: block;
             margin-bottom: 5px;
             color: #2d3748;
             font-weight: 600;
         }
-        
+
         .form-group select,
         .form-group input {
             width: 100%;
@@ -84,45 +85,45 @@
             font-size: 1rem;
             transition: border 0.3s;
         }
-        
+
         .form-group select:focus,
         .form-group input:focus {
             outline: none;
             border-color: #1e3c72;
         }
-        
+
         .form-row {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 15px;
         }
-        
+
         .main-content {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 20px;
         }
-        
+
         .scanner-section {
             background: white;
             padding: 25px;
             border-radius: 15px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
         }
-        
+
         .scanner-section h2 {
             color: #1e3c72;
             margin-bottom: 15px;
             font-size: 1.5rem;
         }
-        
+
         #reader {
             border: 3px solid #e2e8f0;
             border-radius: 10px;
             overflow: hidden;
             margin-bottom: 15px;
         }
-        
+
         .btn {
             background: #1e3c72;
             color: white;
@@ -136,49 +137,49 @@
             width: 100%;
             margin-bottom: 10px;
         }
-        
+
         .btn:hover {
             background: #152a54;
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(30, 60, 114, 0.4);
         }
-        
+
         .btn-stop {
             background: #e53e3e;
         }
-        
+
         .btn-stop:hover {
             background: #c53030;
         }
-        
+
         .btn-export {
             background: #48bb78;
         }
-        
+
         .btn-export:hover {
             background: #38a169;
         }
-        
+
         .attendance-list {
             background: white;
             padding: 25px;
             border-radius: 15px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
         }
-        
+
         .attendance-list h2 {
             color: #1e3c72;
             margin-bottom: 15px;
             font-size: 1.5rem;
         }
-        
+
         .stats {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 15px;
             margin-bottom: 20px;
         }
-        
+
         .stat-card {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             padding: 15px;
@@ -186,23 +187,23 @@
             text-align: center;
             color: white;
         }
-        
+
         .stat-number {
             font-size: 2rem;
             font-weight: bold;
             margin-bottom: 5px;
         }
-        
+
         .stat-label {
             font-size: 0.9rem;
             opacity: 0.9;
         }
-        
+
         .attendance-items {
             max-height: 500px;
             overflow-y: auto;
         }
-        
+
         .attendance-item {
             background: #f7fafc;
             padding: 15px;
@@ -211,51 +212,52 @@
             border-right: 4px solid #48bb78;
             transition: transform 0.2s;
         }
-        
+
         .attendance-item:hover {
             transform: translateX(-5px);
         }
-        
+
         .attendance-item.new {
             animation: slideIn 0.5s ease;
         }
-        
+
         @keyframes slideIn {
             from {
                 transform: translateX(50px);
                 opacity: 0;
             }
+
             to {
                 transform: translateX(0);
                 opacity: 1;
             }
         }
-        
+
         .student-info {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 8px;
         }
-        
+
         .student-name {
             font-weight: 600;
             color: #2d3748;
             font-size: 1.1rem;
         }
-        
+
         .student-id {
             color: #718096;
             font-size: 0.9rem;
             font-family: 'Courier New', monospace;
         }
-        
+
         .attendance-time {
             color: #48bb78;
             font-size: 0.85rem;
             font-weight: 600;
         }
-        
+
         .alert {
             padding: 15px;
             border-radius: 8px;
@@ -263,25 +265,25 @@
             text-align: center;
             font-weight: 600;
         }
-        
+
         .alert-success {
             background: #c6f6d5;
             color: #22543d;
             border: 2px solid #48bb78;
         }
-        
+
         .alert-error {
             background: #fed7d7;
             color: #742a2a;
             border: 2px solid #e53e3e;
         }
-        
+
         .alert-warning {
             background: #feebc8;
             color: #744210;
             border: 2px solid #ed8936;
         }
-        
+
         .hidden {
             display: none;
         }
@@ -290,24 +292,25 @@
             .main-content {
                 grid-template-columns: 1fr;
             }
-            
+
             .form-row {
                 grid-template-columns: 1fr;
             }
-            
+
             .stats {
                 grid-template-columns: 1fr;
             }
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <div class="header">
             <h1>📸 نظام مسح الحضور بالـ QR</h1>
             <p>قسم علوم الذكاء الاصطناعي - جامعة المصطفى</p>
         </div>
-        
+
         <div class="session-info">
             <h2>⚙️ معلومات الجلسة</h2>
             <div class="form-row">
@@ -343,9 +346,9 @@
                 </div>
             </div>
         </div>
-        
+
         <div id="alertContainer"></div>
-        
+
         <div class="main-content">
             <div class="scanner-section">
                 <h2>📷 ماسح الـ QR</h2>
@@ -357,10 +360,10 @@
                     ⏹️ إيقاف المسح
                 </button>
             </div>
-            
+
             <div class="attendance-list">
                 <h2>✅ قائمة الحضور</h2>
-                
+
                 <div class="stats">
                     <div class="stat-card">
                         <div class="stat-number" id="totalPresent">0</div>
@@ -375,11 +378,11 @@
                         <div class="stat-label">نسبة الحضور</div>
                     </div>
                 </div>
-                
+
                 <button class="btn btn-export" onclick="exportAttendance()">
                     💾 حفظ وتصدير البيانات
                 </button>
-                
+
                 <div class="attendance-items" id="attendanceList"></div>
             </div>
         </div>
@@ -389,11 +392,11 @@
         let html5QrCode = null;
         let attendanceRecords = [];
         const totalStudents = 18;
-        
+
         // Set current date and time
         document.getElementById('date').valueAsDate = new Date();
         document.getElementById('time').value = new Date().toTimeString().slice(0, 5);
-        
+
         // Load existing attendance from localStorage
         function loadAttendance() {
             const saved = localStorage.getItem('attendanceRecords');
@@ -402,28 +405,28 @@
                 updateAttendanceDisplay();
             }
         }
-        
+
         function showAlert(message, type) {
             const alertContainer = document.getElementById('alertContainer');
             const alert = document.createElement('div');
             alert.className = `alert alert-${type}`;
             alert.textContent = message;
             alertContainer.appendChild(alert);
-            
+
             setTimeout(() => {
                 alert.remove();
             }, 3000);
         }
-        
+
         function startScanner() {
             const subject = document.getElementById('subject').value;
             if (!subject) {
                 showAlert('⚠️ يرجى اختيار المادة الدراسية أولاً', 'warning');
                 return;
             }
-            
+
             html5QrCode = new Html5Qrcode("reader");
-            
+
             html5QrCode.start(
                 { facingMode: "environment" },
                 {
@@ -440,7 +443,7 @@
                 showAlert('❌ خطأ في تشغيل الكاميرا: ' + err, 'error');
             });
         }
-        
+
         function stopScanner() {
             if (html5QrCode) {
                 html5QrCode.stop().then(() => {
@@ -452,18 +455,18 @@
                 });
             }
         }
-        
+
         function onScanSuccess(decodedText, decodedResult) {
             try {
                 const studentData = JSON.parse(decodedText);
-                
+
                 // Check if student already marked present
                 const existing = attendanceRecords.find(r => r.studentId === studentData.id);
                 if (existing) {
                     showAlert('⚠️ الطالب مسجل مسبقاً: ' + studentData.name, 'warning');
                     return;
                 }
-                
+
                 // Add attendance record
                 const record = {
                     studentId: studentData.id,
@@ -474,36 +477,36 @@
                     time: new Date().toLocaleTimeString('ar-EG'),
                     timestamp: new Date().toISOString()
                 };
-                
+
                 attendanceRecords.push(record);
                 saveAttendance();
                 updateAttendanceDisplay();
-                
+
                 showAlert('✅ تم تسجيل حضور: ' + studentData.name, 'success');
-                
+
                 // Play success sound (optional)
                 playSuccessSound();
-                
+
             } catch (error) {
                 showAlert('❌ رمز QR غير صالح', 'error');
             }
         }
-        
+
         function onScanError(errorMessage) {
             // Ignore scan errors (they happen frequently during scanning)
         }
-        
+
         function updateAttendanceDisplay() {
             const listContainer = document.getElementById('attendanceList');
             listContainer.innerHTML = '';
-            
+
             // Get current session records
             const subject = document.getElementById('subject').value;
             const date = document.getElementById('date').value;
-            const sessionRecords = attendanceRecords.filter(r => 
+            const sessionRecords = attendanceRecords.filter(r =>
                 r.subject === subject && r.date === date
             );
-            
+
             sessionRecords.reverse().forEach(record => {
                 const item = document.createElement('div');
                 item.className = 'attendance-item';
@@ -515,31 +518,31 @@
                     <div class="attendance-time">⏰ ${record.time}</div>
                 `;
                 listContainer.appendChild(item);
-                
+
                 // Add animation
                 setTimeout(() => item.classList.add('new'), 10);
             });
-            
+
             // Update statistics
             const presentCount = sessionRecords.length;
             const absentCount = totalStudents - presentCount;
             const percentage = Math.round((presentCount / totalStudents) * 100);
-            
+
             document.getElementById('totalPresent').textContent = presentCount;
             document.getElementById('totalAbsent').textContent = absentCount;
             document.getElementById('percentage').textContent = percentage + '%';
         }
-        
+
         function saveAttendance() {
             localStorage.setItem('attendanceRecords', JSON.stringify(attendanceRecords));
         }
-        
+
         function exportAttendance() {
             if (attendanceRecords.length === 0) {
                 showAlert('⚠️ لا توجد سجلات لتصديرها', 'warning');
                 return;
             }
-            
+
             // Export as JSON
             const dataStr = JSON.stringify(attendanceRecords, null, 2);
             const dataBlob = new Blob([dataStr], { type: 'application/json' });
@@ -548,50 +551,51 @@
             link.href = url;
             link.download = `attendance_${new Date().toISOString().split('T')[0]}.json`;
             link.click();
-            
+
             showAlert('✅ تم تصدير البيانات بنجاح', 'success');
         }
-        
+
         function playSuccessSound() {
             // Create a simple beep sound
             const audioContext = new (window.AudioContext || window.webkitAudioContext)();
             const oscillator = audioContext.createOscillator();
             const gainNode = audioContext.createGain();
-            
+
             oscillator.connect(gainNode);
             gainNode.connect(audioContext.destination);
-            
+
             oscillator.frequency.value = 800;
             oscillator.type = 'sine';
-            
+
             gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
             gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
-            
+
             oscillator.start(audioContext.currentTime);
             oscillator.stop(audioContext.currentTime + 0.1);
         }
-        
+
         // Update display when subject or date changes
         document.getElementById('subject').addEventListener('change', updateAttendanceDisplay);
         document.getElementById('date').addEventListener('change', updateAttendanceDisplay);
-        
+
         // Firebase Configuration
         const firebaseConfig = {
-            apiKey: "AIzaSyDqC9X6K8yZ5nF0mR3tL7wH4pJ2vB8uE9g",
+            apiKey: "AIzaSyDLSX6DY_79BD8ZEYBRYh_jtmP0mHslzkE",
             authDomain: "ai-attendance-husam.firebaseapp.com",
             databaseURL: "https://ai-attendance-husam-default-rtdb.firebaseio.com",
             projectId: "ai-attendance-husam",
-            storageBucket: "ai-attendance-husam.appspot.com",
-            messagingSenderId: "123456789012",
-            appId: "1:123456789012:web:abc123def456ghi789"
+            storageBucket: "ai-attendance-husam.firebasestorage.app",
+            messagingSenderId: "305903941972",
+            appId: "1:305903941972:web:d914431aab5a1cc6b5b0c1",
+            measurementId: "G-EJEKCTT2M9"
         };
-        
+
         // Initialize Firebase
         if (!firebase.apps.length) {
             firebase.initializeApp(firebaseConfig);
         }
         const database = firebase.database();
-        
+
         // Modified functions to use Firebase instead of localStorage
         function saveAttendance() {
             // Save to Firebase
@@ -602,11 +606,11 @@
                     newRef.set(record);
                 }
             });
-            
+
             // Also keep localStorage as backup
             localStorage.setItem('attendanceRecords', JSON.stringify(attendanceRecords));
         }
-        
+
         function loadAttendance() {
             // Load from Firebase
             database.ref('attendanceRecords').once('value', (snapshot) => {
@@ -616,7 +620,7 @@
                     record.firebaseId = childSnapshot.key;
                     records.push(record);
                 });
-                
+
                 if (records.length > 0) {
                     attendanceRecords = records;
                 } else {
@@ -626,7 +630,7 @@
                         attendanceRecords = JSON.parse(stored);
                     }
                 }
-                
+
                 updateAttendanceDisplay();
                 showAlert('✅ تم تحميل البيانات من السحابة', 'success');
             }).catch(error => {
@@ -640,12 +644,12 @@
                 showAlert('⚠️ تم التحميل من التخزين المحلي', 'warning');
             });
         }
-        
+
         // Load attendance on page load
         window.onload = () => {
             loadAttendance();
         };
-        
+
         // Cleanup on page unload
         window.onbeforeunload = () => {
             if (html5QrCode) {
@@ -654,4 +658,5 @@
         };
     </script>
 </body>
+
 </html>

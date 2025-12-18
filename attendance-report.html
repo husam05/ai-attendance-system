@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -14,7 +15,7 @@
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
             font-family: 'Tajawal', sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -22,54 +23,54 @@
             direction: rtl;
             padding: 20px;
         }
-        
+
         .container {
             max-width: 1400px;
             margin: 0 auto;
         }
-        
+
         .header {
             background: white;
             padding: 30px;
             border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
             margin-bottom: 20px;
             text-align: center;
         }
-        
+
         .header h1 {
             color: #667eea;
             font-size: 2.5rem;
             margin-bottom: 10px;
         }
-        
+
         .header p {
             color: #718096;
             font-size: 1.2rem;
         }
-        
+
         .controls {
             background: white;
             padding: 20px;
             border-radius: 15px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
             margin-bottom: 20px;
         }
-        
+
         .form-row {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 15px;
             margin-bottom: 15px;
         }
-        
+
         .form-group label {
             display: block;
             margin-bottom: 5px;
             color: #2d3748;
             font-weight: 600;
         }
-        
+
         .form-group select,
         .form-group input {
             width: 100%;
@@ -79,7 +80,7 @@
             font-family: 'Tajawal', sans-serif;
             font-size: 1rem;
         }
-        
+
         .btn {
             background: #667eea;
             color: white;
@@ -92,75 +93,75 @@
             transition: all 0.3s;
             margin: 5px;
         }
-        
+
         .btn:hover {
             background: #5568d3;
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
         }
-        
+
         .btn-success {
             background: #48bb78;
         }
-        
+
         .btn-success:hover {
             background: #38a169;
         }
-        
+
         .report-section {
             background: white;
             padding: 30px;
             border-radius: 15px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
             margin-bottom: 20px;
         }
-        
+
         .report-header {
             text-align: center;
             border-bottom: 3px solid #667eea;
             padding-bottom: 20px;
             margin-bottom: 30px;
         }
-        
+
         .report-header h2 {
             color: #2d3748;
             font-size: 2rem;
             margin-bottom: 10px;
         }
-        
+
         .report-info {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 15px;
             margin-bottom: 30px;
         }
-        
+
         .info-box {
             background: #f7fafc;
             padding: 15px;
             border-radius: 10px;
             border-right: 4px solid #667eea;
         }
-        
+
         .info-label {
             color: #718096;
             font-size: 0.9rem;
             margin-bottom: 5px;
         }
-        
+
         .info-value {
             color: #2d3748;
             font-size: 1.2rem;
             font-weight: 600;
         }
-        
+
         .summary-cards {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
             gap: 15px;
             margin-bottom: 30px;
         }
-        
+
         .summary-card {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
@@ -168,81 +169,82 @@
             border-radius: 10px;
             text-align: center;
         }
-        
+
         .summary-value {
             font-size: 2.5rem;
             font-weight: bold;
             margin-bottom: 5px;
         }
-        
+
         .summary-label {
             font-size: 0.9rem;
             opacity: 0.9;
         }
-        
+
         table {
             width: 100%;
             border-collapse: collapse;
             margin-top: 20px;
         }
-        
-        th, td {
+
+        th,
+        td {
             padding: 12px;
             text-align: center;
             border: 1px solid #e2e8f0;
         }
-        
+
         th {
             background: #667eea;
             color: white;
             font-weight: 600;
         }
-        
+
         .student-name-cell {
             text-align: right;
             font-weight: 600;
         }
-        
+
         .present {
             background: #c6f6d5;
             color: #22543d;
             font-weight: bold;
         }
-        
+
         .absent {
             background: #fed7d7;
             color: #742a2a;
         }
-        
+
         .attendance-rate {
             font-weight: bold;
         }
-        
+
         .rate-excellent {
             color: #22543d;
         }
-        
+
         .rate-good {
             color: #2c7a7b;
         }
-        
+
         .rate-warning {
             color: #c05621;
         }
-        
+
         .rate-danger {
             color: #742a2a;
         }
-        
+
         .student-report {
             background: white;
             padding: 30px;
             border-radius: 15px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
             margin-bottom: 20px;
             page-break-inside: avoid;
         }
-        
+
         .student-header {
             display: flex;
             justify-content: space-between;
@@ -253,17 +255,17 @@
             border-radius: 10px;
             margin-bottom: 20px;
         }
-        
+
         .student-name {
             font-size: 1.8rem;
             font-weight: bold;
         }
-        
+
         .student-id {
             font-size: 1.2rem;
             opacity: 0.9;
         }
-        
+
         .progress-bar {
             width: 100%;
             height: 30px;
@@ -272,7 +274,7 @@
             overflow: hidden;
             margin: 10px 0;
         }
-        
+
         .progress-fill {
             height: 100%;
             background: linear-gradient(90deg, #48bb78 0%, #38ef7d 100%);
@@ -283,31 +285,33 @@
             font-weight: bold;
             transition: width 0.5s ease;
         }
-        
+
         @media print {
             body {
                 background: white;
                 padding: 0;
             }
-            
+
             .controls {
                 display: none;
             }
-            
-            .report-section, .student-report {
+
+            .report-section,
+            .student-report {
                 box-shadow: none;
                 page-break-inside: avoid;
             }
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <div class="header">
             <h1>📊 تقارير الحضور الذكية</h1>
             <p>قسم علوم الذكاء الاصطناعي - جامعة المصطفى</p>
         </div>
-        
+
         <div class="controls">
             <h3 style="margin-bottom: 15px; color: #2d3748;">إعدادات التقرير</h3>
             <div class="form-row">
@@ -351,7 +355,7 @@
                 📊 تنزيل تقرير مفصل
             </button>
         </div>
-        
+
         <div id="reportContainer"></div>
     </div>
 
@@ -376,9 +380,9 @@
             "سبأ محمد صبري سلطان",
             "رقيه اثير احمد مطلق"
         ];
-        
+
         let allRecords = [];
-        
+
         // Define all subjects (always available even if no records)
         const allSubjects = [
             "المعامل",
@@ -388,28 +392,29 @@
             "أساسيات البرمجة",
             "الإحصاء والاحتمالات"
         ];
-        
+
         function generateStudentId(index) {
             return `2025-AI-${String(index + 1).padStart(3, '0')}`;
         }
-        
+
         // Firebase Configuration
         const firebaseConfig = {
-            apiKey: "AIzaSyDqC9X6K8yZ5nF0mR3tL7wH4pJ2vB8uE9g",
+            apiKey: "AIzaSyDLSX6DY_79BD8ZEYBRYh_jtmP0mHslzkE",
             authDomain: "ai-attendance-husam.firebaseapp.com",
             databaseURL: "https://ai-attendance-husam-default-rtdb.firebaseio.com",
             projectId: "ai-attendance-husam",
-            storageBucket: "ai-attendance-husam.appspot.com",
-            messagingSenderId: "123456789012",
-            appId: "1:123456789012:web:abc123def456ghi789"
+            storageBucket: "ai-attendance-husam.firebasestorage.app",
+            messagingSenderId: "305903941972",
+            appId: "1:305903941972:web:d914431aab5a1cc6b5b0c1",
+            measurementId: "G-EJEKCTT2M9"
         };
-        
+
         // Initialize Firebase
         if (!firebase.apps.length) {
             firebase.initializeApp(firebaseConfig);
         }
         const database = firebase.database();
-        
+
         function loadData() {
             // Load from Firebase
             database.ref('attendanceRecords').once('value', (snapshot) => {
@@ -419,7 +424,7 @@
                     record.firebaseId = childSnapshot.key;
                     allRecords.push(record);
                 });
-                
+
                 if (allRecords.length === 0) {
                     // Fallback to localStorage
                     const saved = localStorage.getItem('attendanceRecords');
@@ -427,9 +432,9 @@
                         allRecords = JSON.parse(saved);
                     }
                 }
-                
+
                 populateSelects();
-                
+
                 // Generate initial report if data exists
                 if (allRecords.length > 0) {
                     generateReport();
@@ -451,7 +456,7 @@
                 }
             });
         }
-        
+
         function showNoDataMessage() {
             document.getElementById('reportContainer').innerHTML = `
                 <div class="report-section">
@@ -468,15 +473,15 @@
                 </div>
             `;
         }
-        
+
         function updateReportOptions() {
             const reportType = document.getElementById('reportType').value;
-            document.getElementById('studentSelectGroup').style.display = 
+            document.getElementById('studentSelectGroup').style.display =
                 reportType === 'student' ? 'block' : 'none';
-            document.getElementById('subjectSelectGroup').style.display = 
+            document.getElementById('subjectSelectGroup').style.display =
                 reportType === 'subject' ? 'block' : 'none';
         }
-        
+
         function populateSelects() {
             // Populate students
             const studentSelect = document.getElementById('studentSelect');
@@ -487,7 +492,7 @@
                 option.textContent = `${student} (${generateStudentId(index)})`;
                 studentSelect.appendChild(option);
             });
-            
+
             // Populate subjects - FIXED: Use predefined list instead of records
             const subjectSelect = document.getElementById('subjectSelect');
             subjectSelect.innerHTML = '';
@@ -498,7 +503,7 @@
                 subjectSelect.appendChild(option);
             });
         }
-        
+
         function filterRecordsByDate(records, startDate, endDate) {
             return records.filter(r => {
                 if (startDate && r.date < startDate) return false;
@@ -506,14 +511,14 @@
                 return true;
             });
         }
-        
+
         function generateAllStudentsReport(filteredRecords) {
             const container = document.getElementById('reportContainer');
-            
+
             // Get unique dates and subjects
             const dates = [...new Set(filteredRecords.map(r => r.date))].sort();
             const subjects = [...new Set(filteredRecords.map(r => r.subject))];
-            
+
             // Calculate statistics per student
             const studentStats = students.map((student, index) => {
                 const studentId = generateStudentId(index);
@@ -521,7 +526,7 @@
                 const attendanceCount = studentRecords.length;
                 const totalClasses = dates.length;
                 const percentage = totalClasses > 0 ? Math.round((attendanceCount / totalClasses) * 100) : 0;
-                
+
                 return {
                     name: student,
                     id: studentId,
@@ -531,11 +536,11 @@
                     records: studentRecords
                 };
             });
-            
+
             const totalPresent = filteredRecords.length;
             const totalPossible = students.length * dates.length;
             const overallPercentage = totalPossible > 0 ? Math.round((totalPresent / totalPossible) * 100) : 0;
-            
+
             container.innerHTML = `
                 <div class="report-section">
                     <div class="report-header">
@@ -595,20 +600,20 @@
                         </thead>
                         <tbody>
                             ${studentStats.map((stat, index) => {
-                                let rateClass = 'rate-danger';
-                                let rating = 'ضعيف';
-                                if (stat.percentage >= 90) {
-                                    rateClass = 'rate-excellent';
-                                    rating = 'ممتاز';
-                                } else if (stat.percentage >= 75) {
-                                    rateClass = 'rate-good';
-                                    rating = 'جيد';
-                                } else if (stat.percentage >= 60) {
-                                    rateClass = 'rate-warning';
-                                    rating = 'مقبول';
-                                }
-                                
-                                return `
+                let rateClass = 'rate-danger';
+                let rating = 'ضعيف';
+                if (stat.percentage >= 90) {
+                    rateClass = 'rate-excellent';
+                    rating = 'ممتاز';
+                } else if (stat.percentage >= 75) {
+                    rateClass = 'rate-good';
+                    rating = 'جيد';
+                } else if (stat.percentage >= 60) {
+                    rateClass = 'rate-warning';
+                    rating = 'مقبول';
+                }
+
+                return `
                                     <tr>
                                         <td>${index + 1}</td>
                                         <td class="student-name-cell">${stat.name}</td>
@@ -619,33 +624,33 @@
                                         <td class="${rateClass}">${rating}</td>
                                     </tr>
                                 `;
-                            }).join('')}
+            }).join('')}
                         </tbody>
                     </table>
                 </div>
             `;
         }
-        
+
         function generateStudentReport(studentName, filteredRecords) {
             const container = document.getElementById('reportContainer');
             const studentIndex = students.indexOf(studentName);
             const studentId = generateStudentId(studentIndex);
-            
+
             const studentRecords = filteredRecords.filter(r => r.studentName === studentName);
             const dates = [...new Set(filteredRecords.map(r => r.date))].sort();
             const subjects = [...new Set(filteredRecords.map(r => r.subject))];
-            
+
             const attendanceCount = studentRecords.length;
             const totalClasses = dates.length;
             const percentage = totalClasses > 0 ? Math.round((attendanceCount / totalClasses) * 100) : 0;
-            
+
             // Group by subject
             const subjectStats = subjects.map(subject => {
                 const subjectRecords = studentRecords.filter(r => r.subject === subject);
                 const subjectDates = [...new Set(filteredRecords.filter(r => r.subject === subject).map(r => r.date))];
-                const subjectPercentage = subjectDates.length > 0 ? 
+                const subjectPercentage = subjectDates.length > 0 ?
                     Math.round((subjectRecords.length / subjectDates.length) * 100) : 0;
-                
+
                 return {
                     subject,
                     present: subjectRecords.length,
@@ -653,7 +658,7 @@
                     percentage: subjectPercentage
                 };
             });
-            
+
             container.innerHTML = `
                 <div class="student-report">
                     <div class="student-header">
@@ -706,11 +711,10 @@
                                     <td class="student-name-cell">${stat.subject}</td>
                                     <td class="present">${stat.present}</td>
                                     <td>${stat.total}</td>
-                                    <td class="attendance-rate ${
-                                        stat.percentage >= 90 ? 'rate-excellent' :
-                                        stat.percentage >= 75 ? 'rate-good' :
-                                        stat.percentage >= 60 ? 'rate-warning' : 'rate-danger'
-                                    }">${stat.percentage}%</td>
+                                    <td class="attendance-rate ${stat.percentage >= 90 ? 'rate-excellent' :
+                    stat.percentage >= 75 ? 'rate-good' :
+                        stat.percentage >= 60 ? 'rate-warning' : 'rate-danger'
+                }">${stat.percentage}%</td>
                                 </tr>
                             `).join('')}
                         </tbody>
@@ -742,18 +746,18 @@
                 </div>
             `;
         }
-        
+
         function generateSubjectReport(subject, filteredRecords) {
             const container = document.getElementById('reportContainer');
             const subjectRecords = filteredRecords.filter(r => r.subject === subject);
             const dates = [...new Set(subjectRecords.map(r => r.date))].sort();
-            
+
             const studentStats = students.map((student, index) => {
                 const studentId = generateStudentId(index);
                 const studentRecords = subjectRecords.filter(r => r.studentName === student);
-                const percentage = dates.length > 0 ? 
+                const percentage = dates.length > 0 ?
                     Math.round((studentRecords.length / dates.length) * 100) : 0;
-                
+
                 return {
                     name: student,
                     id: studentId,
@@ -762,7 +766,7 @@
                     percentage
                 };
             });
-            
+
             container.innerHTML = `
                 <div class="report-section">
                     <div class="report-header">
@@ -804,11 +808,10 @@
                                     <td>${stat.id}</td>
                                     <td class="present">${stat.present}</td>
                                     <td>${stat.total}</td>
-                                    <td class="attendance-rate ${
-                                        stat.percentage >= 90 ? 'rate-excellent' :
-                                        stat.percentage >= 75 ? 'rate-good' :
-                                        stat.percentage >= 60 ? 'rate-warning' : 'rate-danger'
-                                    }">${stat.percentage}%</td>
+                                    <td class="attendance-rate ${stat.percentage >= 90 ? 'rate-excellent' :
+                    stat.percentage >= 75 ? 'rate-good' :
+                        stat.percentage >= 60 ? 'rate-warning' : 'rate-danger'
+                }">${stat.percentage}%</td>
                                 </tr>
                             `).join('')}
                         </tbody>
@@ -816,19 +819,19 @@
                 </div>
             `;
         }
-        
+
         function generateReport() {
             const reportType = document.getElementById('reportType').value;
             const startDate = document.getElementById('startDate').value;
             const endDate = document.getElementById('endDate').value;
-            
+
             const filteredRecords = filterRecordsByDate(allRecords, startDate, endDate);
-            
+
             if (filteredRecords.length === 0) {
                 alert('⚠️ لا توجد سجلات في الفترة المحددة');
                 return;
             }
-            
+
             if (reportType === 'all') {
                 generateAllStudentsReport(filteredRecords);
             } else if (reportType === 'student') {
@@ -839,18 +842,18 @@
                 generateSubjectReport(subject, filteredRecords);
             }
         }
-        
+
         function exportReport() {
             const reportContainer = document.getElementById('reportContainer');
             if (!reportContainer.innerHTML) {
                 alert('⚠️ يرجى إنشاء تقرير أولاً');
                 return;
             }
-            
+
             const reportType = document.getElementById('reportType').value;
             const startDate = document.getElementById('startDate').value;
             const endDate = document.getElementById('endDate').value;
-            
+
             // Export as CSV for Excel
             if (confirm('هل تريد تصدير البيانات إلى Excel (CSV)؟\nاضغط OK للتصدير، Cancel للطباعة فقط')) {
                 exportToCSV(reportType, startDate, endDate);
@@ -858,16 +861,16 @@
                 window.print();
             }
         }
-        
+
         function exportToCSV(reportType, startDate, endDate) {
             let csv = '\uFEFF'; // UTF-8 BOM
             const filteredRecords = filterRecordsByDate(allRecords, startDate, endDate);
-            
+
             if (reportType === 'all') {
                 csv += 'التقرير الشامل للحضور\n';
                 csv += `الفترة: ${startDate} - ${endDate}\n\n`;
                 csv += 'الرقم,اسم الطالب,رقم الطالب,عدد مرات الحضور,إجمالي المحاضرات,نسبة الحضور,التقييم\n';
-                
+
                 const dates = [...new Set(filteredRecords.map(r => r.date))].sort();
                 students.forEach((student, index) => {
                     const studentId = generateStudentId(index);
@@ -875,16 +878,16 @@
                     const attendanceCount = studentRecords.length;
                     const totalClasses = dates.length;
                     const percentage = totalClasses > 0 ? Math.round((attendanceCount / totalClasses) * 100) : 0;
-                    
+
                     let rating = 'ضعيف';
                     if (percentage >= 90) rating = 'ممتاز';
                     else if (percentage >= 75) rating = 'جيد';
                     else if (percentage >= 60) rating = 'مقبول';
-                    
+
                     csv += `${index + 1},${student},${studentId},${attendanceCount},${totalClasses},${percentage}%,${rating}\n`;
                 });
             }
-            
+
             // Download CSV
             const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement('a');
@@ -893,36 +896,36 @@
             link.setAttribute('download', `تقرير_الحضور_${startDate}_${endDate}.csv`);
             link.click();
         }
-        
+
         function setDefaultDates() {
             const today = new Date();
             const threeMonthsAgo = new Date(today);
             threeMonthsAgo.setMonth(today.getMonth() - 3);
-            
+
             document.getElementById('startDate').valueAsDate = threeMonthsAgo;
             document.getElementById('endDate').valueAsDate = today;
         }
-        
+
         function downloadDetailedReport() {
             if (allRecords.length === 0) {
                 alert('⚠️ لا توجد بيانات لتصديرها');
                 return;
             }
-            
+
             const startDate = document.getElementById('startDate').value;
             const endDate = document.getElementById('endDate').value;
             const filteredRecords = filterRecordsByDate(allRecords, startDate, endDate);
-            
+
             if (filteredRecords.length === 0) {
                 alert('⚠️ لا توجد سجلات في الفترة المحددة');
                 return;
             }
-            
+
             let csv = '\uFEFF'; // UTF-8 BOM
             csv += 'التقرير التفصيلي الكامل للحضور\n';
             csv += `الفترة: ${startDate} - ${endDate}\n`;
             csv += `تاريخ التقرير: ${new Date().toLocaleDateString('ar-EG')}\n\n`;
-            
+
             // Summary section
             csv += '=== الملخص الإحصائي ===\n';
             csv += `عدد الطلاب,${students.length}\n`;
@@ -931,33 +934,33 @@
             csv += `أيام الدراسة,${dates.length}\n`;
             const subjects = [...new Set(filteredRecords.map(r => r.subject))];
             csv += `المواد الدراسية,${subjects.length}\n\n`;
-            
+
             // Detailed records
             csv += '=== سجلات الحضور التفصيلية ===\n';
             csv += 'اسم الطالب,رقم الطالب,المادة,نوع المحاضرة,التاريخ,الوقت\n';
-            
+
             filteredRecords.forEach(record => {
                 csv += `${record.studentName},${record.studentId},${record.subject},${record.lectureType},${record.date},${record.time}\n`;
             });
-            
+
             csv += '\n=== تقرير الطلاب الفردي ===\n';
             csv += 'الرقم,اسم الطالب,رقم الطالب,عدد مرات الحضور,إجمالي المحاضرات,نسبة الحضور,التقييم\n';
-            
+
             students.forEach((student, index) => {
                 const studentId = generateStudentId(index);
                 const studentRecords = filteredRecords.filter(r => r.studentName === student);
                 const attendanceCount = studentRecords.length;
                 const totalClasses = dates.length;
                 const percentage = totalClasses > 0 ? Math.round((attendanceCount / totalClasses) * 100) : 0;
-                
+
                 let rating = 'ضعيف';
                 if (percentage >= 90) rating = 'ممتاز';
                 else if (percentage >= 75) rating = 'جيد';
                 else if (percentage >= 60) rating = 'مقبول';
-                
+
                 csv += `${index + 1},${student},${studentId},${attendanceCount},${totalClasses},${percentage}%,${rating}\n`;
             });
-            
+
             // Download
             const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement('a');
@@ -967,11 +970,12 @@
             link.click();
             URL.revokeObjectURL(url);
         }
-        
+
         window.onload = () => {
             setDefaultDates();
             loadData(); // loadData now handles everything including populating selects
         };
     </script>
 </body>
+
 </html>

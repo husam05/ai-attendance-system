@@ -1,0 +1,11 @@
+{
+    "rules": {
+        "attendanceRecords": {
+            ".read": true,
+            ".write": true,
+            "$recordId": {
+                ".validate": "newData.hasChildren(['studentId', 'studentName', 'subject', 'date', 'time', 'timestamp'])"
+            }
+        }
+    }
+}
