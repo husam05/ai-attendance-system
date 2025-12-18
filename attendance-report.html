@@ -85,6 +85,32 @@
         <div id="reportContainer" class="animate-slide-up delay-200"></div>
     </div>
 
+    <!-- HOD Auth Modal -->
+    <div id="hodAuthModal"
+        style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 9999; backdrop-filter: blur(8px); justify-content: center; align-items: center;">
+        <div class="glass-card"
+            style="background: white; padding: 2.5rem; border-radius: 20px; width: 90%; max-width: 400px; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.4);">
+            <div style="font-size: 4rem; margin-bottom: 1rem;">🔒</div>
+            <h2 style="color: #2d3748; margin-bottom: 1rem;">دخول رئيس القسم</h2>
+            <p style="color: #718096; margin-bottom: 2rem;">يرجى إدخال رمز المرور للوصول إلى هذه الصفحة</p>
+
+            <input type="password" id="hodPinInput" placeholder="ادخل رمز المرور"
+                style="width: 100%; padding: 15px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 1.2rem; text-align: center; margin-bottom: 1.5rem; outline: none; transition: border-color 0.3s;">
+
+            <button onclick="verifyHodPin()" class="btn btn-primary"
+                style="width: 100%; padding: 15px; border-radius: 10px; font-size: 1.1rem; font-weight: bold;">
+                دخول
+            </button>
+
+            <div id="hodError" style="color: #e53e3e; margin-top: 1rem; display: none;">رمز المرور غير صحيح</div>
+
+            <button onclick="window.location.href='index.html'"
+                style="margin-top: 1rem; background: transparent; border: none; color: #718096; text-decoration: underline; cursor: pointer;">
+                العودة للصفحة الرئيسية
+            </button>
+        </div>
+    </div>
+
     <script>
         const students = [
             "يوسف ميثاق طالب عجيل",
@@ -108,6 +134,47 @@
         ];
 
         let allRecords = [];
+
+        // HOD Authentication Logic
+        function checkHodAuth() {
+            const isHodAuth = sessionStorage.getItem('hod_authenticated');
+            const modal = document.getElementById('hodAuthModal');
+            const container = document.querySelector('.container');
+
+            if (isHodAuth === 'true') {
+                modal.style.display = 'none';
+                container.style.filter = 'none';
+                return true;
+            } else {
+                modal.style.display = 'flex';
+                container.style.filter = 'blur(10px)';
+                return false;
+            }
+        }
+
+        function verifyHodPin() {
+            const pin = document.getElementById('hodPinInput').value;
+            const errorMsg = document.getElementById('hodError');
+
+            if (pin === '987987987') {
+                sessionStorage.setItem('hod_authenticated', 'true');
+                document.getElementById('hodAuthModal').style.display = 'none';
+                document.querySelector('.container').style.filter = 'none';
+                // Initialize page data
+                setDefaultDates();
+                loadData();
+            } else {
+                errorMsg.style.display = 'block';
+                document.getElementById('hodPinInput').style.borderColor = '#e53e3e';
+            }
+        }
+
+        // Add Enter key listener for password
+        document.getElementById('hodPinInput')?.addEventListener('keyup', function (event) {
+            if (event.key === 'Enter') {
+                verifyHodPin();
+            }
+        });
 
         // Define all subjects (always available even if no records)
         const allSubjects = [
@@ -720,6 +787,8 @@
 
         // Auth Protection & Logic
         function logout() {
+            // Also clear HOD auth on logout
+            sessionStorage.removeItem('hod_authenticated');
             firebase.auth().signOut().then(() => {
                 window.location.href = 'login.html';
             });
@@ -730,8 +799,11 @@
             if (!user) {
                 window.location.href = 'login.html';
             } else {
-                setDefaultDates();
-                loadData();
+                // Check HOD PIN
+                if (checkHodAuth()) {
+                    setDefaultDates();
+                    loadData();
+                }
             }
         });
 
