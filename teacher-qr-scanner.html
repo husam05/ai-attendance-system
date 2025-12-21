@@ -310,9 +310,14 @@
         <div class="header">
             <div style="display: flex; justify-content: space-between; align-items: center;">
                 <h1>📸 نظام مسح الحضور بالـ QR</h1>
-                <button onclick="logout()" class="btn"
-                    style="width: auto; margin: 0; background: #e53e3e; font-size: 0.9rem; padding: 8px 15px;">تسجيل
-                    خروج</button>
+                <div>
+                    <button onclick="generateDelegateLink()" class="btn"
+                        style="width: auto; margin: 0; background: #ed8936; font-size: 0.9rem; padding: 8px 15px; margin-left: 10px;">🔗
+                        تفويض طالب</button>
+                    <button onclick="logout()" class="btn"
+                        style="width: auto; margin: 0; background: #e53e3e; font-size: 0.9rem; padding: 8px 15px;">تسجيل
+                        خروج</button>
+                </div>
             </div>
             <p>قسم علوم الذكاء الاصطناعي - جامعة المصطفى</p>
         </div>
@@ -397,7 +402,7 @@
     <script>
         let html5QrCode = null;
         let attendanceRecords = [];
-        const totalStudents = 18;
+        const totalStudents = 19;
 
         // Set current date and time
         document.getElementById('date').valueAsDate = new Date();
@@ -648,6 +653,32 @@
                 }
                 updateAttendanceDisplay();
                 showAlert('⚠️ تم التحميل من التخزين المحلي', 'warning');
+            });
+        }
+
+        // Delegate Link Generation
+        function generateDelegateLink() {
+            const token = 'dlg_' + Math.random().toString(36).substr(2, 9) + Date.now().toString(36);
+            const expiry = Date.now() + 3600000; // 1 hour expiration
+
+            // Save token to Firebase
+            database.ref('temp_tokens/' + token).set({
+                expiry: expiry,
+                created: Date.now(),
+                createdBy: firebase.auth().currentUser ? firebase.auth().currentUser.uid : 'admin'
+            }).then(() => {
+                const baseUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/'));
+                const link = `${baseUrl}/temp-scanner.html?token=${token}`;
+
+                // Copy to clipboard
+                navigator.clipboard.writeText(link).then(() => {
+                    alert("✅ تم إنشاء الرابط ونسخه للحافظة!\n\nصلاحيته: ساعة واحدة");
+                }).catch(() => {
+                    prompt("✅ تم إنشاء الرابط (انسخه يدوياً):", link);
+                });
+            }).catch(err => {
+                console.error(err);
+                alert("❌ حدث خطأ: " + err.message);
             });
         }
 
