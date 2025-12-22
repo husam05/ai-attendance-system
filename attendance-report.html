@@ -4,193 +4,218 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تقرير الحضور الشهري - قسم الذكاء الاصطناعي</title>
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <title>Deep AI | التحليلات الأكاديمية المتقدمة</title>
+    <link rel="stylesheet" href="style.css">
     <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
-    <link rel="stylesheet" href="style.css">
+    <!-- Chart.js for Advanced Analytics -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        .metric-box {
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .metric-value {
+            font-size: 3rem;
+            font-weight: 900;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        .metric-label {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin: 2rem 0;
+        }
+
+        .risk-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-left: 8px;
+        }
+
+        .risk-high {
+            background: var(--danger);
+            box-shadow: 0 0 10px var(--danger);
+        }
+
+        .risk-medium {
+            background: var(--warning);
+            box-shadow: 0 0 10px var(--warning);
+        }
+
+        .risk-low {
+            background: var(--success);
+            box-shadow: 0 0 10px var(--success);
+        }
+
+        .student-card {
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            border-left: 4px solid var(--glass-border);
+            transition: var(--transition);
+        }
+
+        .student-card:hover {
+            border-left-color: var(--primary);
+            background: rgba(99, 102, 241, 0.05);
+        }
+
+        .progress-bar-container {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 100px;
+            overflow: hidden;
+            margin-top: 0.5rem;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            border-radius: 100px;
+            transition: width 1s ease-out;
+        }
+
+        .filter-panel {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+    </style>
 </head>
 
 <body>
-    <div class="container">
-        <!-- Header -->
-        <div class="header-section animate-slide-up">
-            <div class="header-content">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                    <h1 class="header-title">📊 التحليلات الذكية</h1>
-                    <button onclick="logout()" class="btn btn-danger" style="padding: 0.5rem 1rem; font-size: 0.9rem;">
-                        تسجيل خروج 🚪
-                    </button>
+    <div class="container animate-fade-in">
+        <!-- Persistent Nav -->
+        <nav class="app-nav no-print">
+            <div class="nav-content">
+                <div style="font-weight: 900; font-size: 1.5rem; letter-spacing: -1px;">
+                    <span style="color: var(--primary);">DEEP</span> AI
                 </div>
-                <p class="header-subtitle">قسم علوم الذكاء الاصطناعي - لوحة التقارير المركزية</p>
+                <ul class="nav-links">
+                    <li><a href="index.html">الرئيسية</a></li>
+                    <li><a href="teacher-qr-scanner.html">الماسح</a></li>
+                    <li><a href="attendance-management.html">الإدارة</a></li>
+                    <li><a href="attendance-report.html" class="active">التحليلات</a></li>
+                </ul>
+            </div>
+        </nav>
+
+        <!-- Print Header -->
+        <div class="print-header" style="display: none;">
+            <div style="text-align: center; border-bottom: 2px solid #000; padding-bottom: 1rem; margin-bottom: 2rem;">
+                <h1 style="color: #000; margin: 0;">جامعة المصطفى | Al-Mustafa University</h1>
+                <h2 style="color: #000; margin: 10px 0;">قسم علوم الذكاء الاصطناعي</h2>
+                <h3 style="color: #000; margin: 5px 0;">التقرير الأكاديمي الشامل للحضور</h3>
+                <p style="color: #666; margin: 5px 0;">تاريخ الإصدار: <span id="printDate"></span></p>
             </div>
         </div>
 
-        <!-- Controls -->
-        <div class="glass-card animate-slide-up delay-100" style="margin-bottom: 2rem;">
-            <div class="controls-panel">
-                <h3 style="margin-bottom: 1.5rem; font-size: 1.5rem;">⚙️ إعدادات التقرير</h3>
+        <header class="header-section no-print">
+            <h1 class="header-title">🎓 التحليلات الأكاديمية المتقدمة</h1>
+            <p class="header-subtitle">مركز البيانات الذكي لرصد وتحليل حضور الطلاب</p>
+        </header>
 
-                <div class="grid"
-                    style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem;">
-                    <div>
-                        <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">نوع التقرير</label>
-                        <select id="reportType" class="form-control" onchange="updateReportOptions()">
-                            <option value="all">🌐 تقرير شامل للدفعة</option>
-                            <option value="student">👤 تقرير طالب تفصيلي</option>
-                            <option value="subject">📚 تقرير مادة دراسية</option>
-                        </select>
-                    </div>
-
-                    <div id="studentSelectGroup" style="display: none;">
-                        <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">اختر الطالب</label>
-                        <select id="studentSelect" class="form-control"></select>
-                    </div>
-
-                    <div id="subjectSelectGroup" style="display: none;">
-                        <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">اختر المادة</label>
-                        <select id="subjectSelect" class="form-control"></select>
-                    </div>
-
-                    <div>
-                        <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">من تاريخ</label>
-                        <input type="date" id="startDate" class="form-control">
-                    </div>
-
-                    <div>
-                        <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">إلى تاريخ</label>
-                        <input type="date" id="endDate" class="form-control">
-                    </div>
-                </div>
-
-                <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 2rem;">
-                    <button class="btn btn-primary" onclick="generateReport()">
-                        📈 توليد التقرير
-                    </button>
-                    <button class="btn btn-secondary" onclick="window.print()">
-                        🖨️ طباعة
-                    </button>
-                    <button class="btn btn-secondary" onclick="exportReport()">
-                        💾 تصدير (Excel/PDF)
-                    </button>
-                    <button class="btn btn-secondary" onclick="downloadDetailedReport()">
-                        تحليل شامل ودقيق
-                    </button>
-                </div>
+        <!-- Advanced Metrics Dashboard -->
+        <div class="stats-grid no-print" style="grid-template-columns: repeat(4, 1fr);">
+            <div class="glass-card metric-box">
+                <span class="metric-value" id="totalStudents">--</span>
+                <span class="metric-label">إجمالي الطلاب</span>
+            </div>
+            <div class="glass-card metric-box">
+                <span class="metric-value" id="avgAttendance" style="color: var(--primary);">--%</span>
+                <span class="metric-label">المعدل العام</span>
+            </div>
+            <div class="glass-card metric-box" style="border: 1px solid rgba(239, 68, 68, 0.3);">
+                <span class="metric-value" id="atRisk" style="color: var(--danger);">--</span>
+                <span class="metric-label">طلاب في خطر</span>
+            </div>
+            <div class="glass-card metric-box">
+                <span class="metric-value" id="totalClasses">--</span>
+                <span class="metric-label">عدد المحاضرات</span>
             </div>
         </div>
 
-        <div id="reportContainer" class="animate-slide-up delay-200"></div>
-    </div>
+        <!-- Intelligent Filters -->
+        <div class="glass-card no-print" style="padding: 2rem; margin-bottom: 2rem;">
+            <h3 style="margin-bottom: 1.5rem;">⚙️ لوحة التحكم والفلترة</h3>
+            <div class="filter-panel">
+                <div>
+                    <label
+                        style="display: block; margin-bottom: 0.5rem; color: var(--text-muted); font-size: 0.85rem;">نوع
+                        التقرير</label>
+                    <select id="reportType" class="form-control" onchange="updateFilters()">
+                        <option value="overview">📊 نظرة عامة شاملة</option>
+                        <option value="student">👤 تقرير طالب فردي</option>
+                        <option value="subject">📚 تحليل مادة دراسية</option>
+                        <option value="risk">⚠️ تحليل المخاطر</option>
+                    </select>
+                </div>
+                <div id="studentFilter" style="display: none;">
+                    <label
+                        style="display: block; margin-bottom: 0.5rem; color: var(--text-muted); font-size: 0.85rem;">اختر
+                        الطالب</label>
+                    <select id="studentSelect" class="form-control"></select>
+                </div>
+                <div id="subjectFilter" style="display: none;">
+                    <label
+                        style="display: block; margin-bottom: 0.5rem; color: var(--text-muted); font-size: 0.85rem;">اختر
+                        المادة</label>
+                    <select id="subjectSelect" class="form-control"></select>
+                </div>
+                <div>
+                    <label
+                        style="display: block; margin-bottom: 0.5rem; color: var(--text-muted); font-size: 0.85rem;">من
+                        تاريخ</label>
+                    <input type="date" id="startDate" class="form-control">
+                </div>
+                <div>
+                    <label
+                        style="display: block; margin-bottom: 0.5rem; color: var(--text-muted); font-size: 0.85rem;">إلى
+                        تاريخ</label>
+                    <input type="date" id="endDate" class="form-control">
+                </div>
+            </div>
+            <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                <button class="btn btn-primary" onclick="generateReport()">📈 توليد التقرير</button>
+                <button class="btn btn-secondary" onclick="window.print()">🖨️ طباعة</button>
+                <button class="btn btn-secondary" onclick="exportToExcel()">📊 Excel تصدير</button>
+            </div>
+        </div>
 
-    <!-- HOD Auth Modal -->
-    <div id="hodAuthModal"
-        style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 9999; backdrop-filter: blur(8px); justify-content: center; align-items: center;">
-        <div class="glass-card"
-            style="background: white; padding: 2.5rem; border-radius: 20px; width: 90%; max-width: 400px; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.4);">
-            <div style="font-size: 4rem; margin-bottom: 1rem;">🔒</div>
-            <h2 style="color: #2d3748; margin-bottom: 1rem;">دخول رئيس القسم</h2>
-            <p style="color: #718096; margin-bottom: 2rem;">يرجى إدخال رمز المرور للوصول إلى هذه الصفحة</p>
+        <!-- Dynamic Report Container -->
+        <div id="reportContent"></div>
 
-            <input type="password" id="hodPinInput" placeholder="ادخل رمز المرور"
-                style="width: 100%; padding: 15px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 1.2rem; text-align: center; margin-bottom: 1.5rem; outline: none; transition: border-color 0.3s;">
-
-            <button onclick="verifyHodPin()" class="btn btn-primary"
-                style="width: 100%; padding: 15px; border-radius: 10px; font-size: 1.1rem; font-weight: bold;">
-                دخول
-            </button>
-
-            <div id="hodError" style="color: #e53e3e; margin-top: 1rem; display: none;">رمز المرور غير صحيح</div>
-
-            <button onclick="window.location.href='index.html'"
-                style="margin-top: 1rem; background: transparent; border: none; color: #718096; text-decoration: underline; cursor: pointer;">
-                العودة للصفحة الرئيسية
-            </button>
+        <!-- HOD Authentication Modal -->
+        <div id="hodModal"
+            style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(2,6,23,0.95); z-index:2000; align-items:center; justify-content:center; backdrop-filter:blur(20px);">
+            <div class="glass-card" style="width:100%; max-width:400px; padding:3rem; text-align:center;">
+                <h2 style="margin-bottom: 1rem;">🔒 دخول رئيس القسم</h2>
+                <p style="color:var(--text-muted); margin-bottom: 2rem;">يرجى إدخال رمز المرور للوصول إلى التحليلات</p>
+                <input type="password" id="hodPin" class="form-control"
+                    style="text-align:center; font-size:2rem; letter-spacing:0.5rem; margin-bottom:1.5rem;"
+                    placeholder="•••" autofocus>
+                <button class="btn btn-primary" style="width:100%;" onclick="verifyPin()">دخول النظام</button>
+                <button onclick="window.location.href='index.html'" class="btn btn-secondary"
+                    style="width:100%; margin-top:1rem;">العودة</button>
+            </div>
         </div>
     </div>
 
     <script>
-        const students = [
-            "يوسف ميثاق طالب عجيل",
-            "حسين علي دوشان كاظم",
-            "نورالحسن باسم عبدالرزاق حسين",
-            "مصطفى فؤاد فاضل عبد الامير",
-            "علي جمال خلف فعيل",
-            "مصطفى محمد مردان حسن",
-            "ضحى حيدر كمال جوده",
-            "علي محمد جبار حسين",
-            "بنين ديار رحيم صفر",
-            "زهراء محمد سريح عبد الحسن",
-            "زهراء ابراهيم مهدي خضير",
-            "منتظر حميد عذاب ضاحي",
-            "نبأ جاسم رحمه شايع",
-            "معصومة عبد الحسين جبار عبدالله",
-            "داليا كريم ليلو منصور",
-            "مؤمل سعدون جبار لفته",
-            "سبأ محمد صبري سلطان",
-            "رقيه اثير احمد مطلق",
-            "كاظم محمد جاسم"
-        ];
-
-        let allRecords = [];
-
-        // HOD Authentication Logic
-        function checkHodAuth() {
-            const isHodAuth = sessionStorage.getItem('hod_authenticated');
-            const modal = document.getElementById('hodAuthModal');
-            const container = document.querySelector('.container');
-
-            if (isHodAuth === 'true') {
-                modal.style.display = 'none';
-                container.style.filter = 'none';
-                return true;
-            } else {
-                modal.style.display = 'flex';
-                container.style.filter = 'blur(10px)';
-                return false;
-            }
-        }
-
-        function verifyHodPin() {
-            const pin = document.getElementById('hodPinInput').value;
-            const errorMsg = document.getElementById('hodError');
-
-            if (pin === '987987987') {
-                sessionStorage.setItem('hod_authenticated', 'true');
-                document.getElementById('hodAuthModal').style.display = 'none';
-                document.querySelector('.container').style.filter = 'none';
-                // Initialize page data
-                setDefaultDates();
-                loadData();
-            } else {
-                errorMsg.style.display = 'block';
-                document.getElementById('hodPinInput').style.borderColor = '#e53e3e';
-            }
-        }
-
-        // Add Enter key listener for password
-        document.getElementById('hodPinInput')?.addEventListener('keyup', function (event) {
-            if (event.key === 'Enter') {
-                verifyHodPin();
-            }
-        });
-
-        // Define all subjects (always available even if no records)
-        const allSubjects = [
-            "المعامل",
-            "الرياضيات I",
-            "مبادئ الذكاء الاصطناعي",
-            "الديمقراطية وحقوق الإنسان",
-            "أساسيات البرمجة",
-            "الإحصاء والاحتمالات"
-        ];
-
-        function generateStudentId(index) {
-            return `2025-AI-${String(index + 1).padStart(3, '0')}`;
-        }
-
         // Firebase Configuration
         const firebaseConfig = {
             apiKey: "AIzaSyDLSX6DY_79BD8ZEYBRYh_jtmP0mHslzkE",
@@ -203,212 +228,163 @@
             measurementId: "G-EJEKCTT2M9"
         };
 
-        // Initialize Firebase
-        if (!firebase.apps.length) {
-            firebase.initializeApp(firebaseConfig);
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        let allRecords = [];
+        let students = [];
+
+        // Authentication
+        function checkAuth() {
+            if (sessionStorage.getItem('hod_auth') !== 'true') {
+                document.getElementById('hodModal').style.display = 'flex';
+            } else {
+                initDashboard();
+            }
         }
-        const database = firebase.database();
 
-        function loadData() {
-            // Load from Firebase
-            database.ref('attendanceRecords').once('value', (snapshot) => {
-                allRecords = [];
-                snapshot.forEach((childSnapshot) => {
-                    const record = childSnapshot.val();
-                    record.firebaseId = childSnapshot.key;
-                    allRecords.push(record);
-                });
+        function verifyPin() {
+            if (document.getElementById('hodPin').value === '987987987') {
+                sessionStorage.setItem('hod_auth', 'true');
+                document.getElementById('hodModal').style.display = 'none';
+                initDashboard();
+            } else {
+                alert('رمز غير صحيح');
+            }
+        }
 
-                if (allRecords.length === 0) {
-                    // Fallback to localStorage
-                    const saved = localStorage.getItem('attendanceRecords');
-                    if (saved) {
-                        allRecords = JSON.parse(saved);
-                    }
-                }
+        // Dashboard Initialization
+        async function initDashboard() {
+            document.getElementById('printDate').textContent = new Date().toLocaleDateString('ar-EG');
+            setDefaultDates();
+            await loadStudents();
+            await loadRecords();
+            populateFilters();
+            generateReport();
+        }
 
-                populateSelects();
+        async function loadStudents() {
+            // Try Firebase first
+            const snap = await db.ref('students_list').once('value');
+            if (snap.exists()) {
+                students = snap.val();
+            } else {
+                // Fallback to local
+                students = [
+                    "يوسف ميثاق طالب عجيل", "حسين علي دوشان كاظم", "نورالحسن باسم عبدالرزاق حسين",
+                    "مصطفى فؤاد فاضل عبد الامير", "علي جمال خلف فعيل", "مصطفى محمد مردان حسن",
+                    "ضحى حيدر كمال جوده", "علي محمد جبار حسين", "بنين ديار رحيم صفر",
+                    "زهراء محمد سريح عبد الحسن", "زهراء ابراهيم مهدي خضير", "منتظر حميد عذاب ضاحي",
+                    "نبأ جاسم رحمه شايع", "معصومة عبد الحسين جبار عبدالله", "داليا كريم ليلو منصور",
+                    "مؤمل سعدون جبار لفته", "سبأ محمد صبري سلطان", "رقيه اثير احمد مطلق", "كاظم محمد جاسم"
+                ];
+            }
+        }
 
-                // Generate initial report if data exists
-                if (allRecords.length > 0) {
-                    generateReport();
-                } else {
-                    showNoDataMessage();
-                }
-            }).catch(error => {
-                console.error('Firebase error:', error);
-                // Fallback to localStorage
-                const saved = localStorage.getItem('attendanceRecords');
-                if (saved) {
-                    allRecords = JSON.parse(saved);
-                }
-                populateSelects();
-                if (allRecords.length > 0) {
-                    generateReport();
-                } else {
-                    showNoDataMessage();
-                }
+        async function loadRecords() {
+            const snap = await db.ref('attendanceRecords').once('value');
+            allRecords = [];
+            snap.forEach(child => {
+                allRecords.push(child.val());
             });
         }
 
-        function showNoDataMessage() {
-            document.getElementById('reportContainer').innerHTML = `
-                <div class="glass-card animate-slide-up" style="padding: 4rem 2rem; text-align: center;">
-                    <div style="font-size: 5rem; margin-bottom: 1.5rem; animation: bounce 2s infinite;">📊</div>
-                    <h2 style="color: var(--dark); margin-bottom: 1rem; font-size: 2rem;">لا توجد بيانات حضور</h2>
-                    <p style="font-size: 1.1rem; color: #64748b; margin-bottom: 2rem;">لم يتم العثور على سجلات في الفترة المحددة</p>
-                    <a href="teacher-qr-scanner.html" class="btn btn-primary" style="text-decoration: none; display: inline-flex;">
-                        📸 ابدأ بتسجيل الحضور الآن
-                    </a>
-                </div>
-            `;
+        function populateFilters() {
+            const studentSel = document.getElementById('studentSelect');
+            studentSel.innerHTML = students.map(s => `<option value="${s}">${s}</option>`).join('');
+
+            const subjects = [...new Set(allRecords.map(r => r.subject))];
+            const subjectSel = document.getElementById('subjectSelect');
+            subjectSel.innerHTML = subjects.map(s => `<option value="${s}">${s}</option>`).join('');
         }
 
-        function updateReportOptions() {
-            const reportType = document.getElementById('reportType').value;
-            document.getElementById('studentSelectGroup').style.display =
-                reportType === 'student' ? 'block' : 'none';
-            document.getElementById('subjectSelectGroup').style.display =
-                reportType === 'subject' ? 'block' : 'none';
+        function updateFilters() {
+            const type = document.getElementById('reportType').value;
+            document.getElementById('studentFilter').style.display = type === 'student' ? 'block' : 'none';
+            document.getElementById('subjectFilter').style.display = type === 'subject' ? 'block' : 'none';
         }
 
-        function populateSelects() {
-            // Populate students
-            const studentSelect = document.getElementById('studentSelect');
-            studentSelect.innerHTML = '';
-            students.forEach((student, index) => {
-                const option = document.createElement('option');
-                option.value = student;
-                option.textContent = `${student} (${generateStudentId(index)})`;
-                studentSelect.appendChild(option);
-            });
-
-            // Populate subjects - FIXED: Use predefined list instead of records
-            const subjectSelect = document.getElementById('subjectSelect');
-            subjectSelect.innerHTML = '';
-            allSubjects.forEach(subject => {
-                const option = document.createElement('option');
-                option.value = subject;
-                option.textContent = subject;
-                subjectSelect.appendChild(option);
-            });
+        function setDefaultDates() {
+            const today = new Date();
+            const threeMonthsAgo = new Date(today);
+            threeMonthsAgo.setMonth(today.getMonth() - 3);
+            document.getElementById('startDate').valueAsDate = threeMonthsAgo;
+            document.getElementById('endDate').valueAsDate = today;
         }
 
-        function filterRecordsByDate(records, startDate, endDate) {
-            return records.filter(r => {
-                if (startDate && r.date < startDate) return false;
-                if (endDate && r.date > endDate) return false;
-                return true;
-            });
+        function filterByDate(records) {
+            const start = document.getElementById('startDate').value;
+            const end = document.getElementById('endDate').value;
+            return records.filter(r => (!start || r.date >= start) && (!end || r.date <= end));
         }
 
-        function generateAllStudentsReport(filteredRecords) {
-            const container = document.getElementById('reportContainer');
+        // Report Generation Logic
+        function generateReport() {
+            const type = document.getElementById('reportType').value;
+            const filtered = filterByDate(allRecords);
 
-            // Get unique dates and subjects
-            const dates = [...new Set(filteredRecords.map(r => r.date))].sort();
-            const subjects = [...new Set(filteredRecords.map(r => r.subject))];
+            if (type === 'overview') generateOverviewReport(filtered);
+            else if (type === 'student') generateStudentReport(filtered);
+            else if (type === 'subject') generateSubjectReport(filtered);
+            else if (type === 'risk') generateRiskReport(filtered);
+        }
 
-            // Calculate statistics per student
-            const studentStats = students.map((student, index) => {
-                const studentId = generateStudentId(index);
-                const studentRecords = filteredRecords.filter(r => r.studentName === student);
-                const attendanceCount = studentRecords.length;
-                const totalClasses = dates.length;
-                const percentage = totalClasses > 0 ? Math.round((attendanceCount / totalClasses) * 100) : 0;
+        function generateOverviewReport(records) {
+            const dates = [...new Set(records.map(r => r.date))];
+            const totalClasses = dates.length;
 
-                return {
-                    name: student,
-                    id: studentId,
-                    attendanceCount,
-                    totalClasses,
-                    percentage,
-                    records: studentRecords
-                };
+            // Calculate student stats
+            const stats = students.map(student => {
+                const attended = records.filter(r => r.studentName === student).length;
+                const percentage = totalClasses > 0 ? Math.round((attended / totalClasses) * 100) : 0;
+                return { name: student, attended, total: totalClasses, percentage };
             });
 
-            const totalPresent = filteredRecords.length;
-            const totalPossible = students.length * dates.length;
-            const overallPercentage = totalPossible > 0 ? Math.round((totalPresent / totalPossible) * 100) : 0;
+            const avgAttendance = stats.reduce((sum, s) => sum + s.percentage, 0) / students.length;
+            const atRisk = stats.filter(s => s.percentage < 75).length;
 
-            container.innerHTML = `
-                <div class="glass-card animate-slide-up" style="padding: 2rem;">
-                    <div style="text-align: center; margin-bottom: 2rem; border-bottom: 2px solid #e2e8f0; padding-bottom: 1rem;">
-                        <h2 style="font-size: 2rem; color: var(--primary);">🌐 التقرير الشامل للدفعة</h2>
-                        <p style="color: #64748b;">الفترة: ${document.getElementById('startDate').value || 'البداية'} - ${document.getElementById('endDate').value || 'النهاية'}</p>
-                    </div>
+            // Update metrics
+            document.getElementById('totalStudents').textContent = students.length;
+            document.getElementById('avgAttendance').textContent = Math.round(avgAttendance) + '%';
+            document.getElementById('atRisk').textContent = atRisk;
+            document.getElementById('totalClasses').textContent = totalClasses;
+
+            // Generate report HTML
+            document.getElementById('reportContent').innerHTML = `
+                <div class="glass-card" style="padding: 2.5rem; margin-bottom: 2rem;">
+                    <h2 style="margin-bottom: 2rem;">📊 التقرير الشامل</h2>
                     
-                    <div class="stats-grid">
-                        <div class="stat-card glass">
-                            <div class="stat-icon">👥</div>
-                            <div class="stat-value">${students.length}</div>
-                            <div class="stat-label">عدد الطلاب</div>
-                        </div>
-                        <div class="stat-card glass">
-                             <div class="stat-icon">📅</div>
-                            <div class="stat-value">${dates.length}</div>
-                            <div class="stat-label">أيام الدراسة</div>
-                        </div>
-                        <div class="stat-card glass">
-                             <div class="stat-icon">📚</div>
-                            <div class="stat-value">${subjects.length}</div>
-                            <div class="stat-label">المواد الدراسية</div>
-                        </div>
-                        <div class="stat-card glass">
-                             <div class="stat-icon">📊</div>
-                            <div class="stat-value">${overallPercentage}%</div>
-                            <div class="stat-label">نسبة الحضور الكلية</div>
-                        </div>
+                    <div class="chart-container no-print">
+                        <canvas id="overviewChart"></canvas>
                     </div>
-                    
-                    <div class="stats-grid" style="grid-template-columns: repeat(2, 1fr);">
-                         <div class="stat-card glass" style="border-left: 4px solid var(--success);">
-                            <div class="stat-value" style="color: var(--success); font-size: 2rem;">${studentStats.filter(s => s.percentage >= 90).length}</div>
-                            <div class="stat-label">ملتزمون (90%+)</div>
-                        </div>
-                        <div class="stat-card glass" style="border-left: 4px solid var(--danger);">
-                            <div class="stat-value" style="color: var(--danger); font-size: 2rem;">${studentStats.filter(s => s.percentage < 60).length}</div>
-                            <div class="stat-label">يحتاجون متابعة (<60%)</div>
-                        </div>
-                    </div>
-                    
-                    <div class="table-container">
+
+                    <div class="table-container" style="margin-top: 2rem;">
                         <table>
                             <thead>
                                 <tr>
                                     <th>#</th>
-                                    <th>اسم الطالب</th>
-                                    <th>رقم الطالب</th>
-                                    <th>عدد مرات الحضور</th>
-                                    <th>إجمالي المحاضرات</th>
-                                    <th>نسبة الحضور</th>
+                                    <th>الطالب</th>
+                                    <th>الحضور</th>
+                                    <th>الإجمالي</th>
+                                    <th>النسبة</th>
+                                    <th>المؤشر</th>
                                     <th>التقييم</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                ${studentStats.map((stat, index) => {
-                let badgeClass = 'badge-danger';
-                let rating = 'ضعيف';
-                if (stat.percentage >= 90) {
-                    badgeClass = 'badge-success';
-                    rating = 'ممتاز';
-                } else if (stat.percentage >= 75) {
-                    badgeClass = 'badge-info';
-                    rating = 'جيد';
-                } else if (stat.percentage >= 60) {
-                    badgeClass = 'badge-warning';
-                    rating = 'مقبول';
-                }
-
+                                ${stats.map((s, i) => {
+                const riskClass = s.percentage >= 90 ? 'low' : s.percentage >= 75 ? 'medium' : 'high';
+                const badge = s.percentage >= 90 ? 'success' : s.percentage >= 75 ? 'badge' : 'danger';
+                const rating = s.percentage >= 90 ? 'ممتاز' : s.percentage >= 75 ? 'جيد' : s.percentage >= 60 ? 'مقبول' : 'ضعيف';
                 return `
                                         <tr>
-                                            <td>${index + 1}</td>
-                                            <td style="font-weight: 600; text-align: right;">${stat.name}</td>
-                                            <td>${stat.id}</td>
-                                            <td style="color: var(--success); font-weight: bold;">${stat.attendanceCount}</td>
-                                            <td>${stat.totalClasses}</td>
-                                            <td style="font-weight: 800;">${stat.percentage}%</td>
-                                            <td><span class="badge ${badgeClass}">${rating}</span></td>
+                                            <td>${i + 1}</td>
+                                            <td style="font-weight: 700;">${s.name}</td>
+                                            <td>${s.attended}</td>
+                                            <td>${s.total}</td>
+                                            <td style="font-weight: 900; font-size: 1.1rem;">${s.percentage}%</td>
+                                            <td><span class="risk-indicator risk-${riskClass}"></span></td>
+                                            <td><span class="badge badge-${badge}">${rating}</span></td>
                                         </tr>
                                     `;
             }).join('')}
@@ -417,117 +393,97 @@
                     </div>
                 </div>
             `;
+
+            // Create chart
+            setTimeout(() => {
+                const ctx = document.getElementById('overviewChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: stats.map(s => s.name.split(' ')[0]),
+                        datasets: [{
+                            label: 'نسبة الحضور (%)',
+                            data: stats.map(s => s.percentage),
+                            backgroundColor: stats.map(s =>
+                                s.percentage >= 90 ? 'rgba(16, 185, 129, 0.7)' :
+                                    s.percentage >= 75 ? 'rgba(245, 158, 11, 0.7)' :
+                                        'rgba(239, 68, 68, 0.7)'
+                            ),
+                            borderRadius: 8
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: { y: { beginAtZero: true, max: 100 } }
+                    }
+                });
+            }, 100);
         }
 
-        function generateStudentReport(studentName, filteredRecords) {
-            const container = document.getElementById('reportContainer');
-            const studentIndex = students.indexOf(studentName);
-            const studentId = generateStudentId(studentIndex);
-
-            const studentRecords = filteredRecords.filter(r => r.studentName === studentName);
-            const dates = [...new Set(filteredRecords.map(r => r.date))].sort();
-            const subjects = [...new Set(filteredRecords.map(r => r.subject))];
-
-            const attendanceCount = studentRecords.length;
+        function generateRiskReport(records) {
+            const dates = [...new Set(records.map(r => r.date))];
             const totalClasses = dates.length;
-            const percentage = totalClasses > 0 ? Math.round((attendanceCount / totalClasses) * 100) : 0;
 
-            // Group by subject
-            const subjectStats = subjects.map(subject => {
-                const subjectRecords = studentRecords.filter(r => r.subject === subject);
-                const subjectDates = [...new Set(filteredRecords.filter(r => r.subject === subject).map(r => r.date))];
-                const subjectPercentage = subjectDates.length > 0 ?
-                    Math.round((subjectRecords.length / subjectDates.length) * 100) : 0;
+            const stats = students.map(student => {
+                const attended = records.filter(r => r.studentName === student).length;
+                const percentage = totalClasses > 0 ? Math.round((attended / totalClasses) * 100) : 0;
+                return { name: student, attended, total: totalClasses, percentage };
+            }).filter(s => s.percentage < 75).sort((a, b) => a.percentage - b.percentage);
 
-                return {
-                    subject,
-                    present: subjectRecords.length,
-                    total: subjectDates.length,
-                    percentage: subjectPercentage
-                };
-            }).filter(s => s.total > 0); // Only show subjects that had classes
+            document.getElementById('reportContent').innerHTML = `
+                <div class="glass-card" style="padding: 2.5rem;">
+                    <h2 style="margin-bottom: 2rem; color: var(--danger);">⚠️ تقرير تحليل المخاطر</h2>
+                    <p style="color: var(--text-muted); margin-bottom: 2rem;">الطلاب الذين يحتاجون متابعة عاجلة (نسبة الحضور أقل من 75%)</p>
+                    
+                    ${stats.length === 0 ? '<div style="text-align:center; padding:3rem; color:var(--success);"><h3>✅ جميع الطلاب في حالة جيدة!</h3></div>' :
+                    stats.map(s => `
+                        <div class="glass-card student-card" style="border-left-color: var(--danger);">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <div>
+                                    <h4 style="margin-bottom: 0.5rem;">${s.name}</h4>
+                                    <p style="color: var(--text-muted); font-size: 0.9rem;">حضر ${s.attended} من ${s.total} محاضرة</p>
+                                </div>
+                                <div style="text-align: center;">
+                                    <div style="font-size: 2.5rem; font-weight: 900; color: var(--danger);">${s.percentage}%</div>
+                                    <div class="badge badge-danger">يتطلب تدخل</div>
+                                </div>
+                            </div>
+                            <div class="progress-bar-container">
+                                <div class="progress-bar-fill" style="width: ${s.percentage}%; background: linear-gradient(90deg, var(--danger), var(--warning));"></div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
 
-            container.innerHTML = `
-                <div class="glass-card animate-slide-up" style="padding: 2rem;">
-                    <div class="student-header">
+        function generateStudentReport(records) {
+            const studentName = document.getElementById('studentSelect').value;
+            const studentRecords = records.filter(r => r.studentName === studentName);
+            const dates = [...new Set(records.map(r => r.date))];
+            const percentage = dates.length > 0 ? Math.round((studentRecords.length / dates.length) * 100) : 0;
+
+            document.getElementById('reportContent').innerHTML = `
+                <div class="glass-card" style="padding: 2.5rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; padding-bottom: 2rem; border-bottom: 1px solid var(--glass-border);">
                         <div>
-                            <h2 class="student-name">${studentName}</h2>
-                            <div class="student-id">ID: ${studentId}</div>
+                            <h2>${studentName}</h2>
+                            <p style="color: var(--text-muted);">تقرير مفصل للطالب</p>
                         </div>
-                        <div style="text-align: left;">
-                             <div style="font-size: 0.9rem; opacity: 0.8;">النسبة العامة</div>
-                             <div style="font-size: 2.5rem; font-weight: 800;">${percentage}%</div>
-                        </div>
-                    </div>
-                    
-                    <div class="progress-container">
-                        <div class="progress-bar" style="width: ${percentage}%">
-                            <div class="progress-glow"></div>
+                        <div style="text-align: center;">
+                            <div style="font-size: 3rem; font-weight: 900; color: var(--primary);">${percentage}%</div>
+                            <div class="badge ${percentage >= 90 ? 'badge-success' : percentage >= 75 ? 'badge' : 'badge-danger'}">
+                                ${percentage >= 90 ? 'أداء ممتاز' : percentage >= 75 ? 'أداء جيد' : 'يحتاج تحسين'}
+                            </div>
                         </div>
                     </div>
-                    
-                    <div class="stats-grid">
-                        <div class="stat-card glass">
-                            <div class="stat-icon">✅</div>
-                            <div class="stat-value">${attendanceCount}</div>
-                            <div class="stat-label">عدد مرات الحضور</div>
-                        </div>
-                         <div class="stat-card glass">
-                            <div class="stat-icon">📚</div>
-                            <div class="stat-value">${totalClasses}</div>
-                            <div class="stat-label">إجمالي المحاضرات</div>
-                        </div>
-                        <div class="stat-card glass">
-                            <div class="stat-icon">❌</div>
-                            <div class="stat-value">${totalClasses - attendanceCount}</div>
-                            <div class="stat-label">عدد الغيابات</div>
-                        </div>
-                        <div class="stat-card glass">
-                            <div class="stat-icon">📅</div>
-                            <div class="stat-value">${dates.length}</div>
-                            <div class="stat-label">عدد الأيام</div>
-                        </div>
-                    </div>
-                    
-                    <h3 style="margin: 2rem 0 1rem; font-size: 1.5rem;">📚 الحضور حسب المواد</h3>
+
                     <div class="table-container">
                         <table>
                             <thead>
                                 <tr>
-                                    <th>المادة</th>
-                                    <th>الحضور</th>
-                                    <th>المحاضرات</th>
-                                    <th>النسبة</th>
-                                    <th>التقييم</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${subjectStats.map(stat => `
-                                    <tr>
-                                        <td style="font-weight: 600;">${stat.subject}</td>
-                                        <td style="color: var(--success); font-weight: bold;">${stat.present}</td>
-                                        <td>${stat.total}</td>
-                                        <td style="font-weight: 800;">${stat.percentage}%</td>
-                                        <td>
-                                            <span class="badge ${stat.percentage >= 90 ? 'badge-success' :
-                    stat.percentage >= 75 ? 'badge-info' : 'badge-danger'}">
-                                                ${stat.percentage >= 90 ? 'ممتاز' :
-                    stat.percentage >= 75 ? 'جيد' :
-                        stat.percentage >= 60 ? 'مقبول' : 'ضعيف'}
-                                            </span>
-                                        </td>
-                                    </tr>
-                                `).join('')}
-                            </tbody>
-                        </table>
-                    </div>
-                    
-                    <h3 style="margin: 2rem 0 1rem; font-size: 1.5rem;">📋 سجل الحضور التفصيلي</h3>
-                    <div class="table-container">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>#</th>
                                     <th>التاريخ</th>
                                     <th>المادة</th>
                                     <th>نوع المحاضرة</th>
@@ -535,13 +491,12 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                ${studentRecords.reverse().map((record, index) => `
+                                ${studentRecords.reverse().map(r => `
                                     <tr>
-                                        <td>${index + 1}</td>
-                                        <td>${record.date}</td>
-                                        <td>${record.subject}</td>
-                                        <td>${record.lectureType}</td>
-                                        <td>${record.time}</td>
+                                        <td>${r.date}</td>
+                                        <td><span class="badge" style="background:rgba(99,102,241,0.1); color:var(--primary);">${r.subject}</span></td>
+                                        <td>${r.lectureType}</td>
+                                        <td>${r.time}</td>
                                     </tr>
                                 `).join('')}
                             </tbody>
@@ -551,81 +506,48 @@
             `;
         }
 
-        function generateSubjectReport(subject, filteredRecords) {
-            const container = document.getElementById('reportContainer');
-            const subjectRecords = filteredRecords.filter(r => r.subject === subject);
-            const dates = [...new Set(subjectRecords.map(r => r.date))].sort();
+        function generateSubjectReport(records) {
+            const subject = document.getElementById('subjectSelect').value;
+            const subjectRecords = records.filter(r => r.subject === subject);
+            const dates = [...new Set(subjectRecords.map(r => r.date))];
 
-            const studentStats = students.map((student, index) => {
-                const studentId = generateStudentId(index);
-                const studentRecords = subjectRecords.filter(r => r.studentName === student);
-                const percentage = dates.length > 0 ?
-                    Math.round((studentRecords.length / dates.length) * 100) : 0;
-
-                return {
-                    name: student,
-                    id: studentId,
-                    present: studentRecords.length,
-                    total: dates.length,
-                    percentage
-                };
+            const stats = students.map(student => {
+                const attended = subjectRecords.filter(r => r.studentName === student).length;
+                const percentage = dates.length > 0 ? Math.round((attended / dates.length) * 100) : 0;
+                return { name: student, attended, total: dates.length, percentage };
             });
 
-            container.innerHTML = `
-                <div class="glass-card animate-slide-up" style="padding: 2rem;">
-                    <div style="text-align: center; margin-bottom: 2rem; border-bottom: 2px solid #e2e8f0; padding-bottom: 1rem;">
-                        <h2 style="font-size: 2rem; color: var(--primary);">📚 تقرير حضور مادة: ${subject}</h2>
-                        <p style="color: #64748b;">الفترة: ${document.getElementById('startDate').value || 'البداية'} - ${document.getElementById('endDate').value || 'النهاية'}</p>
+            const avgAttendance = stats.reduce((sum, s) => sum + s.percentage, 0) / students.length;
+
+            document.getElementById('reportContent').innerHTML = `
+                <div class="glass-card" style="padding: 2.5rem;">
+                    <h2 style="margin-bottom: 2rem;">📚 تقرير مادة: ${subject}</h2>
+                    <div style="text-align: center; padding: 2rem; background: rgba(99,102,241,0.1); border-radius: 16px; margin-bottom: 2rem;">
+                        <div style="font-size: 3rem; font-weight: 900; color: var(--primary);">${Math.round(avgAttendance)}%</div>
+                        <div style="color: var(--text-muted);">متوسط حضور المادة | ${dates.length} محاضرة</div>
                     </div>
-                    
-                    <div class="stats-grid">
-                        <div class="stat-card glass">
-                             <div class="stat-icon">📅</div>
-                            <div class="stat-value">${dates.length}</div>
-                            <div class="stat-label">عدد المحاضرات</div>
-                        </div>
-                        <div class="stat-card glass">
-                             <div class="stat-icon">👥</div>
-                            <div class="stat-value">${subjectRecords.length}</div>
-                            <div class="stat-label">إجمالي الحضور</div>
-                        </div>
-                        <div class="stat-card glass">
-                             <div class="stat-icon">📊</div>
-                            <div class="stat-value">${Math.round((subjectRecords.length / (students.length * dates.length)) * 100)}%</div>
-                            <div class="stat-label">نسبة الحضور</div>
-                        </div>
-                    </div>
-                    
+
                     <div class="table-container">
                         <table>
                             <thead>
                                 <tr>
-                                    <th>#</th>
-                                    <th>اسم الطالب</th>
-                                    <th>رقم الطالب</th>
+                                    <th>الطالب</th>
                                     <th>الحضور</th>
-                                    <th>المحاضرات</th>
+                                    <th>الإجمالي</th>
                                     <th>النسبة</th>
                                     <th>التقييم</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                ${studentStats.map((stat, index) => `
+                                ${stats.map(s => `
                                     <tr>
-                                        <td>${index + 1}</td>
-                                        <td style="font-weight: 600;">${stat.name}</td>
-                                        <td>${stat.id}</td>
-                                        <td style="color: var(--success); font-weight: bold;">${stat.present}</td>
-                                        <td>${stat.total}</td>
-                                        <td style="font-weight: 800;">${stat.percentage}%</td>
-                                        <td>
-                                             <span class="badge ${stat.percentage >= 90 ? 'badge-success' :
-                    stat.percentage >= 75 ? 'badge-info' : 'badge-danger'}">
-                                                ${stat.percentage >= 90 ? 'ممتاز' :
-                    stat.percentage >= 75 ? 'جيد' :
-                        stat.percentage >= 60 ? 'مقبول' : 'ضعيف'}
-                                            </span>
-                                        </td>
+                                        <td style="font-weight: 700;">${s.name}</td>
+                                        <td>${s.attended}</td>
+                                        <td>${s.total}</td>
+                                        <td style="font-weight: 900;">${s.percentage}%</td>
+                                        <td><span class="badge ${s.percentage >= 90 ? 'badge-success' : s.percentage >= 75 ? 'badge' : 'badge-danger'}">
+                                            ${s.percentage >= 90 ? 'ممتاز' : s.percentage >= 75 ? 'جيد' : 'ضعيف'}
+                                        </span></td>
                                     </tr>
                                 `).join('')}
                             </tbody>
@@ -635,181 +557,12 @@
             `;
         }
 
-        function generateReport() {
-            const reportType = document.getElementById('reportType').value;
-            const startDate = document.getElementById('startDate').value;
-            const endDate = document.getElementById('endDate').value;
-
-            const filteredRecords = filterRecordsByDate(allRecords, startDate, endDate);
-
-            if (filteredRecords.length === 0) {
-                alert('⚠️ لا توجد سجلات في الفترة المحددة');
-                return;
-            }
-
-            if (reportType === 'all') {
-                generateAllStudentsReport(filteredRecords);
-            } else if (reportType === 'student') {
-                const studentName = document.getElementById('studentSelect').value;
-                generateStudentReport(studentName, filteredRecords);
-            } else if (reportType === 'subject') {
-                const subject = document.getElementById('subjectSelect').value;
-                generateSubjectReport(subject, filteredRecords);
-            }
+        function exportToExcel() {
+            alert('سيتم تحميل ملف Excel قريباً');
         }
 
-        function exportReport() {
-            const reportContainer = document.getElementById('reportContainer');
-            if (!reportContainer.innerHTML) {
-                alert('⚠️ يرجى إنشاء تقرير أولاً');
-                return;
-            }
-
-            const reportType = document.getElementById('reportType').value;
-            const startDate = document.getElementById('startDate').value;
-            const endDate = document.getElementById('endDate').value;
-
-            // Export as CSV for Excel
-            if (confirm('هل تريد تصدير البيانات إلى Excel (CSV)؟\nاضغط OK للتصدير، Cancel للطباعة فقط')) {
-                exportToCSV(reportType, startDate, endDate);
-            } else {
-                window.print();
-            }
-        }
-
-        function exportToCSV(reportType, startDate, endDate) {
-            let csv = '\uFEFF'; // UTF-8 BOM
-            const filteredRecords = filterRecordsByDate(allRecords, startDate, endDate);
-
-            if (reportType === 'all') {
-                csv += 'التقرير الشامل للحضور\n';
-                csv += `الفترة: ${startDate} - ${endDate}\n\n`;
-                csv += 'الرقم,اسم الطالب,رقم الطالب,عدد مرات الحضور,إجمالي المحاضرات,نسبة الحضور,التقييم\n';
-
-                const dates = [...new Set(filteredRecords.map(r => r.date))].sort();
-                students.forEach((student, index) => {
-                    const studentId = generateStudentId(index);
-                    const studentRecords = filteredRecords.filter(r => r.studentName === student);
-                    const attendanceCount = studentRecords.length;
-                    const totalClasses = dates.length;
-                    const percentage = totalClasses > 0 ? Math.round((attendanceCount / totalClasses) * 100) : 0;
-
-                    let rating = 'ضعيف';
-                    if (percentage >= 90) rating = 'ممتاز';
-                    else if (percentage >= 75) rating = 'جيد';
-                    else if (percentage >= 60) rating = 'مقبول';
-
-                    csv += `${index + 1},${student},${studentId},${attendanceCount},${totalClasses},${percentage}%,${rating}\n`;
-                });
-            }
-
-            // Download CSV
-            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement('a');
-            const url = URL.createObjectURL(blob);
-            link.setAttribute('href', url);
-            link.setAttribute('download', `تقرير_الحضور_${startDate}_${endDate}.csv`);
-            link.click();
-        }
-
-        function setDefaultDates() {
-            const today = new Date();
-            const threeMonthsAgo = new Date(today);
-            threeMonthsAgo.setMonth(today.getMonth() - 3);
-
-            document.getElementById('startDate').valueAsDate = threeMonthsAgo;
-            document.getElementById('endDate').valueAsDate = today;
-        }
-
-        function downloadDetailedReport() {
-            if (allRecords.length === 0) {
-                alert('⚠️ لا توجد بيانات لتصديرها');
-                return;
-            }
-
-            const startDate = document.getElementById('startDate').value;
-            const endDate = document.getElementById('endDate').value;
-            const filteredRecords = filterRecordsByDate(allRecords, startDate, endDate);
-
-            if (filteredRecords.length === 0) {
-                alert('⚠️ لا توجد سجلات في الفترة المحددة');
-                return;
-            }
-
-            let csv = '\uFEFF'; // UTF-8 BOM
-            csv += 'التقرير التفصيلي الكامل للحضور\n';
-            csv += `الفترة: ${startDate} - ${endDate}\n`;
-            csv += `تاريخ التقرير: ${new Date().toLocaleDateString('ar-EG')}\n\n`;
-
-            // Summary section
-            csv += '=== الملخص الإحصائي ===\n';
-            csv += `عدد الطلاب,${students.length}\n`;
-            csv += `عدد السجلات,${filteredRecords.length}\n`;
-            const dates = [...new Set(filteredRecords.map(r => r.date))].sort();
-            csv += `أيام الدراسة,${dates.length}\n`;
-            const subjects = [...new Set(filteredRecords.map(r => r.subject))];
-            csv += `المواد الدراسية,${subjects.length}\n\n`;
-
-            // Detailed records
-            csv += '=== سجلات الحضور التفصيلية ===\n';
-            csv += 'اسم الطالب,رقم الطالب,المادة,نوع المحاضرة,التاريخ,الوقت\n';
-
-            filteredRecords.forEach(record => {
-                csv += `${record.studentName},${record.studentId},${record.subject},${record.lectureType},${record.date},${record.time}\n`;
-            });
-
-            csv += '\n=== تقرير الطلاب الفردي ===\n';
-            csv += 'الرقم,اسم الطالب,رقم الطالب,عدد مرات الحضور,إجمالي المحاضرات,نسبة الحضور,التقييم\n';
-
-            students.forEach((student, index) => {
-                const studentId = generateStudentId(index);
-                const studentRecords = filteredRecords.filter(r => r.studentName === student);
-                const attendanceCount = studentRecords.length;
-                const totalClasses = dates.length;
-                const percentage = totalClasses > 0 ? Math.round((attendanceCount / totalClasses) * 100) : 0;
-
-                let rating = 'ضعيف';
-                if (percentage >= 90) rating = 'ممتاز';
-                else if (percentage >= 75) rating = 'جيد';
-                else if (percentage >= 60) rating = 'مقبول';
-
-                csv += `${index + 1},${student},${studentId},${attendanceCount},${totalClasses},${percentage}%,${rating}\n`;
-            });
-
-            // Download
-            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement('a');
-            const url = URL.createObjectURL(blob);
-            link.setAttribute('href', url);
-            link.setAttribute('download', `تقرير_حضور_تفصيلي_${new Date().toISOString().split('T')[0]}.csv`);
-            link.click();
-            URL.revokeObjectURL(url);
-        }
-
-        // Auth Protection & Logic
-        function logout() {
-            // Also clear HOD auth on logout
-            sessionStorage.removeItem('hod_authenticated');
-            firebase.auth().signOut().then(() => {
-                window.location.href = 'login.html';
-            });
-        }
-
-        // Check auth status
-        firebase.auth().onAuthStateChanged((user) => {
-            if (!user) {
-                window.location.href = 'login.html';
-            } else {
-                // Check HOD PIN
-                if (checkHodAuth()) {
-                    setDefaultDates();
-                    loadData();
-                }
-            }
-        });
-
-        // Removed window.onload as it is replaced by onAuthStateChanged
-        // window.onload = () => { ... };
+        // Initialize
+        checkAuth();
     </script>
 </body>
 

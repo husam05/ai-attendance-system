@@ -4,636 +4,119 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>إدارة سجلات الحضور - قسم الذكاء الاصطناعي</title>
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>Deep AI | إدارة السجلات</title>
+    <link rel="stylesheet" href="style.css">
     <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Tajawal', sans-serif;
-            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
-            min-height: 100vh;
-            direction: rtl;
-            padding: 20px;
-        }
-
-        .container {
-            max-width: 1600px;
-            margin: 0 auto;
-        }
-
-        .header {
-            background: white;
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-            margin-bottom: 20px;
-            text-align: center;
-        }
-
-        .header h1 {
-            color: #11998e;
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-        }
-
-        .header p {
-            color: #718096;
-            font-size: 1.2rem;
-        }
-
-        .controls {
-            background: white;
-            padding: 20px;
-            border-radius: 15px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-            margin-bottom: 20px;
-        }
-
-        .btn {
-            background: #11998e;
-            color: white;
-            border: none;
-            padding: 12px 25px;
-            font-size: 1rem;
-            border-radius: 8px;
-            cursor: pointer;
-            font-family: 'Tajawal', sans-serif;
-            transition: all 0.3s;
-            margin: 5px;
-        }
-
-        .btn:hover {
-            background: #0d7a70;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(17, 153, 142, 0.4);
-        }
-
-        .btn-danger {
-            background: #e53e3e;
-        }
-
-        .btn-danger:hover {
-            background: #c53030;
-        }
-
-        .btn-primary {
-            background: #3182ce;
-        }
-
-        .btn-primary:hover {
-            background: #2c5282;
-        }
-
-        .dashboard {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 20px;
-            margin-bottom: 20px;
-        }
-
-        .stat-card {
-            background: white;
-            padding: 25px;
-            border-radius: 15px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-            text-align: center;
-            transition: transform 0.3s;
-        }
-
-        .stat-card:hover {
-            transform: translateY(-5px);
-        }
-
-        .stat-icon {
-            font-size: 3rem;
-            margin-bottom: 10px;
-        }
-
-        .stat-value {
-            font-size: 2.5rem;
-            font-weight: bold;
-            color: #2d3748;
-            margin-bottom: 5px;
-        }
-
-        .stat-label {
-            color: #718096;
-            font-size: 1.1rem;
-        }
-
-        .data-section {
-            background: white;
-            padding: 25px;
-            border-radius: 15px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-            margin-bottom: 20px;
-        }
-
-        .data-section h2 {
-            color: #2d3748;
-            margin-bottom: 20px;
-            font-size: 1.8rem;
-            border-bottom: 3px solid #11998e;
-            padding-bottom: 10px;
-        }
-
-        .filters {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 5px;
-            color: #2d3748;
-            font-weight: 600;
-        }
-
-        .form-group select,
-        .form-group input {
-            width: 100%;
-            padding: 10px;
-            border: 2px solid #e2e8f0;
-            border-radius: 8px;
-            font-family: 'Tajawal', sans-serif;
-            font-size: 1rem;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-
-        th,
-        td {
-            padding: 12px;
-            text-align: right;
-            border-bottom: 1px solid #e2e8f0;
-        }
-
-        th {
-            background: #11998e;
-            color: white;
-            font-weight: 600;
-            position: sticky;
-            top: 0;
-        }
-
-        tr:hover {
-            background: #f7fafc;
-        }
-
-        .table-container {
-            max-height: 500px;
-            overflow-y: auto;
-        }
-
-        .badge {
-            display: inline-block;
-            padding: 5px 12px;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            font-weight: 600;
-        }
-
-        .badge-present {
-            background: #c6f6d5;
-            color: #22543d;
-        }
-
-        .badge-absent {
-            background: #fed7d7;
-            color: #742a2a;
-        }
-
-        .chart-container {
-            position: relative;
-            height: 400px;
-            margin-top: 20px;
-        }
-
-        @media print {
-            body {
-                background: white;
-            }
-
-            .controls,
-            .btn {
-                display: none;
-            }
-
-            .data-section {
-                box-shadow: none;
-            }
-        }
-    </style>
 </head>
 
 <body>
-    <div class="container">
-        <div class="header">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <h1>📊 نظام إدارة الحضور</h1>
-                <button onclick="logout()" class="btn"
-                    style="width: auto; margin: 0; background: #e53e3e; font-size: 0.9rem; padding: 8px 15px;">تسجيل
-                    خروج</button>
+    <div class="container animate-fade-in">
+        <!-- Persistent Nav -->
+        <nav class="app-nav">
+            <div class="nav-content">
+                <div style="font-weight: 900; font-size: 1.5rem; letter-spacing: -1px;">
+                    <span style="color: var(--primary);">DEEP</span> AI
+                </div>
+                <ul class="nav-links">
+                    <li><a href="index.html">الرئيسية</a></li>
+                    <li><a href="teacher-qr-scanner.html">الماسح</a></li>
+                    <li><a href="attendance-management.html" class="active">الإدارة</a></li>
+                    <li><a href="attendance-report.html">التقارير</a></li>
+                </ul>
             </div>
-            <p>قسم علوم الذكاء الاصطناعي - جامعة المصطفى</p>
+        </nav>
+
+        <header class="header-section no-print">
+            <h1 class="header-title">مركز التحكم والبيانات</h1>
+            <p class="header-subtitle">إدارة الحضور والمزامنة السحابية للطلاب</p>
+        </header>
+
+        <!-- Dynamic Stats -->
+        <div class="stats-grid no-print">
+            <div class="glass-card stat-card">
+                <span class="stat-label">إجمالي الطلاب</span>
+                <span id="stat-total-students" class="stat-value">--</span>
+                <div class="badge badge-success">محدث لحظياً</div>
+            </div>
+            <div class="glass-card stat-card">
+                <span class="stat-label">سجلات اليوم</span>
+                <span id="stat-today-scans" class="stat-value">0</span>
+                <div class="badge badge-success">نشط</div>
+            </div>
+            <div class="glass-card stat-card" style="border-right: 4px solid var(--accent);">
+                <span class="stat-label">طلاب في خطر (غياب متكرر)</span>
+                <span id="stat-at-risk" class="stat-value">--</span>
+                <div class="badge badge-danger">يتطلب متابعة</div>
+            </div>
         </div>
 
-        <div class="dashboard">
-            <div class="stat-card">
-                <div class="stat-icon">📝</div>
-                <div class="stat-value" id="totalRecords">0</div>
-                <div class="stat-label">إجمالي السجلات</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon">👥</div>
-                <div class="stat-value" id="totalStudents">19</div>
-                <div class="stat-label">عدد الطلاب</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon">📚</div>
-                <div class="stat-value" id="totalSubjects">0</div>
-                <div class="stat-label">المواد الدراسية</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon">📅</div>
-                <div class="stat-value" id="totalDays">0</div>
-                <div class="stat-label">أيام الدراسة</div>
-            </div>
-        </div>
-
-        <div class="controls">
-            <button class="btn" onclick="window.location.href='teacher-qr-scanner.html'">
-                📷 فتح ماسح الحضور
-            </button>
-            <button class="btn btn-primary" onclick="exportToExcel()">
-                📥 تصدير إلى Excel
-            </button>
-            <button class="btn btn-primary" onclick="window.print()">
-                🖨️ طباعة التقرير
-            </button>
-            <button class="btn" onclick="importData()">
-                📤 استيراد البيانات
-            </button>
-            <button class="btn btn-danger" onclick="clearAllData()">
-                🗑️ مسح جميع البيانات
-            </button>
-            <input type="file" id="fileInput" accept=".json" style="display: none" onchange="handleFileImport(event)">
-        </div>
-
-        <div class="data-section">
-            <h2>🔍 تصفية السجلات</h2>
-            <div class="filters">
-                <div class="form-group">
-                    <label>المادة</label>
-                    <select id="filterSubject" onchange="filterRecords()">
-                        <option value="">جميع المواد</option>
-                    </select>
+        <!-- Toolbar -->
+        <div class="glass-card no-print" style="padding: 2rem; margin-bottom: 2rem;">
+            <div
+                style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                <div style="display: flex; gap: 1rem;">
+                    <button class="btn btn-primary" onclick="window.print()">🖨️ طباعة السجل</button>
+                    <button class="btn btn-secondary" onclick="exportData()">💾 تصدير Excel</button>
                 </div>
-                <div class="form-group">
-                    <label>الطالب</label>
-                    <select id="filterStudent" onchange="filterRecords()">
-                        <option value="">جميع الطلاب</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>من تاريخ</label>
-                    <input type="date" id="filterDateFrom" onchange="filterRecords()">
-                </div>
-                <div class="form-group">
-                    <label>إلى تاريخ</label>
-                    <input type="date" id="filterDateTo" onchange="filterRecords()">
+                <div style="display: flex; gap: 1rem;">
+                    <!-- The Sync Component (Deep Enhancement Feature) -->
+                    <button class="btn btn-secondary" onclick="syncStudentsToCloud()"
+                        title="مزامنة القائمة المحلية مع السحابة">
+                        ☁️ مزامنة قاعدة الطلاب
+                    </button>
                 </div>
             </div>
         </div>
 
-        <div class="data-section">
-            <h2>📋 سجلات الحضور</h2>
+        <div class="glass-card" style="padding: 2rem;">
             <div class="table-container">
-                <table id="recordsTable">
+                <table>
                     <thead>
                         <tr>
-                            <th>#</th>
-                            <th>اسم الطالب</th>
-                            <th>رقم الطالب</th>
+                            <th>الطالب</th>
                             <th>المادة</th>
-                            <th>نوع المحاضرة</th>
                             <th>التاريخ</th>
                             <th>الوقت</th>
+                            <th>الحالة</th>
+                            <th class="no-print">إجراءات</th>
                         </tr>
                     </thead>
-                    <tbody id="recordsBody"></tbody>
+                    <tbody id="attendance-body">
+                        <!-- Loaded dynamically -->
+                    </tbody>
                 </table>
             </div>
         </div>
 
-        <div class="data-section">
-            <h2>📈 إحصائيات الحضور</h2>
-            <div class="chart-container">
-                <canvas id="attendanceChart"></canvas>
+        <!-- HOD PIN Modal - Kept for security -->
+        <div id="hodModal"
+            style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(2,6,23,0.95); z-index:2000; align-items:center; justify-content:center; backdrop-filter:blur(20px);">
+            <div class="glass-card" style="width:100%; max-width:400px; padding:3rem; text-align:center;">
+                <h2 style="margin-bottom: 1rem;">🔒 دخول المصادقة</h2>
+                <p style="color:var(--text-muted); margin-bottom: 2rem;">يرجى إدخال رمز HOD للوصول</p>
+                <input type="password" id="hodPin" class="form-control"
+                    style="text-align:center; font-size:2rem; letter-spacing:0.5rem; margin-bottom:1.5rem;" autofocus>
+                <button class="btn btn-primary" style="width:100%;" onclick="verifyPin()">فتح النظام</button>
             </div>
         </div>
     </div>
 
-    <!-- HOD Auth Modal -->
-    <div id="hodAuthModal"
-        style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 9999; backdrop-filter: blur(8px); justify-content: center; align-items: center;">
-        <div
-            style="background: white; padding: 2.5rem; border-radius: 20px; width: 90%; max-width: 400px; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.4);">
-            <div style="font-size: 4rem; margin-bottom: 1rem;">🔒</div>
-            <h2 style="color: #2d3748; margin-bottom: 1rem;">دخول رئيس القسم</h2>
-            <p style="color: #718096; margin-bottom: 2rem;">يرجى إدخال رمز المرور للوصول إلى هذه الصفحة</p>
-
-            <input type="password" id="hodPinInput" placeholder="ادخل رمز المرور"
-                style="width: 100%; padding: 15px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 1.2rem; text-align: center; margin-bottom: 1.5rem; outline: none; transition: border-color 0.3s;">
-
-            <button onclick="verifyHodPin()"
-                style="width: 100%; padding: 15px; background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); color: white; border: none; border-radius: 10px; font-size: 1.1rem; font-weight: bold; cursor: pointer; transition: transform 0.2s;">
-                دخول
-            </button>
-
-            <div id="hodError" style="color: #e53e3e; margin-top: 1rem; display: none;">رمز المرور غير صحيح</div>
-
-            <button onclick="window.location.href='index.html'"
-                style="margin-top: 1rem; background: transparent; border: none; color: #718096; text-decoration: underline; cursor: pointer;">
-                العودة للصفحة الرئيسية
-            </button>
-        </div>
-    </div>
-
     <script>
-        let allRecords = [];
-        let filteredRecords = [];
-        let attendanceChart = null;
-
-        const students = [
-            "يوسف ميثاق طالب عجيل",
-            "حسين علي دوشان كاظم",
-            "نورالحسن باسم عبدالرزاق حسين",
-            "مصطفى فؤاد فاضل عبد الامير",
-            "علي جمال خلف فعيل",
-            "مصطفى محمد مردان حسن",
-            "ضحى حيدر كمال جوده",
-            "علي محمد جبار حسين",
-            "بنين ديار رحيم صفر",
-            "زهراء محمد سريح عبد الحسن",
-            "زهراء ابراهيم مهدي خضير",
-            "منتظر حميد عذاب ضاحي",
-            "نبأ جاسم رحمه شايع",
-            "معصومة عبد الحسين جبار عبدالله",
-            "داليا كريم ليلو منصور",
-            "مؤمل سعدون جبار لفته",
-            "سبأ محمد صبري سلطان",
-            "رقيه اثير احمد مطلق",
-            "كاظم محمد جاسم"
+        // Central Student Database (to be moved to Firebase)
+        // Central Student Database (Fallback)
+        const localStudents = [
+            "يوسف ميثاق طالب عجيل", "حسين علي دوشان كاظم", "نورالحسن باسم عبدالرزاق حسين",
+            "مصطفى فؤاد فاضل عبد الامير", "علي جمال خلف فعيل", "مصطفى محمد مردان حسن",
+            "ضحى حيدر كمال جوده", "علي محمد جبار حسين", "بنين ديار رحيم صفر",
+            "زهراء محمد سريح عبد الحسن", "زهراء ابراهيم مهدي خضير", "منتظر حميد عذاب ضاحي",
+            "نبأ جاسم رحمه شايع", "معصومة عبد الحسين جبار عبدالله", "داليا كريم ليلو منصور",
+            "مؤمل سعدون جبار لفته", "سبأ محمد صبري سلطان", "رقيه اثير احمد مطلق", "كاظم محمد جاسم"
         ];
 
-        // HOD Authentication Logic
-        function checkHodAuth() {
-            const isHodAuth = sessionStorage.getItem('hod_authenticated');
-            const modal = document.getElementById('hodAuthModal');
-            const container = document.querySelector('.container');
-
-            if (isHodAuth === 'true') {
-                modal.style.display = 'none';
-                container.style.filter = 'none';
-                return true;
-            } else {
-                modal.style.display = 'flex';
-                container.style.filter = 'blur(10px)';
-                return false;
-            }
-        }
-
-        function verifyHodPin() {
-            const pin = document.getElementById('hodPinInput').value;
-            const errorMsg = document.getElementById('hodError');
-
-            if (pin === '987987987') {
-                sessionStorage.setItem('hod_authenticated', 'true');
-                document.getElementById('hodAuthModal').style.display = 'none';
-                document.querySelector('.container').style.filter = 'none';
-                loadData(); // Load data only after success
-            } else {
-                errorMsg.style.display = 'block';
-                document.getElementById('hodPinInput').style.borderColor = '#e53e3e';
-            }
-        }
-
-        // Add Enter key listener for password
-        document.getElementById('hodPinInput')?.addEventListener('keyup', function (event) {
-            if (event.key === 'Enter') {
-                verifyHodPin();
-            }
-        });
-
-        function loadData() {
-            const saved = localStorage.getItem('attendanceRecords');
-            if (saved) {
-                allRecords = JSON.parse(saved);
-                filteredRecords = [...allRecords];
-                updateDashboard();
-                populateFilters();
-                displayRecords();
-                createChart();
-            }
-        }
-
-        function updateDashboard() {
-            document.getElementById('totalRecords').textContent = allRecords.length;
-
-            const subjects = new Set(allRecords.map(r => r.subject));
-            document.getElementById('totalSubjects').textContent = subjects.size;
-
-            const days = new Set(allRecords.map(r => r.date));
-            document.getElementById('totalDays').textContent = days.size;
-        }
-
-        function populateFilters() {
-            // Populate subjects
-            const subjects = [...new Set(allRecords.map(r => r.subject))];
-            const subjectSelect = document.getElementById('filterSubject');
-            subjectSelect.innerHTML = '<option value="">جميع المواد</option>';
-            subjects.forEach(subject => {
-                const option = document.createElement('option');
-                option.value = subject;
-                option.textContent = subject;
-                subjectSelect.appendChild(option);
-            });
-
-            // Populate students
-            const studentSelect = document.getElementById('filterStudent');
-            studentSelect.innerHTML = '<option value="">جميع الطلاب</option>';
-            students.forEach(student => {
-                const option = document.createElement('option');
-                option.value = student;
-                option.textContent = student;
-                studentSelect.appendChild(option);
-            });
-        }
-
-        function filterRecords() {
-            const subject = document.getElementById('filterSubject').value;
-            const student = document.getElementById('filterStudent').value;
-            const dateFrom = document.getElementById('filterDateFrom').value;
-            const dateTo = document.getElementById('filterDateTo').value;
-
-            filteredRecords = allRecords.filter(record => {
-                if (subject && record.subject !== subject) return false;
-                if (student && record.studentName !== student) return false;
-                if (dateFrom && record.date < dateFrom) return false;
-                if (dateTo && record.date > dateTo) return false;
-                return true;
-            });
-
-            displayRecords();
-        }
-
-        function displayRecords() {
-            const tbody = document.getElementById('recordsBody');
-            tbody.innerHTML = '';
-
-            filteredRecords.reverse().forEach((record, index) => {
-                const row = tbody.insertRow();
-                row.innerHTML = `
-                    <td>${index + 1}</td>
-                    <td>${record.studentName}</td>
-                    <td><span class="badge badge-present">${record.studentId}</span></td>
-                    <td>${record.subject}</td>
-                    <td>${record.lectureType}</td>
-                    <td>${record.date}</td>
-                    <td>${record.time}</td>
-                `;
-            });
-        }
-
-        function createChart() {
-            const ctx = document.getElementById('attendanceChart').getContext('2d');
-
-            // Count attendance per subject
-            const subjectCounts = {};
-            allRecords.forEach(record => {
-                subjectCounts[record.subject] = (subjectCounts[record.subject] || 0) + 1;
-            });
-
-            const labels = Object.keys(subjectCounts);
-            const data = Object.values(subjectCounts);
-
-            if (attendanceChart) {
-                attendanceChart.destroy();
-            }
-
-            attendanceChart = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'عدد مرات الحضور',
-                        data: data,
-                        backgroundColor: 'rgba(17, 153, 142, 0.6)',
-                        borderColor: 'rgba(17, 153, 142, 1)',
-                        borderWidth: 2
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: true,
-                            labels: {
-                                font: {
-                                    family: 'Tajawal'
-                                }
-                            }
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                font: {
-                                    family: 'Tajawal'
-                                }
-                            }
-                        },
-                        x: {
-                            ticks: {
-                                font: {
-                                    family: 'Tajawal'
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-        }
-
-        function exportToExcel() {
-            let csv = '\uFEFF'; // UTF-8 BOM for Arabic support
-            csv += 'الرقم,اسم الطالب,رقم الطالب,المادة,نوع المحاضرة,التاريخ,الوقت\n';
-
-            allRecords.forEach((record, index) => {
-                csv += `${index + 1},${record.studentName},${record.studentId},${record.subject},${record.lectureType},${record.date},${record.time}\n`;
-            });
-
-            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement('a');
-            const url = URL.createObjectURL(blob);
-            link.setAttribute('href', url);
-            link.setAttribute('download', `attendance_records_${new Date().toISOString().split('T')[0]}.csv`);
-            link.click();
-        }
-
-        function importData() {
-            document.getElementById('fileInput').click();
-        }
-
-        function handleFileImport(event) {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function (e) {
-                    try {
-                        const imported = JSON.parse(e.target.result);
-                        allRecords = imported;
-                        localStorage.setItem('attendanceRecords', JSON.stringify(allRecords));
-                        alert('✅ تم استيراد البيانات بنجاح');
-                        loadData();
-                    } catch (error) {
-                        alert('❌ خطأ في استيراد البيانات');
-                    }
-                };
-                reader.readAsText(file);
-            }
-        }
-
-        function clearAllData() {
-            if (confirm('⚠️ هل أنت متأكد من حذف جميع البيانات؟ لا يمكن التراجع عن هذا الإجراء!')) {
-                localStorage.removeItem('attendanceRecords');
-                allRecords = [];
-                filteredRecords = [];
-                alert('✅ تم حذف جميع البيانات');
-                loadData();
-            }
-        }
-
-        // Firebase Configuration
+        // Firebase Setup
         const firebaseConfig = {
             apiKey: "AIzaSyDLSX6DY_79BD8ZEYBRYh_jtmP0mHslzkE",
             authDomain: "ai-attendance-husam.firebaseapp.com",
@@ -645,87 +128,138 @@
             measurementId: "G-EJEKCTT2M9"
         };
 
-        // Initialize Firebase
         if (!firebase.apps.length) {
             firebase.initializeApp(firebaseConfig);
         }
-        const database = firebase.database();
+        const db = firebase.database();
+        let currentStudentList = [];
 
-        // Modified loadData to use Firebase
-        function loadData() {
-            database.ref('attendanceRecords').once('value', (snapshot) => {
-                allRecords = [];
-                snapshot.forEach((childSnapshot) => {
-                    const record = childSnapshot.val();
-                    record.firebaseId = childSnapshot.key;
-                    allRecords.push(record);
+        // 1. PIN Security
+        function checkAuth() {
+            if (sessionStorage.getItem('hod_auth') !== 'true') {
+                document.getElementById('hodModal').style.display = 'flex';
+            } else {
+                initDashboard();
+            }
+        }
+
+        function verifyPin() {
+            const pin = document.getElementById('hodPin').value;
+            if (pin === '987987987') {
+                sessionStorage.setItem('hod_auth', 'true');
+                document.getElementById('hodModal').style.display = 'none';
+                initDashboard();
+            } else {
+                alert('رمز خاطئ');
+            }
+        }
+
+        // 2. Dashboard Logic
+        async function initDashboard() {
+            await fetchStudents();
+            loadAttendance();
+            updateStats();
+        }
+
+        async function fetchStudents() {
+            try {
+                const snap = await db.ref('students_list').once('value');
+                if (snap.exists() && Array.isArray(snap.val())) {
+                    currentStudentList = snap.val();
+                } else {
+                    currentStudentList = localStudents;
+                }
+                updateStats();
+            } catch (e) {
+                console.error("Fetch error:", e);
+                currentStudentList = localStudents;
+                updateStats();
+            }
+        }
+
+        function loadAttendance() {
+            db.ref('attendanceRecords').limitToLast(100).on('value', snap => {
+                const tbody = document.getElementById('attendance-body');
+                tbody.innerHTML = '';
+                const data = snap.val();
+
+                if (data) {
+                    Object.keys(data).reverse().forEach(key => {
+                        const rec = data[key];
+                        tbody.innerHTML += `
+                            <tr>
+                                <td style="font-weight:700;">${rec.studentName}</td>
+                                <td><span class="badge" style="background:rgba(99,102,241,0.1); color:var(--primary);">${rec.subject}</span></td>
+                                <td>${rec.date}</td>
+                                <td>${rec.time}</td>
+                                <td><span class="badge badge-success">حاضر</span></td>
+                                <td class="no-print">
+                                    <button onclick="deleteRecord('${key}')" style="background:none; border:none; cursor:pointer;" title="حذف">🗑️</button>
+                                </td>
+                            </tr>
+                        `;
+                    });
+                }
+            });
+        }
+
+        // 3. Deep Enhancement: Sync Task & Export
+        function exportData() {
+            db.ref('attendanceRecords').once('value', (snap) => {
+                const data = snap.val();
+                if (!data) {
+                    alert('لا توجد بيانات للتصدير');
+                    return;
+                }
+
+                let csvContent = "data:text/csv;charset=utf-8,\uFEFF";
+                csvContent += "Student Name,Subject,Date,Time,Status\n";
+
+                Object.values(data).forEach(row => {
+                    csvContent += `${row.studentName},${row.subject},${row.date},${row.time},Attended\n`;
                 });
 
-                if (allRecords.length === 0) {
-                    // Fallback to localStorage
-                    const stored = localStorage.getItem('attendanceRecords');
-                    if (stored) {
-                        allRecords = JSON.parse(stored);
-                    }
-                }
-
-                filteredRecords = [...allRecords];
-                populateFilters();
-                displayRecords();
-                createChart();
-            }).catch(error => {
-                console.error('Firebase error:', error);
-                // Fallback to localStorage
-                const stored = localStorage.getItem('attendanceRecords');
-                if (stored) {
-                    allRecords = JSON.parse(stored);
-                    filteredRecords = [...allRecords];
-                    populateFilters();
-                    displayRecords();
-                    createChart();
-                }
+                const encodedUri = encodeURI(csvContent);
+                const link = document.createElement("a");
+                link.setAttribute("href", encodedUri);
+                link.setAttribute("download", "attendance_report_" + new Date().toISOString().split('T')[0] + ".csv");
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
             });
         }
 
-        // Modified clearAllData to use Firebase
-        function clearAllData() {
-            if (confirm('⚠️ هل أنت متأكد من حذف جميع البيانات؟ لا يمكن التراجع عن هذا الإجراء!')) {
-                database.ref('attendanceRecords').remove()
-                    .then(() => {
-                        localStorage.removeItem('attendanceRecords');
-                        allRecords = [];
-                        filteredRecords = [];
-                        alert('✅ تم حذف جميع البيانات من السحابة');
-                        loadData();
-                    })
-                    .catch(error => {
-                        console.error('Firebase error:', error);
-                        alert('❌ خطأ في حذف البيانات');
-                    });
+        async function syncStudentsToCloud() {
+            if (!confirm('تنبيه: سيقوم هذا الإجراء بإعادة تعيين قاعدة بيانات الطلاب السحابية بالبيانات المحلية. هل أنت متأكد؟')) return;
+
+            try {
+                const studentsRef = db.ref('students_list');
+                await studentsRef.set(localStudents);
+                alert('✅ تم تحديث قاعدة البيانات السحابية بنجاح.');
+                location.reload();
+            } catch (e) {
+                console.error(e);
+                alert('خطأ في المزامنة');
             }
         }
 
-        // Auth Protection & Logic
-        function logout() {
-            // Also clear HOD auth on logout
-            sessionStorage.removeItem('hod_authenticated');
-            firebase.auth().signOut().then(() => {
-                window.location.href = 'login.html';
+        function updateStats() {
+            document.getElementById('stat-total-students').innerText = currentStudentList.length;
+
+            // Live Daily Count
+            const today = new Date().toISOString().split('T')[0];
+            db.ref('attendanceRecords').orderByChild('date').equalTo(today).on('value', snap => {
+                document.getElementById('stat-today-scans').innerText = snap.numChildren();
             });
         }
 
-        // Check auth status
-        firebase.auth().onAuthStateChanged((user) => {
-            if (!user) {
-                window.location.href = 'login.html';
-            } else {
-                // Check HOD PIN
-                if (checkHodAuth()) {
-                    loadData();
-                }
-                // If not hod authenticated, loadData is called in verifyHodPin()
+        function deleteRecord(id) {
+            if (confirm('هل تريد حذف هذا السجل؟')) {
+                db.ref('attendanceRecords/' + id).remove();
             }
-        });
+        }
+
+        checkAuth();
     </script>
 </body>
 

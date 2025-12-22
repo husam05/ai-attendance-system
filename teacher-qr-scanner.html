@@ -4,592 +4,179 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ماسح الحضور - قسم الذكاء الاصطناعي</title>
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <title>Deep AI | ماسح الحضور الذكي</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- QR Library & Firebase -->
     <script src="https://unpkg.com/html5-qrcode"></script>
-    <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Tajawal', sans-serif;
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-            min-height: 100vh;
-            direction: rtl;
-            padding: 20px;
-        }
-
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-
-        .header {
-            background: white;
-            padding: 25px;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-            margin-bottom: 20px;
-            text-align: center;
-        }
-
-        .header h1 {
-            color: #1e3c72;
-            font-size: 2.2rem;
-            margin-bottom: 10px;
-        }
-
-        .header p {
-            color: #718096;
-            font-size: 1.1rem;
-        }
-
-        .session-info {
-            background: white;
-            padding: 20px;
-            border-radius: 15px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-            margin-bottom: 20px;
-        }
-
-        .session-info h2 {
-            color: #1e3c72;
-            margin-bottom: 15px;
-            font-size: 1.5rem;
-        }
-
-        .form-group {
-            margin-bottom: 15px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 5px;
-            color: #2d3748;
-            font-weight: 600;
-        }
-
-        .form-group select,
-        .form-group input {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #e2e8f0;
-            border-radius: 8px;
-            font-family: 'Tajawal', sans-serif;
-            font-size: 1rem;
-            transition: border 0.3s;
-        }
-
-        .form-group select:focus,
-        .form-group input:focus {
-            outline: none;
-            border-color: #1e3c72;
-        }
-
-        .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-        }
-
-        .main-content {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-        }
-
-        .scanner-section {
-            background: white;
-            padding: 25px;
-            border-radius: 15px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-        }
-
-        .scanner-section h2 {
-            color: #1e3c72;
-            margin-bottom: 15px;
-            font-size: 1.5rem;
-        }
-
         #reader {
-            border: 3px solid #e2e8f0;
-            border-radius: 10px;
-            overflow: hidden;
-            margin-bottom: 15px;
-        }
-
-        .btn {
-            background: #1e3c72;
-            color: white;
-            border: none;
-            padding: 12px 30px;
-            font-size: 1.1rem;
-            border-radius: 8px;
-            cursor: pointer;
-            font-family: 'Tajawal', sans-serif;
-            transition: all 0.3s;
             width: 100%;
-            margin-bottom: 10px;
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            border: 2px solid var(--glass-border);
+            background: #000;
         }
 
-        .btn:hover {
-            background: #152a54;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(30, 60, 114, 0.4);
+        #reader__scan_region video {
+            object-fit: cover !important;
         }
 
-        .btn-stop {
-            background: #e53e3e;
+        .scanner-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 250px;
+            height: 250px;
+            border: 2px solid var(--primary);
+            border-radius: 20px;
+            box-shadow: 0 0 0 1000px rgba(0, 0, 0, 0.5);
+            pointer-events: none;
+            z-index: 10;
         }
 
-        .btn-stop:hover {
-            background: #c53030;
+        .scanner-line {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: var(--primary);
+            box-shadow: 0 0 15px var(--primary);
+            animation: scanMove 2s infinite linear;
         }
 
-        .btn-export {
-            background: #48bb78;
+        @keyframes scanMove {
+            0% {
+                top: 0;
+            }
+
+            50% {
+                top: 100%;
+            }
+
+            100% {
+                top: 0;
+            }
         }
 
-        .btn-export:hover {
-            background: #38a169;
-        }
-
-        .attendance-list {
-            background: white;
-            padding: 25px;
-            border-radius: 15px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-        }
-
-        .attendance-list h2 {
-            color: #1e3c72;
-            margin-bottom: 15px;
-            font-size: 1.5rem;
-        }
-
-        .stats {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-
-        .stat-card {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 15px;
-            border-radius: 10px;
-            text-align: center;
-            color: white;
-        }
-
-        .stat-number {
-            font-size: 2rem;
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-
-        .stat-label {
-            font-size: 0.9rem;
-            opacity: 0.9;
-        }
-
-        .attendance-items {
-            max-height: 500px;
+        .recent-scans {
+            max-height: 300px;
             overflow-y: auto;
         }
 
-        .attendance-item {
-            background: #f7fafc;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 10px;
-            border-right: 4px solid #48bb78;
-            transition: transform 0.2s;
-        }
-
-        .attendance-item:hover {
-            transform: translateX(-5px);
-        }
-
-        .attendance-item.new {
-            animation: slideIn 0.5s ease;
+        .scan-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            border-bottom: 1px solid var(--glass-border);
+            animation: slideIn 0.3s ease-out;
         }
 
         @keyframes slideIn {
             from {
-                transform: translateX(50px);
                 opacity: 0;
+                transform: translateX(20px);
             }
 
             to {
-                transform: translateX(0);
                 opacity: 1;
-            }
-        }
-
-        .student-info {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 8px;
-        }
-
-        .student-name {
-            font-weight: 600;
-            color: #2d3748;
-            font-size: 1.1rem;
-        }
-
-        .student-id {
-            color: #718096;
-            font-size: 0.9rem;
-            font-family: 'Courier New', monospace;
-        }
-
-        .attendance-time {
-            color: #48bb78;
-            font-size: 0.85rem;
-            font-weight: 600;
-        }
-
-        .alert {
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 15px;
-            text-align: center;
-            font-weight: 600;
-        }
-
-        .alert-success {
-            background: #c6f6d5;
-            color: #22543d;
-            border: 2px solid #48bb78;
-        }
-
-        .alert-error {
-            background: #fed7d7;
-            color: #742a2a;
-            border: 2px solid #e53e3e;
-        }
-
-        .alert-warning {
-            background: #feebc8;
-            color: #744210;
-            border: 2px solid #ed8936;
-        }
-
-        .hidden {
-            display: none;
-        }
-
-        @media (max-width: 768px) {
-            .main-content {
-                grid-template-columns: 1fr;
-            }
-
-            .form-row {
-                grid-template-columns: 1fr;
-            }
-
-            .stats {
-                grid-template-columns: 1fr;
+                transform: translateX(0);
             }
         }
     </style>
 </head>
 
 <body>
-    <div class="container">
-        <div class="header">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <h1>📸 نظام مسح الحضور بالـ QR</h1>
-                <div>
-                    <button onclick="generateDelegateLink()" class="btn"
-                        style="width: auto; margin: 0; background: #ed8936; font-size: 0.9rem; padding: 8px 15px; margin-left: 10px;">🔗
-                        تفويض طالب</button>
-                    <button onclick="logout()" class="btn"
-                        style="width: auto; margin: 0; background: #e53e3e; font-size: 0.9rem; padding: 8px 15px;">تسجيل
-                        خروج</button>
+    <div class="container animate-fade-in">
+        <nav class="app-nav">
+            <div class="nav-content">
+                <div style="font-weight: 900; font-size: 1.5rem;"><span style="color: var(--primary);">DEEP</span> AI
                 </div>
+                <ul class="nav-links">
+                    <li><a href="index.html">الرئيسية</a></li>
+                    <li><a href="teacher-qr-scanner.html" class="active">الماسح</a></li>
+                    <li><a href="attendance-management.html">الإدارة</a></li>
+                    <li><a href="attendance-report.html">التقارير</a></li>
+                </ul>
             </div>
-            <p>قسم علوم الذكاء الاصطناعي - جامعة المصطفى</p>
-        </div>
+        </nav>
 
-        <div class="session-info">
-            <h2>⚙️ معلومات الجلسة</h2>
-            <div class="form-row">
-                <div class="form-group">
-                    <label>المادة الدراسية</label>
-                    <select id="subject">
-                        <option value="">اختر المادة...</option>
-                        <option value="المعامل">المعامل</option>
-                        <option value="الرياضيات I">الرياضيات I</option>
-                        <option value="مبادئ الذكاء الاصطناعي">مبادئ الذكاء الاصطناعي</option>
-                        <option value="الديمقراطية وحقوق الإنسان">الديمقراطية وحقوق الإنسان</option>
-                        <option value="أساسيات البرمجة">أساسيات البرمجة</option>
-                        <option value="الإحصاء والاحتمالات">الإحصاء والاحتمالات</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>نوع المحاضرة</label>
-                    <select id="lectureType">
-                        <option value="نظري">نظري</option>
-                        <option value="عملي">عملي</option>
-                        <option value="مختبر">مختبر</option>
-                    </select>
-                </div>
-            </div>
-            <div class="form-row">
-                <div class="form-group">
-                    <label>التاريخ</label>
-                    <input type="date" id="date">
-                </div>
-                <div class="form-group">
-                    <label>الوقت</label>
-                    <input type="time" id="time">
-                </div>
-            </div>
-        </div>
+        <div style="display: grid; grid-template-columns: 1.5fr 1fr; gap: 2rem; align-items: start;">
+            <!-- Main Scanner Panel -->
+            <div class="glass-card" style="padding: 2rem;">
+                <h2 style="margin-bottom: 2rem;">📸 جلسة الحضور الذكية</h2>
 
-        <div id="alertContainer"></div>
-
-        <div class="main-content">
-            <div class="scanner-section">
-                <h2>📷 ماسح الـ QR</h2>
-                <div id="reader"></div>
-                <button class="btn" id="startBtn" onclick="startScanner()">
-                    🎬 بدء المسح
-                </button>
-                <button class="btn btn-stop hidden" id="stopBtn" onclick="stopScanner()">
-                    ⏹️ إيقاف المسح
-                </button>
-            </div>
-
-            <div class="attendance-list">
-                <h2>✅ قائمة الحضور</h2>
-
-                <div class="stats">
-                    <div class="stat-card">
-                        <div class="stat-number" id="totalPresent">0</div>
-                        <div class="stat-label">حاضر</div>
+                <div class="grid"
+                    style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 2rem;">
+                    <div>
+                        <label
+                            style="color: var(--text-muted); display: block; margin-bottom: 0.5rem; font-size: 0.8rem;">المادة
+                            الدراسية</label>
+                        <select id="subject" class="form-control">
+                            <option>المعامل</option>
+                            <option>الرياضيات I</option>
+                            <option>مبادئ الذكاء الاصطناعي</option>
+                            <option>الديمقراطية وحقوق الإنسان</option>
+                            <option>أساسيات البرمجة</option>
+                            <option>الإحصاء والاحتمالات</option>
+                        </select>
                     </div>
-                    <div class="stat-card">
-                        <div class="stat-number" id="totalAbsent">18</div>
-                        <div class="stat-label">غائب</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-number" id="percentage">0%</div>
-                        <div class="stat-label">نسبة الحضور</div>
+                    <div>
+                        <label
+                            style="color: var(--text-muted); display: block; margin-bottom: 0.5rem; font-size: 0.8rem;">نوع
+                            المحاضرة</label>
+                        <select id="lectureType" class="form-control">
+                            <option>نظري</option>
+                            <option>عملي</option>
+                            <option>إضافي</option>
+                        </select>
                     </div>
                 </div>
 
-                <button class="btn btn-export" onclick="exportAttendance()">
-                    💾 حفظ وتصدير البيانات
-                </button>
+                <div style="position: relative;">
+                    <div id="reader"></div>
+                    <div class="scanner-overlay" id="overlay">
+                        <div class="scanner-line"></div>
+                    </div>
+                </div>
 
-                <div class="attendance-items" id="attendanceList"></div>
+                <div style="margin-top: 2rem; display: flex; gap: 1rem;">
+                    <button class="btn btn-primary" onclick="startScanner()" id="startBtn" style="flex: 1;">⚡ بدء
+                        المسح</button>
+                    <button class="btn btn-secondary" onclick="stopScanner()">🛑 إيقاف</button>
+                    <button class="btn btn-secondary" onclick="generateDelegateLink()">🔗 تفويض طالب</button>
+                </div>
+            </div>
+
+            <!-- Side Panel: Stats & Activity -->
+            <div class="glass-card" style="padding: 2rem;">
+                <h3>📊 نشاط الجلسة</h3>
+                <div style="text-align: center; margin: 2rem 0;">
+                    <div id="scan-count" style="font-size: 4rem; font-weight: 900; color: var(--primary);">0</div>
+                    <div style="color: var(--text-muted);">طالب سجلوا حضورهم</div>
+                </div>
+
+                <h4 style="margin-bottom: 1rem; color: var(--text-muted);">آخر المسوحات</h4>
+                <div id="recent-list" class="recent-scans">
+                    <div style="text-align: center; padding: 2rem; color: var(--text-muted); font-size: 0.9rem;">بانتظار
+                        مسح أول طالب...</div>
+                </div>
             </div>
         </div>
     </div>
 
+    <!-- Audio Feedback Assets -->
+    <audio id="beepSuccess" preload="auto">
+        <source src="https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3" type="audio/mpeg">
+    </audio>
+
     <script>
-        let html5QrCode = null;
-        let attendanceRecords = [];
-        const totalStudents = 19;
-
-        // Set current date and time
-        document.getElementById('date').valueAsDate = new Date();
-        document.getElementById('time').value = new Date().toTimeString().slice(0, 5);
-
-        // Load existing attendance from localStorage
-        function loadAttendance() {
-            const saved = localStorage.getItem('attendanceRecords');
-            if (saved) {
-                attendanceRecords = JSON.parse(saved);
-                updateAttendanceDisplay();
-            }
-        }
-
-        function showAlert(message, type) {
-            const alertContainer = document.getElementById('alertContainer');
-            const alert = document.createElement('div');
-            alert.className = `alert alert-${type}`;
-            alert.textContent = message;
-            alertContainer.appendChild(alert);
-
-            setTimeout(() => {
-                alert.remove();
-            }, 3000);
-        }
-
-        function startScanner() {
-            const subject = document.getElementById('subject').value;
-            if (!subject) {
-                showAlert('⚠️ يرجى اختيار المادة الدراسية أولاً', 'warning');
-                return;
-            }
-
-            html5QrCode = new Html5Qrcode("reader");
-
-            html5QrCode.start(
-                { facingMode: "environment" },
-                {
-                    fps: 10,
-                    qrbox: { width: 250, height: 250 }
-                },
-                onScanSuccess,
-                onScanError
-            ).then(() => {
-                document.getElementById('startBtn').classList.add('hidden');
-                document.getElementById('stopBtn').classList.remove('hidden');
-                showAlert('✅ بدأ المسح - يمكنك مسح رموز QR الآن', 'success');
-            }).catch(err => {
-                showAlert('❌ خطأ في تشغيل الكاميرا: ' + err, 'error');
-            });
-        }
-
-        function stopScanner() {
-            if (html5QrCode) {
-                html5QrCode.stop().then(() => {
-                    document.getElementById('startBtn').classList.remove('hidden');
-                    document.getElementById('stopBtn').classList.add('hidden');
-                    showAlert('⏹️ تم إيقاف المسح', 'success');
-                }).catch(err => {
-                    console.error('Error stopping scanner:', err);
-                });
-            }
-        }
-
-        function onScanSuccess(decodedText, decodedResult) {
-            try {
-                const studentData = JSON.parse(decodedText);
-
-                // Check if student already marked present
-                const existing = attendanceRecords.find(r => r.studentId === studentData.id);
-                if (existing) {
-                    showAlert('⚠️ الطالب مسجل مسبقاً: ' + studentData.name, 'warning');
-                    return;
-                }
-
-                // Add attendance record
-                const record = {
-                    studentId: studentData.id,
-                    studentName: studentData.name,
-                    subject: document.getElementById('subject').value,
-                    lectureType: document.getElementById('lectureType').value,
-                    date: document.getElementById('date').value,
-                    time: new Date().toLocaleTimeString('ar-EG'),
-                    timestamp: new Date().toISOString()
-                };
-
-                attendanceRecords.push(record);
-                saveAttendance();
-                updateAttendanceDisplay();
-
-                showAlert('✅ تم تسجيل حضور: ' + studentData.name, 'success');
-
-                // Play success sound (optional)
-                playSuccessSound();
-
-            } catch (error) {
-                showAlert('❌ رمز QR غير صالح', 'error');
-            }
-        }
-
-        function onScanError(errorMessage) {
-            // Ignore scan errors (they happen frequently during scanning)
-        }
-
-        function updateAttendanceDisplay() {
-            const listContainer = document.getElementById('attendanceList');
-            listContainer.innerHTML = '';
-
-            // Get current session records
-            const subject = document.getElementById('subject').value;
-            const date = document.getElementById('date').value;
-            const sessionRecords = attendanceRecords.filter(r =>
-                r.subject === subject && r.date === date
-            );
-
-            sessionRecords.reverse().forEach(record => {
-                const item = document.createElement('div');
-                item.className = 'attendance-item';
-                item.innerHTML = `
-                    <div class="student-info">
-                        <span class="student-name">${record.studentName}</span>
-                        <span class="student-id">${record.studentId}</span>
-                    </div>
-                    <div class="attendance-time">⏰ ${record.time}</div>
-                `;
-                listContainer.appendChild(item);
-
-                // Add animation
-                setTimeout(() => item.classList.add('new'), 10);
-            });
-
-            // Update statistics
-            const presentCount = sessionRecords.length;
-            const absentCount = totalStudents - presentCount;
-            const percentage = Math.round((presentCount / totalStudents) * 100);
-
-            document.getElementById('totalPresent').textContent = presentCount;
-            document.getElementById('totalAbsent').textContent = absentCount;
-            document.getElementById('percentage').textContent = percentage + '%';
-        }
-
-        function saveAttendance() {
-            localStorage.setItem('attendanceRecords', JSON.stringify(attendanceRecords));
-        }
-
-        function exportAttendance() {
-            if (attendanceRecords.length === 0) {
-                showAlert('⚠️ لا توجد سجلات لتصديرها', 'warning');
-                return;
-            }
-
-            // Export as JSON
-            const dataStr = JSON.stringify(attendanceRecords, null, 2);
-            const dataBlob = new Blob([dataStr], { type: 'application/json' });
-            const url = URL.createObjectURL(dataBlob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = `attendance_${new Date().toISOString().split('T')[0]}.json`;
-            link.click();
-
-            showAlert('✅ تم تصدير البيانات بنجاح', 'success');
-        }
-
-        function playSuccessSound() {
-            // Create a simple beep sound
-            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            const oscillator = audioContext.createOscillator();
-            const gainNode = audioContext.createGain();
-
-            oscillator.connect(gainNode);
-            gainNode.connect(audioContext.destination);
-
-            oscillator.frequency.value = 800;
-            oscillator.type = 'sine';
-
-            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
-
-            oscillator.start(audioContext.currentTime);
-            oscillator.stop(audioContext.currentTime + 0.1);
-        }
-
-        // Update display when subject or date changes
-        document.getElementById('subject').addEventListener('change', updateAttendanceDisplay);
-        document.getElementById('date').addEventListener('change', updateAttendanceDisplay);
-
-        // Firebase Configuration
+        // Firebase Config
         const firebaseConfig = {
             apiKey: "AIzaSyDLSX6DY_79BD8ZEYBRYh_jtmP0mHslzkE",
             authDomain: "ai-attendance-husam.firebaseapp.com",
@@ -600,113 +187,156 @@
             appId: "1:305903941972:web:d914431aab5a1cc6b5b0c1",
             measurementId: "G-EJEKCTT2M9"
         };
-
-        // Initialize Firebase
-        if (!firebase.apps.length) {
-            firebase.initializeApp(firebaseConfig);
-        }
+        firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
 
-        // Modified functions to use Firebase instead of localStorage
-        function saveAttendance() {
-            // Save to Firebase
-            attendanceRecords.forEach(record => {
-                if (!record.firebaseId) {
-                    const newRef = database.ref('attendanceRecords').push();
-                    record.firebaseId = newRef.key;
-                    newRef.set(record);
-                }
-            });
+        let html5QrCode;
+        let scanCount = 0;
+        const scannedIds = new Set();
+        const processingIds = new Set();
 
-            // Also keep localStorage as backup
-            localStorage.setItem('attendanceRecords', JSON.stringify(attendanceRecords));
+        const successBeep = document.getElementById('beepSuccess');
+
+        function startScanner() {
+            html5QrCode = new Html5Qrcode("reader");
+            // Reduce FPS to 10 to prevent overheating and race conditions
+            const config = { fps: 10, qrbox: { width: 250, height: 250 } };
+
+            html5QrCode.start({ facingMode: "environment" }, config, onScanSuccess);
+            document.getElementById('startBtn').disabled = true;
+            document.getElementById('startBtn').innerText = 'الماسح نشط 🟢';
         }
 
-        function loadAttendance() {
-            // Load from Firebase
-            database.ref('attendanceRecords').once('value', (snapshot) => {
-                const records = [];
-                snapshot.forEach((childSnapshot) => {
-                    const record = childSnapshot.val();
-                    record.firebaseId = childSnapshot.key;
-                    records.push(record);
+        async function onScanSuccess(decodedText) {
+            let student;
+            try {
+                student = JSON.parse(decodedText);
+                if (!student.id || !student.name) return; // Silent return for invalid data to reduce noise
+            } catch (e) {
+                // Ignore non-JSON garbage scans
+                return;
+            }
+
+            // 1. Local Debounce & Lock
+            if (scannedIds.has(student.id)) return;
+            if (processingIds.has(student.id)) return;
+
+            // Lock processing for this student
+            processingIds.add(student.id);
+
+            try {
+                const subject = document.getElementById('subject').value;
+                const today = new Date().toISOString().split('T')[0];
+
+                // 2. Cloud Duplicate Check (Prevent Cross-Device Duplicates)
+                // We use ordering by date to limit the query scope
+                const snapshot = await database.ref('attendanceRecords')
+                    .orderByChild('date')
+                    .equalTo(today)
+                    .once('value');
+
+                let isDuplicate = false;
+                if (snapshot.exists()) {
+                    snapshot.forEach(child => {
+                        const rec = child.val();
+                        if (rec.studentId === student.id && rec.subject === subject) {
+                            isDuplicate = true;
+                        }
+                    });
+                }
+
+                if (isDuplicate) {
+                    showToast(`⚠️ ${student.name} مسجل مسبقاً لمادة ${subject}`, 'warning');
+                    scannedIds.add(student.id); // Add to local ignore list so we don't query again
+                    return;
+                }
+
+                // 3. Add to Firebase
+                const record = {
+                    studentId: student.id,
+                    studentName: student.name,
+                    subject: subject,
+                    lectureType: document.getElementById('lectureType').value,
+                    date: today,
+                    time: new Date().toLocaleTimeString('ar-EG'),
+                    timestamp: Date.now()
+                };
+
+                await database.ref('attendanceRecords').push(record);
+
+                // Success UI
+                // Use .catch to prevent errors if browser blocks autoplay
+                successBeep.play().catch(e => console.log('Audio blocked', e));
+
+                scannedIds.add(student.id);
+                scanCount++;
+                document.getElementById('scan-count').innerText = scanCount;
+                addToList(student.name);
+                showToast(`تم تسجيل ${student.name} ✅`, 'success');
+
+            } catch (e) {
+                console.error(e);
+                showToast('خطأ في الاتصال بالسيرفر', 'danger');
+            } finally {
+                // Unlock processing for this student
+                processingIds.delete(student.id);
+            }
+        }
+
+        function addToList(name) {
+            const list = document.getElementById('recent-list');
+            if (scannedIds.size === 1) list.innerHTML = '';
+
+            const item = document.createElement('div');
+            item.className = 'scan-item';
+            item.innerHTML = `
+                <span style="font-weight:700;">${name}</span>
+                <span style="font-size:0.8rem; color:var(--text-muted);">${new Date().toLocaleTimeString('ar-EG')}</span>
+            `;
+            list.prepend(item);
+        }
+
+        function stopScanner() {
+            if (html5QrCode) {
+                html5QrCode.stop().then(() => {
+                    document.getElementById('startBtn').disabled = false;
+                    document.getElementById('startBtn').innerText = '⚡ بدء المسح';
                 });
-
-                if (records.length > 0) {
-                    attendanceRecords = records;
-                } else {
-                    // Fallback to localStorage if Firebase is empty
-                    const stored = localStorage.getItem('attendanceRecords');
-                    if (stored) {
-                        attendanceRecords = JSON.parse(stored);
-                    }
-                }
-
-                updateAttendanceDisplay();
-                showAlert('✅ تم تحميل البيانات من السحابة', 'success');
-            }).catch(error => {
-                console.error('Firebase error:', error);
-                // Fallback to localStorage
-                const stored = localStorage.getItem('attendanceRecords');
-                if (stored) {
-                    attendanceRecords = JSON.parse(stored);
-                }
-                updateAttendanceDisplay();
-                showAlert('⚠️ تم التحميل من التخزين المحلي', 'warning');
-            });
+            }
         }
 
-        // Delegate Link Generation
+        function showToast(msg, type) {
+            // Quick visual feedback
+            const toast = document.createElement('div');
+            toast.className = `badge badge-${type}`;
+            toast.style.position = 'fixed';
+            toast.style.bottom = '2rem';
+            toast.style.left = '2rem';
+            toast.style.padding = '1rem 2rem';
+            toast.style.zIndex = '9999';
+            toast.style.fontSize = '1.1rem';
+            toast.style.boxShadow = 'var(--shadow-premium)';
+            toast.innerText = msg;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
         function generateDelegateLink() {
             const token = 'dlg_' + Math.random().toString(36).substr(2, 9) + Date.now().toString(36);
-            const expiry = Date.now() + 3600000; // 1 hour expiration
+            const expiry = Date.now() + 1800000; // 30 minutes
+            const subject = document.getElementById('subject').value;
 
-            // Save token to Firebase
             database.ref('temp_tokens/' + token).set({
-                expiry: expiry,
-                created: Date.now(),
-                createdBy: firebase.auth().currentUser ? firebase.auth().currentUser.uid : 'admin'
+                expiry,
+                subject,
+                lectureType: document.getElementById('lectureType').value,
+                createdAt: Date.now()
             }).then(() => {
-                const baseUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/'));
-                const link = `${baseUrl}/temp-scanner.html?token=${token}`;
-
-                // Copy to clipboard
-                navigator.clipboard.writeText(link).then(() => {
-                    alert("✅ تم إنشاء الرابط ونسخه للحافظة!\n\nصلاحيته: ساعة واحدة");
-                }).catch(() => {
-                    prompt("✅ تم إنشاء الرابط (انسخه يدوياً):", link);
-                });
-            }).catch(err => {
-                console.error(err);
-                alert("❌ حدث خطأ: " + err.message);
+                const url = window.location.origin + `/temp-scanner.html?token=${token}`;
+                navigator.clipboard.writeText(url);
+                alert('🔗 تم نسخ رابط التفويض! متاح لمدة 30 دقيقة لمادة ' + subject + ' - أرسله لمراقب الشعبة');
             });
         }
-
-        // Auth Protection & Logic
-        function logout() {
-            firebase.auth().signOut().then(() => {
-                window.location.href = 'login.html';
-            });
-        }
-
-        // Check auth status
-        firebase.auth().onAuthStateChanged((user) => {
-            if (!user) {
-                window.location.href = 'login.html';
-            } else {
-                loadAttendance();
-            }
-        });
-
-        // Removed window.onload as it is replaced by onAuthStateChanged
-        // window.onload = () => { ... };
-
-        // Cleanup on page unload
-        window.onbeforeunload = () => {
-            if (html5QrCode) {
-                stopScanner();
-            }
-        };
     </script>
 </body>
 

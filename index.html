@@ -4,190 +4,187 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام الحضور الذكي بتقنية QR - قسم الذكاء الاصطناعي</title>
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <title>Deep AI | نظام الحضور الذكي</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        .features-grid {
+        .hero-section {
+            padding: 6rem 1rem;
+            text-align: center;
+        }
+
+        .dashboard-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 1.5rem;
+            gap: 2rem;
+            margin-top: -4rem;
         }
 
-        .feature-item {
-            padding: 1.5rem;
+        .icon-box {
+            width: 80px;
+            height: 80px;
+            border-radius: 20px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
             display: flex;
-            align-items: flex-start;
-            gap: 1rem;
-            transition: transform 0.3s ease;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            margin: 0 auto 1.5rem;
+            box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3);
+            transition: var(--transition);
         }
 
-        .feature-item:hover {
-            transform: translateX(-5px);
+        .glass-card:hover .icon-box {
+            transform: scale(1.1) rotate(5deg);
         }
 
-        .guide-list li {
-            position: relative;
-            padding-right: 1.5rem;
-            margin-bottom: 1rem;
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 16px;
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            color: var(--success);
+            border-radius: 100px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            margin-bottom: 2rem;
         }
 
-        .guide-list li::before {
-            content: '•';
-            color: var(--primary);
-            position: absolute;
-            right: 0;
-            font-weight: bold;
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--success);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--success);
+            animation: pulse-dot 2s infinite;
+        }
+
+        @keyframes pulse-dot {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+
+            50% {
+                transform: scale(1.5);
+                opacity: 0.5;
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
         }
     </style>
 </head>
 
 <body>
-    <div class="container">
-        <!-- Header -->
-        <div class="header-section animate-slide-up">
-            <div class="header-content">
-                <div class="logo" style="font-size: 4rem; margin-bottom: 1rem; animation: bounce 2s infinite;">🎓</div>
-                <h1 class="header-title">نظام الحضور الذكي بتقنية QR</h1>
-                <p class="header-subtitle">قسم علوم الذكاء الاصطناعي - جامعة المصطفى</p>
-                <div style="margin-top: 1.5rem;">
-                    <span class="badge badge-success" style="font-size: 0.9rem;"> الإصدار 2.0 🚀</span>
+    <div class="container animate-fade-in">
+        <!-- Persistent Nav -->
+        <nav class="app-nav">
+            <div class="nav-content">
+                <div style="font-weight: 900; font-size: 1.5rem; letter-spacing: -1px;">
+                    <span style="color: var(--primary);">DEEP</span> AI
                 </div>
+                <ul class="nav-links">
+                    <li><a href="index.html" class="active">الرئيسية</a></li>
+                    <li><a href="teacher-qr-scanner.html">الماسح</a></li>
+                    <li><a href="attendance-management.html">الإدارة</a></li>
+                    <li><a href="attendance-report.html">التقارير</a></li>
+                </ul>
             </div>
-        </div>
+        </nav>
 
-        <!-- Main Cards -->
-        <div class="grid animate-slide-up delay-100"
-            style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; margin-bottom: 3rem;">
+        <!-- Hero -->
+        <header class="hero-section">
+            <div class="status-pill">
+                <div class="status-dot"></div>
+                النظام سحابي ومتصل بالذكاء الاصطناعي
+            </div>
+            <h1 class="header-title">نظام الحضور الذكي المتطور</h1>
+            <p class="header-subtitle">قسم علوم الذكاء الاصطناعي - جامعة المصطفى | الإصدار 2.5</p>
+        </header>
 
+        <!-- Command Grid -->
+        <section class="dashboard-grid animate-slide-up">
             <div class="glass-card" onclick="window.location.href='student-qr-generator.html'"
-                style="cursor: pointer; padding: 2rem; text-align: center;">
-                <div class="stat-icon" style="margin: 0 auto 1.5rem;">🎫</div>
-                <h2 style="color: var(--dark); margin-bottom: 1rem;">رموز QR للطلاب</h2>
-                <p style="color: #64748b; margin-bottom: 2rem; line-height: 1.6;">إنشاء وطباعة رموز QR لجميع الطلاب مع
-                    معلوماتهم الشخصية</p>
-                <button class="btn btn-primary" style="width: 100%;">فتح مولد الرموز</button>
+                style="cursor: pointer; padding: 2.5rem; text-align: center;">
+                <div class="icon-box">🎟️</div>
+                <h3>هويات الطلاب</h3>
+                <p style="color: var(--text-muted); margin: 1rem 0 2rem;">توليد وإدارة بطاقات التعريف الذكية بتقنية QR
+                    المتطورة لجميع الطلاب.</p>
+                <div class="btn btn-secondary" style="width: 100%;">دخول المحطة</div>
             </div>
 
             <div class="glass-card" onclick="window.location.href='teacher-qr-scanner.html'"
-                style="cursor: pointer; padding: 2rem; text-align: center; border: 2px solid var(--primary);">
-                <div class="stat-icon" style="margin: 0 auto 1.5rem; background: var(--primary); color: white;">📸</div>
-                <h2 style="color: var(--primary); margin-bottom: 1rem;">ماسح الحضور</h2>
-                <p style="color: #64748b; margin-bottom: 2rem; line-height: 1.6;">مسح رموز QR للطلاب وتسجيل الحضور
-                    مباشرة مع الوقت والتاريخ</p>
-                <button class="btn btn-primary" style="width: 100%;">فتح الماسح</button>
+                style="cursor: pointer; padding: 2.5rem; text-align: center; border: 1px solid var(--primary);">
+                <div class="icon-box" style="background: var(--primary);">📸</div>
+                <h3>الماسح الضوئي</h3>
+                <p style="color: var(--text-muted); margin: 1rem 0 2rem;">تسجيل الحضور اللحظي باستخدام تقنيات التعرف
+                    السريع على الرموز.</p>
+                <div class="btn btn-primary" style="width: 100%;">بدء الجلسة</div>
             </div>
 
             <div class="glass-card" onclick="window.location.href='attendance-management.html'"
-                style="cursor: pointer; padding: 2rem; text-align: center;">
-                <div class="stat-icon" style="margin: 0 auto 1.5rem;">📊</div>
-                <h2 style="color: var(--dark); margin-bottom: 1rem;">إدارة السجلات</h2>
-                <p style="color: #64748b; margin-bottom: 2rem; line-height: 1.6;">عرض وإدارة جميع سجلات الحضور مع
-                    إحصائيات تفصيلية</p>
-                <button class="btn btn-secondary" style="width: 100%;">فتح الإدارة</button>
+                style="cursor: pointer; padding: 2.5rem; text-align: center;">
+                <div class="icon-box" style="background: var(--secondary);">📊</div>
+                <h3>مركز التحكم</h3>
+                <p style="color: var(--text-muted); margin: 1rem 0 2rem;">إدارة السجلات، تصحيح الأخطاء، ومراقبة حضور
+                    الطلاب في الوقت الفعلي.</p>
+                <div class="btn btn-secondary" style="width: 100%;">إدارة البيانات</div>
             </div>
 
             <div class="glass-card" onclick="window.location.href='attendance-report.html'"
-                style="cursor: pointer; padding: 2rem; text-align: center;">
-                <div class="stat-icon" style="margin: 0 auto 1.5rem;">📈</div>
-                <h2 style="color: var(--dark); margin-bottom: 1rem;">التقارير الذكية</h2>
-                <p style="color: #64748b; margin-bottom: 2rem; line-height: 1.6;">إنشاء تقارير شاملة لفترة 3 أشهر مع
-                    تحليلات متقدمة</p>
-                <button class="btn btn-secondary" style="width: 100%;">فتح التقارير</button>
+                style="cursor: pointer; padding: 2.5rem; text-align: center;">
+                <div class="icon-box" style="background: var(--accent);">📈</div>
+                <h3>التحليلات الذكية</h3>
+                <p style="color: var(--text-muted); margin: 1rem 0 2rem;">إنتاج تقارير أكاديمية رسمية مع تحليلات إحصائية
+                    لنسب الغياب والحضور.</p>
+                <div class="btn btn-secondary" style="width: 100%;">عرض التقارير</div>
             </div>
-        </div>
+        </section>
 
-        <!-- Features -->
-        <div class="glass-card animate-slide-up delay-200" style="padding: 2rem; margin-bottom: 3rem;">
-            <h2 style="text-align: center; margin-bottom: 2rem; color: var(--primary);">✨ مميزات النظام</h2>
-            <div class="features-grid">
-                <div class="glass feature-item" style="border-radius: 12px;">
-                    <span style="font-size: 2rem;">⚡</span>
-                    <div>
-                        <h3 style="margin-bottom: 0.5rem; color: var(--dark);">سريع وفعال</h3>
-                        <p style="color: #64748b; font-size: 0.9rem;">تسجيل الحضور في ثوانٍ معدودة</p>
-                    </div>
-                </div>
-
-                <div class="glass feature-item" style="border-radius: 12px;">
-                    <span style="font-size: 2rem;">🔒</span>
-                    <div>
-                        <h3 style="margin-bottom: 0.5rem; color: var(--dark);">آمن وموثوق</h3>
-                        <p style="color: #64748b; font-size: 0.9rem;">حماية بيانات الطلاب والسجلات</p>
-                    </div>
-                </div>
-
-                <div class="glass feature-item" style="border-radius: 12px;">
-                    <span style="font-size: 2rem;">📱</span>
-                    <div>
-                        <h3 style="margin-bottom: 0.5rem; color: var(--dark);">متوافق مع الجوال</h3>
-                        <p style="color: #64748b; font-size: 0.9rem;">يعمل على جميع الأجهزة</p>
-                    </div>
-                </div>
-
-                <div class="glass feature-item" style="border-radius: 12px;">
-                    <span style="font-size: 2rem;">☁️</span>
-                    <div>
-                        <h3 style="margin-bottom: 0.5rem; color: var(--dark);">تخزين سحابي</h3>
-                        <p style="color: #64748b; font-size: 0.9rem;">دعم Firebase Realtime Database</p>
-                    </div>
-                </div>
-
-                <div class="glass feature-item" style="border-radius: 12px;">
-                    <span style="font-size: 2rem;">📊</span>
-                    <div>
-                        <h3 style="margin-bottom: 0.5rem; color: var(--dark);">تقارير تفصيلية</h3>
-                        <p style="color: #64748b; font-size: 0.9rem;">إحصائيات وتحليلات شاملة</p>
-                    </div>
-                </div>
-
-                <div class="glass feature-item" style="border-radius: 12px;">
-                    <span style="font-size: 2rem;">💾</span>
-                    <div>
-                        <h3 style="margin-bottom: 0.5rem; color: var(--dark);">تصدير البيانات</h3>
-                        <p style="color: #64748b; font-size: 0.9rem;">Excel و PDF</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Guide -->
-        <div class="glass-card animate-slide-up delay-300" style="padding: 2rem;">
-            <h2 style="margin-bottom: 1.5rem; color: var(--dark); display: flex; align-items: center; gap: 0.5rem;">
-                <span>📖</span> دليل الاستخدام
-            </h2>
-
-            <div
-                style="background: rgba(248, 250, 252, 0.5); padding: 2rem; border-radius: 12px; border: 1px solid #e2e8f0;">
-                <h3 style="color: var(--primary); margin-bottom: 1rem;">خطوات استخدام النظام:</h3>
-                <ul class="guide-list" style="list-style: none; color: #475569;">
-                    <li><strong>1. إنشاء رموز QR للطلاب:</strong> اذهب إلى صفحة "رموز QR للطلاب" لإنشاء وطباعة الرموز
-                    </li>
-                    <li><strong>2. توزيع الرموز:</strong> قم بتوزيع رموز QR على الطلاب (يمكن طباعتها أو إرسالها
-                        إلكترونياً)</li>
-                    <li><strong>3. تسجيل الحضور:</strong> افتح صفحة "ماسح الحضور" واختر المادة والتاريخ، ثم امسح رموز
-                        الطلاب</li>
-                    <li><strong>4. مراجعة السجلات:</strong> استخدم صفحة "إدارة السجلات" لعرض وتصفية بيانات الحضور</li>
-                    <li><strong>5. إنشاء التقارير:</strong> اذهب إلى "التقارير الذكية" لإنشاء تقارير شاملة وتحليلات</li>
-                </ul>
-
-                <div style="margin-top: 2rem; padding-top: 2rem; border-top: 2px dashed #cbd5e1;">
-                    <h3 style="color: var(--warning); margin-bottom: 1rem;">ملاحظات هامة:</h3>
-                    <ul class="guide-list" style="list-style: none; color: #475569;">
-                        <li>النظام يدعم المزامنة الفورية عبر Firebase</li>
-                        <li>يمكن تصدير البيانات لحفظها كنسخة احتياطية</li>
-                        <li>يمكن استخدام الكاميرا الأمامية أو الخلفية للجهاز</li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-
-        <!-- Footer -->
-        <div style="text-align: center; margin-top: 3rem; color: #64748b; padding-bottom: 2rem;">
-            <p style="font-weight: 600;">© 2025 قسم علوم الذكاء الاصطناعي - جامعة المصطفى</p>
-            <p style="font-size: 0.9rem; opacity: 0.8;">نظام الحضور الذكي بتقنية QR Code</p>
-        </div>
+        <!-- Live Feed Simulation (Future Step: Real-time Firebase activity) -->
+        <footer style="margin-top: 6rem; text-align: center; padding: 2rem; border-top: 1px solid var(--glass-border);">
+            <p style="color: var(--text-muted);">© 2025 Deep AI Systems | قسم علوم الذكاء الاصطناعي</p>
+        </footer>
     </div>
+
+    <!-- Firebase Connection Logic -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyDLSX6DY_79BD8ZEYBRYh_jtmP0mHslzkE",
+            authDomain: "ai-attendance-husam.firebaseapp.com",
+            databaseURL: "https://ai-attendance-husam-default-rtdb.firebaseio.com",
+            projectId: "ai-attendance-husam",
+            storageBucket: "ai-attendance-husam.firebasestorage.app",
+            messagingSenderId: "305903941972",
+            appId: "1:305903941972:web:d914431aab5a1cc6b5b0c1",
+            measurementId: "G-EJEKCTT2M9"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        const statusDot = document.querySelector('.status-dot');
+        const statusText = document.querySelector('.status-pill');
+
+        db.ref('.info/connected').on('value', function (snap) {
+            if (snap.val() === true) {
+                statusDot.style.background = 'var(--success)';
+                statusDot.style.boxShadow = '0 0 10px var(--success)';
+                statusText.style.borderColor = 'rgba(16, 185, 129, 0.2)';
+                statusText.innerHTML = '<div class="status-dot"></div> النظام سحابي ومتصل بالذكاء الاصطناعي';
+            } else {
+                statusDot.style.background = 'var(--danger)';
+                statusDot.style.boxShadow = '0 0 10px var(--danger)';
+                statusText.style.borderColor = 'rgba(239, 68, 68, 0.2)';
+                statusText.innerHTML = '<div class="status-dot" style="background:var(--danger); box-shadow:none;"></div> انقطع الاتصال - وضع غير متصل بالشبكة';
+            }
+        });
+    </script>
 </body>
 
 </html>

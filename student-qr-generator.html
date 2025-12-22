@@ -4,209 +4,103 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>رموز QR للطلاب - قسم الذكاء الاصطناعي</title>
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+    <title>Deep AI | بطاقات الطلاب</title>
+    <link rel="stylesheet" href="style.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Tajawal', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
-            direction: rtl;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        .header {
-            text-align: center;
-            color: white;
-            margin-bottom: 30px;
-        }
-
-        .header h1 {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-        }
-
-        .header p {
-            font-size: 1.2rem;
-            opacity: 0.9;
-        }
-
-        .controls {
-            background: white;
-            padding: 20px;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            margin-bottom: 30px;
-        }
-
-        .btn {
-            background: #667eea;
-            color: white;
-            border: none;
-            padding: 12px 30px;
-            font-size: 1.1rem;
-            border-radius: 8px;
-            cursor: pointer;
-            font-family: 'Tajawal', sans-serif;
-            transition: all 0.3s;
-            margin: 5px;
-        }
-
-        .btn:hover {
-            background: #5568d3;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
-        }
-
-        .btn-success {
-            background: #48bb78;
-        }
-
-        .btn-success:hover {
-            background: #38a169;
-        }
-
         .students-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
         }
 
-        .student-card {
-            background: white;
-            padding: 20px;
-            border-radius: 15px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-            text-align: center;
-            transition: transform 0.3s;
-            page-break-inside: avoid;
+        .id-card {
+            background: var(--bg-card);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            transition: var(--transition);
         }
 
-        .student-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        .id-card:hover {
+            transform: translateY(-8px);
+            border-color: var(--primary);
         }
 
-        .student-number {
-            background: #667eea;
-            color: white;
-            width: 35px;
-            height: 35px;
-            border-radius: 50%;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            margin-bottom: 10px;
-        }
-
-        .student-name {
-            font-size: 1.2rem;
-            font-weight: 600;
-            color: #2d3748;
-            margin-bottom: 15px;
-            min-height: 50px;
+        .id-header {
+            height: 100px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            position: relative;
             display: flex;
             align-items: center;
             justify-content: center;
         }
 
-        .qr-container {
-            margin: 15px auto;
+        .id-body {
+            padding: 2rem 1.5rem;
+            text-align: center;
+        }
+
+        .qr-box {
             padding: 15px;
-            background: #f7fafc;
-            border-radius: 10px;
-            display: inline-block;
-        }
-
-        .student-id {
-            color: #718096;
-            font-size: 0.9rem;
-            margin-top: 10px;
-            font-family: 'Courier New', monospace;
-        }
-
-        .download-btn {
-            background: #48bb78;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-family: 'Tajawal', sans-serif;
-            font-size: 0.9rem;
-            margin-top: 10px;
-            transition: all 0.3s;
-            width: 100%;
-        }
-
-        .download-btn:hover {
-            background: #38a169;
-            transform: translateY(-2px);
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px dashed var(--glass-border);
+            border-radius: 12px;
+            margin: 1.5rem 0;
         }
 
         @media print {
             body {
-                background: white;
-                padding: 0;
+                background: white !important;
             }
 
-            .controls {
-                display: none;
-            }
-
-            .download-btn {
-                display: none;
+            .no-print {
+                display: none !important;
             }
 
             .students-grid {
                 grid-template-columns: repeat(3, 1fr);
-                gap: 15px;
+                gap: 1rem;
             }
 
-            .student-card {
-                box-shadow: none;
-                border: 1px solid #e2e8f0;
-                break-inside: avoid;
+            .id-card {
+                border: 1px solid #000;
+                page-break-inside: avoid;
             }
 
-            .header {
-                color: #2d3748;
-                margin-bottom: 20px;
+            .id-header {
+                background: #eee !important;
+                border-bottom: 1px solid #000;
             }
         }
     </style>
 </head>
 
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>🎓 رموز QR للطلاب</h1>
-            <p>قسم علوم الذكاء الاصطناعي - جامعة المصطفى</p>
-        </div>
+    <div class="container animate-fade-in">
+        <nav class="app-nav no-print">
+            <div class="nav-content">
+                <div style="font-weight: 900; font-size: 1.5rem;"><span style="color: var(--primary);">DEEP</span> AI
+                </div>
+                <ul class="nav-links">
+                    <li><a href="index.html">الرئيسية</a></li>
+                    <li><a href="teacher-qr-scanner.html">الماسح</a></li>
+                    <li><a href="attendance-management.html">الإدارة</a></li>
+                    <li><a href="attendance-report.html">التقارير</a></li>
+                </ul>
+            </div>
+        </nav>
 
-        <div class="controls">
-            <button class="btn" onclick="generateAllQRCodes()">
-                🔄 إنشاء جميع رموز QR
-            </button>
-            <button class="btn btn-success" onclick="window.print()">
-                🖨️ طباعة الرموز
-            </button>
-            <button class="btn" onclick="downloadAllQRCodes()">
-                💾 تحميل جميع الرموز
-            </button>
+        <header class="header-section no-print">
+            <h1 class="header-title">🎫 بطاقات الهوية الذكية</h1>
+            <p class="header-subtitle">توليد رموز QR لجميع الطلاب</p>
+        </header>
+
+        <div class="glass-card no-print" style="padding: 2rem; margin-bottom: 2rem;">
+            <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                <button class="btn btn-primary" onclick="generateAllQRCodes()">🔄 إنشاء جميع الرموز</button>
+                <button class="btn btn-secondary" onclick="window.print()">🖨️ طباعة البطاقات</button>
+            </div>
         </div>
 
         <div class="students-grid" id="studentsGrid"></div>
@@ -214,63 +108,20 @@
 
     <script>
         const students = [
-            "يوسف ميثاق طالب عجيل",
-            "حسين علي دوشان كاظم",
-            "نورالحسن باسم عبدالرزاق حسين",
-            "مصطفى فؤاد فاضل عبد الامير",
-            "علي جمال خلف فعيل",
-            "مصطفى محمد مردان حسن",
-            "ضحى حيدر كمال جوده",
-            "علي محمد جبار حسين",
-            "بنين ديار رحيم صفر",
-            "زهراء محمد سريح عبد الحسن",
-            "زهراء ابراهيم مهدي خضير",
-            "منتظر حميد عذاب ضاحي",
-            "نبأ جاسم رحمه شايع",
-            "معصومة عبد الحسين جبار عبدالله",
-            "داليا كريم ليلو منصور",
-            "مؤمل سعدون جبار لفته",
-            "سبأ محمد صبري سلطان",
-            "رقيه اثير احمد مطلق",
-            "كاظم محمد جاسم"
+            "يوسف ميثاق طالب عجيل", "حسين علي دوشان كاظم", "نورالحسن باسم عبدالرزاق حسين",
+            "مصطفى فؤاد فاضل عبد الامير", "علي جمال خلف فعيل", "مصطفى محمد مردان حسن",
+            "ضحى حيدر كمال جوده", "علي محمد جبار حسين", "بنين ديار رحيم صفر",
+            "زهراء محمد سريح عبد الحسن", "زهراء ابراهيم مهدي خضير", "منتظر حميد عذاب ضاحي",
+            "نبأ جاسم رحمه شايع", "معصومة عبد الحسين جبار عبدالله", "داليا كريم ليلو منصور",
+            "مؤمل سعدون جبار لفته", "سبأ محمد صبري سلطان", "رقيه اثير احمد مطلق", "كاظم محمد جاسم"
         ];
 
-        function generateStudentId(index, name) {
-            const year = "2025";
-            const dept = "AI";
-            const num = String(index + 1).padStart(3, '0');
-            return `${year}-${dept}-${num}`;
+        function generateStudentId(index) {
+            return `2025-AI-${String(index + 1).padStart(3, '0')}`;
         }
 
-        function createStudentCard(student, index) {
-            const studentId = generateStudentId(index, student);
-
-            const card = document.createElement('div');
-            card.className = 'student-card';
-            card.id = `student-${index}`;
-
-            const qrData = JSON.stringify({
-                id: studentId,
-                name: student,
-                department: "الذكاء الاصطناعي",
-                university: "جامعة المصطفى"
-            });
-
-            card.innerHTML = `
-                <div class="student-number">${index + 1}</div>
-                <div class="student-name">${student}</div>
-                <div class="qr-container" id="qr-${index}"></div>
-                <div class="student-id">ID: ${studentId}</div>
-                <button class="download-btn" onclick="downloadStudentQR(${index}, '${student.replace(/'/g, "\\'")}', '${studentId}')">💾 تحميل QR</button>
-            `;
-
-            return { card, qrData, qrId: `qr-${index}` };
-        }
-
-        function generateQRCodeImage(text, size = 150) {
-            // Using Google Charts API to generate QR code
-            const encodedText = encodeURIComponent(text);
-            return `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&data=${encodedText}`;
+        function generateQRCodeImage(text, size = 200) {
+            return `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&data=${encodeURIComponent(text)}`;
         }
 
         function generateAllQRCodes() {
@@ -278,113 +129,42 @@
             grid.innerHTML = '';
 
             students.forEach((student, index) => {
-                const { card, qrData, qrId } = createStudentCard(student, index);
-                grid.appendChild(card);
-
-                // Generate QR code image
-                setTimeout(() => {
-                    const qrContainer = document.getElementById(qrId);
-                    if (!qrContainer) return;
-
-                    const qrImageUrl = generateQRCodeImage(qrData, 150);
-                    const img = document.createElement('img');
-                    img.src = qrImageUrl;
-                    img.alt = `QR Code for ${student}`;
-                    img.style.width = '150px';
-                    img.style.height = '150px';
-                    img.style.display = 'block';
-
-                    img.onerror = () => {
-                        qrContainer.innerHTML = '<div style="color: red; padding: 10px; font-size: 0.8rem;">خطأ في التوليد</div>';
-                    };
-
-                    qrContainer.innerHTML = '';
-                    qrContainer.appendChild(img);
-                }, 50 * index);
-            });
-        }
-
-        function downloadStudentQR(index, studentName, studentId) {
-            const qrData = JSON.stringify({
-                id: studentId,
-                name: studentName,
-                department: "الذكاء الاصطناعي",
-                university: "جامعة المصطفى"
-            });
-
-            // Generate high-quality QR code (400x400)
-            const qrImageUrl = generateQRCodeImage(qrData, 400);
-
-            // Create canvas to add student name and info
-            const canvas = document.createElement('canvas');
-            canvas.width = 500;
-            canvas.height = 600;
-            const ctx = canvas.getContext('2d');
-
-            // White background
-            ctx.fillStyle = '#ffffff';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            // Load QR code image
-            const img = new Image();
-            img.crossOrigin = 'anonymous';
-            img.onload = function () {
-                // Draw QR code centered
-                ctx.drawImage(img, 50, 80, 400, 400);
-
-                // Add border around QR
-                ctx.strokeStyle = '#667eea';
-                ctx.lineWidth = 3;
-                ctx.strokeRect(48, 78, 404, 404);
-
-                // Add student name (top)
-                ctx.fillStyle = '#2d3748';
-                ctx.font = 'bold 24px Arial';
-                ctx.textAlign = 'center';
-                ctx.fillText(studentName, canvas.width / 2, 50);
-
-                // Add student ID (below QR)
-                ctx.fillStyle = '#667eea';
-                ctx.font = 'bold 20px Arial';
-                ctx.fillText(studentId, canvas.width / 2, 520);
-
-                // Add department (bottom)
-                ctx.fillStyle = '#718096';
-                ctx.font = '16px Arial';
-                ctx.fillText('قسم علوم الذكاء الاصطناعي', canvas.width / 2, 550);
-                ctx.fillText('جامعة المصطفى', canvas.width / 2, 575);
-
-                // Convert canvas to blob and download
-                canvas.toBlob(function (blob) {
-                    const url = URL.createObjectURL(blob);
-                    const link = document.createElement('a');
-                    link.href = url;
-                    link.download = `QR_${studentId}_${studentName}.png`;
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                    URL.revokeObjectURL(url);
+                const studentId = generateStudentId(index);
+                const qrData = JSON.stringify({
+                    id: studentId,
+                    name: student,
+                    department: "الذكاء الاصطناعي",
+                    university: "جامعة المصطفى"
                 });
-            };
-            img.src = qrImageUrl;
+
+                const card = document.createElement('div');
+                card.className = 'id-card';
+                card.innerHTML = `
+                    <div class="id-header">
+                        <div style="color: white; font-weight: 900; font-size: 1.5rem;">AI DEPT</div>
+                    </div>
+                    <div class="id-body">
+                        <div style="width: 80px; height: 80px; background: rgba(99,102,241,0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; font-size: 2.5rem;">
+                            👤
+                        </div>
+                        <h3 style="margin-bottom: 0.5rem; font-size: 1.1rem;">${student}</h3>
+                        <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem;">قسم علوم الذكاء الاصطناعي</p>
+                        
+                        <div class="qr-box">
+                            <img src="${generateQRCodeImage(qrData, 150)}" alt="QR" style="width: 150px; height: 150px; display: block; margin: 0 auto;">
+                        </div>
+                        
+                        <div class="badge" style="background: var(--primary); color: white; padding: 0.5rem 1rem; border-radius: 100px; display: inline-block; font-family: monospace;">
+                            ${studentId}
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
         }
 
-        function downloadAllQRCodes() {
-            alert('لتحميل الرموز، يمكنك استخدام وظيفة الطباعة وحفظها كملف PDF');
-            window.print();
-        }
-
-        // Show loading message
-        document.addEventListener('DOMContentLoaded', () => {
-            const grid = document.getElementById('studentsGrid');
-            grid.innerHTML = '<div style="padding: 40px; text-align: center; color: #667eea; font-size: 1.5rem;">⏳ جاري إنشاء رموز QR...</div>';
-        });
-
-        // Generate QR codes on page load
         window.addEventListener('load', () => {
-            setTimeout(() => {
-                generateAllQRCodes();
-            }, 300);
+            setTimeout(generateAllQRCodes, 300);
         });
     </script>
 </body>

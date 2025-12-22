@@ -4,222 +4,103 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ماسح الحضور المؤقت - قسم الذكاء الاصطناعي</title>
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <title>Deep AI | ماسح مؤقت</title>
+    <link rel="stylesheet" href="style.css">
     <script src="https://unpkg.com/html5-qrcode"></script>
-    <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Tajawal', sans-serif;
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-            min-height: 100vh;
-            direction: rtl;
-            padding: 20px;
-            color: #2d3748;
-        }
-
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-        }
-
-        .glass-card {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            padding: 25px;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            margin-bottom: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-        }
-
-        .header {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        .header h1 {
-            color: #1e3c72;
-            font-size: 1.8rem;
-            margin-bottom: 10px;
-        }
-
-        .badge {
-            background: #48bb78;
-            color: white;
-            padding: 5px 15px;
-            border-radius: 50px;
-            font-size: 0.9rem;
-            display: inline-block;
+        #reader {
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            border: 2px solid var(--glass-border);
+            background: #000;
         }
 
         .timer-badge {
-            background: #ed8936;
-            color: white;
-            padding: 8px 15px;
-            border-radius: 10px;
-            font-weight: bold;
-            margin-top: 10px;
+            background: rgba(245, 158, 11, 0.2);
+            border: 1px solid var(--warning);
+            color: var(--warning);
+            padding: 0.75rem 1.5rem;
+            border-radius: 100px;
+            font-weight: 700;
             display: inline-block;
-        }
-
-        .form-group {
-            margin-bottom: 15px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-        }
-
-        select,
-        input {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #e2e8f0;
-            border-radius: 10px;
-            font-family: 'Tajawal', sans-serif;
-        }
-
-        #reader {
-            border-radius: 15px;
-            overflow: hidden;
-            border: 3px solid #e2e8f0;
-            margin: 20px 0;
-        }
-
-        .btn {
-            background: #1e3c72;
-            color: white;
-            border: none;
-            padding: 15px;
-            width: 100%;
-            border-radius: 10px;
-            font-size: 1.1rem;
-            cursor: pointer;
-            font-family: 'Tajawal', sans-serif;
-            transition: 0.3s;
-        }
-
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(30, 60, 114, 0.3);
-        }
-
-        .btn-stop {
-            background: #e53e3e;
-        }
-
-        .alert {
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 15px;
-            text-align: center;
-            font-weight: bold;
-        }
-
-        .alert-success {
-            background: #c6f6d5;
-            color: #22543d;
-        }
-
-        .alert-error {
-            background: #fed7d7;
-            color: #742a2a;
-        }
-
-        .hidden {
-            display: none !important;
-        }
-
-        /* Loading Overlay */
-        #verify-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: #1e3c72;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-            color: white;
-            flex-direction: column;
+            margin-top: 1rem;
         }
     </style>
 </head>
 
 <body>
     <!-- Verifying Overlay -->
-    <div id="verify-overlay">
-        <div style="font-size: 3rem; margin-bottom: 1rem;">🔒</div>
-        <h2>جاري التحقق من الرابط...</h2>
+    <div id="verify-overlay"
+        style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-deep); display: flex; align-items: center; justify-content: center; z-index: 9999;">
+        <div style="text-align: center;">
+            <div style="font-size: 4rem; margin-bottom: 1rem;">🔒</div>
+            <h2>جاري التحقق من الرابط...</h2>
+        </div>
     </div>
 
     <!-- Error View -->
-    <div id="error-view" class="container hidden" style="text-align: center; padding-top: 100px; color: white;">
-        <div style="font-size: 5rem; margin-bottom: 1rem;">⛔</div>
-        <h1 id="error-msg">الرابط غير صالح أو منتهي الصلاحية</h1>
+    <div id="error-view"
+        style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-deep); align-items: center; justify-content: center; z-index: 9999;">
+        <div style="text-align: center;">
+            <div style="font-size: 5rem; margin-bottom: 1rem;">⛔</div>
+            <h1 id="error-msg">الرابط غير صالح أو منتهي الصلاحية</h1>
+        </div>
     </div>
 
     <!-- Main App -->
-    <div id="main-app" class="container hidden">
-        <div class="glass-card header">
-            <h1>📸 ماسح الحضور (مسؤول مؤقت)</h1>
-            <div class="badge">وضع الطالب المساعد</div>
-            <br>
-            <div class="timer-badge" id="expiry-timer">ينتهي الرابط خلال: --:--</div>
-        </div>
-
-        <div class="glass-card">
-            <div class="form-group">
-                <label>📍 المادة الدراسية</label>
-                <select id="subject">
-                    <option value="">اختر المادة...</option>
-                    <option value="المعامل">المعامل</option>
-                    <option value="الرياضيات I">الرياضيات I</option>
-                    <option value="مبادئ الذكاء الاصطناعي">مبادئ الذكاء الاصطناعي</option>
-                    <option value="الديمقراطية وحقوق الإنسان">الديمقراطية وحقوق الإنسان</option>
-                    <option value="أساسيات البرمجة">أساسيات البرمجة</option>
-                    <option value="الإحصاء والاحتمالات">الإحصاء والاحتمالات</option>
-                </select>
+    <div id="main-app" style="display: none;">
+        <div class="container animate-fade-in">
+            <div class="glass-card" style="padding: 2.5rem; text-align: center; margin-bottom: 2rem;">
+                <h1 style="margin-bottom: 1rem;">📸 ماسح الحضور (وضع مفوض)</h1>
+                <div class="badge badge-success">طالب مساعد</div>
+                <div class="timer-badge" id="expiry-timer">ينتهي خلال: --:--</div>
             </div>
 
-            <div class="form-group">
-                <label>نوع المحاضرة</label>
-                <select id="lectureType">
-                    <option value="نظري">نظري</option>
-                    <option value="عملي">عملي</option>
-                    <option value="مختبر">مختبر</option>
-                </select>
+            <div class="glass-card" style="padding: 2rem; margin-bottom: 2rem;">
+                <div style="margin-bottom: 1.5rem;">
+                    <label style="display: block; margin-bottom: 0.5rem; color: var(--text-muted);">المادة
+                        الدراسية</label>
+                    <select id="subject" class="form-control">
+                        <option value="">اختر المادة...</option>
+                        <option>المعامل</option>
+                        <option>الرياضيات I</option>
+                        <option>مبادئ الذكاء الاصطناعي</option>
+                        <option>الديمقراطية وحقوق الإنسان</option>
+                        <option>أساسيات البرمجة</option>
+                        <option>الإحصاء والاحتمالات</option>
+                    </select>
+                </div>
+
+                <div style="margin-bottom: 1.5rem;">
+                    <label style="display: block; margin-bottom: 0.5rem; color: var(--text-muted);">نوع المحاضرة</label>
+                    <select id="lectureType" class="form-control">
+                        <option>نظري</option>
+                        <option>عملي</option>
+                    </select>
+                </div>
+
+                <div id="alertContainer" style="margin-bottom: 1rem;"></div>
+
+                <div id="reader" style="margin-bottom: 1.5rem;"></div>
+
+                <div style="display: flex; gap: 1rem;">
+                    <button id="startBtn" class="btn btn-primary" onclick="startScanner()" style="flex: 1;">بدء
+                        المسح</button>
+                    <button id="stopBtn" class="btn btn-secondary" onclick="stopScanner()"
+                        style="flex: 1; display: none;">إيقاف</button>
+                </div>
             </div>
 
-            <div id="alertContainer"></div>
-
-            <div id="reader"></div>
-
-            <button id="startBtn" class="btn" onclick="startScanner()">بدء المسح</button>
-            <button id="stopBtn" class="btn btn-stop hidden" onclick="stopScanner()">إيقاف المسح</button>
-        </div>
-
-        <div class="glass-card">
-            <h3>✅ تم تسجيلهم الآن: <span id="count">0</span></h3>
-            <div id="recent-scans" style="margin-top: 10px; max-height: 200px; overflow-y: auto;"></div>
+            <div class="glass-card" style="padding: 2rem;">
+                <h3>✅ تم تسجيلهم: <span id="count">0</span></h3>
+                <div id="recent-scans" style="margin-top: 1rem; max-height: 200px; overflow-y: auto;"></div>
+            </div>
         </div>
     </div>
 
     <script>
-        // Configuration
         const firebaseConfig = {
             apiKey: "AIzaSyDLSX6DY_79BD8ZEYBRYh_jtmP0mHslzkE",
             authDomain: "ai-attendance-husam.firebaseapp.com",
@@ -234,13 +115,11 @@
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
 
-        // State
         const urlParams = new URLSearchParams(window.location.search);
         const token = urlParams.get('token');
         let html5QrCode = null;
         let sessionCount = 0;
 
-        // Init
         async function checkToken() {
             if (!token) return showFatalError('الرابط غير صالح (No Token)');
 
@@ -251,10 +130,13 @@
                 const data = snap.val();
                 if (Date.now() > data.expiry) return showFatalError('انتهت صلاحية هذا الرابط');
 
-                // Valid
-                document.getElementById('verify-overlay').classList.add('hidden');
-                document.getElementById('main-app').classList.remove('hidden');
+                document.getElementById('verify-overlay').style.display = 'none';
+                document.getElementById('main-app').style.display = 'block';
                 startTimer(data.expiry);
+
+                // Pre-fill subject if provided
+                if (data.subject) document.getElementById('subject').value = data.subject;
+                if (data.lectureType) document.getElementById('lectureType').value = data.lectureType;
 
             } catch (e) {
                 console.error(e);
@@ -263,69 +145,104 @@
         }
 
         function showFatalError(msg) {
-            document.getElementById('verify-overlay').classList.add('hidden');
-            document.getElementById('error-view').classList.remove('hidden');
+            document.getElementById('verify-overlay').style.display = 'none';
+            document.getElementById('error-view').style.display = 'flex';
             document.getElementById('error-msg').textContent = msg;
         }
 
         function startTimer(expiryTime) {
             setInterval(() => {
-                const now = Date.now();
-                const diff = expiryTime - now;
-
+                const diff = expiryTime - Date.now();
                 if (diff <= 0) {
-                    showFatalError('انتهت صلاحية الرابط الآن');
+                    showFatalError('انتهت صلاحية الرابط');
                     stopScanner();
                     return;
                 }
-
                 const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
                 const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-                document.getElementById('expiry-timer').textContent = `ينتهي الرابط خلال: ${minutes}:${seconds < 10 ? '0' + seconds : seconds}`;
+                document.getElementById('expiry-timer').textContent = `ينتهي خلال: ${minutes}:${seconds < 10 ? '0' + seconds : seconds}`;
             }, 1000);
         }
 
-        // Scanner Logic
         function startScanner() {
             const subject = document.getElementById('subject').value;
-            if (!subject) return showAlert('⚠️ يرجى اختيار المادة أولاً', 'error');
+            if (!subject) return showAlert('⚠️ يرجى اختيار المادة أولاً', 'warning');
 
             html5QrCode = new Html5Qrcode("reader");
             html5QrCode.start(
                 { facingMode: "environment" },
                 { fps: 10, qrbox: { width: 250, height: 250 } },
-                onScanSuccess,
-                () => { }
+                onScanSuccess
             ).then(() => {
-                document.getElementById('startBtn').classList.add('hidden');
-                document.getElementById('stopBtn').classList.remove('hidden');
+                document.getElementById('startBtn').style.display = 'none';
+                document.getElementById('stopBtn').style.display = 'block';
             });
         }
 
         function stopScanner() {
             if (html5QrCode) {
                 html5QrCode.stop().then(() => {
-                    document.getElementById('startBtn').classList.remove('hidden');
-                    document.getElementById('stopBtn').classList.add('hidden');
+                    document.getElementById('startBtn').style.display = 'block';
+                    document.getElementById('stopBtn').style.display = 'none';
                 });
             }
         }
 
-        function onScanSuccess(decodedText) {
-            try {
-                const data = JSON.parse(decodedText);
-                recordAttendance(data);
+        const scannedIds = new Set();
+        const processingIds = new Set();
 
-                // Pause briefly to avoid double scan
-                html5QrCode.pause();
-                setTimeout(() => html5QrCode.resume(), 2000);
+        async function onScanSuccess(decodedText) {
+            let student;
+            try {
+                student = JSON.parse(decodedText);
+                if (!student.id || !student.name) return;
+            } catch (e) {
+                return;
+            }
+
+            if (scannedIds.has(student.id)) return;
+            if (processingIds.has(student.id)) return;
+
+            processingIds.add(student.id);
+            html5QrCode.pause(); // Pause scanning while checking
+
+            try {
+                const subject = document.getElementById('subject').value;
+                const today = new Date().toISOString().split('T')[0];
+
+                // Check for duplicates in cloud
+                const snapshot = await database.ref('attendanceRecords')
+                    .orderByChild('date')
+                    .equalTo(today)
+                    .once('value');
+
+                let isDuplicate = false;
+                if (snapshot.exists()) {
+                    snapshot.forEach(child => {
+                        const rec = child.val();
+                        if (rec.studentId === student.id && rec.subject === subject) {
+                            isDuplicate = true;
+                        }
+                    });
+                }
+
+                if (isDuplicate) {
+                    showAlert(`⚠️ ${student.name} مسجل مسبقاً لهذه المادة`, 'warning');
+                    scannedIds.add(student.id);
+                } else {
+                    await recordAttendance(student);
+                }
 
             } catch (e) {
-                showAlert('QR غير صالح', 'error');
+                console.error(e);
+                showAlert('خطأ في الاتصال', 'danger');
+            } finally {
+                processingIds.delete(student.id);
+                setTimeout(() => html5QrCode.resume(), 1500); // Resume after short delay
             }
         }
 
-        function recordAttendance(studentData) {
+        async function recordAttendance(studentData) {
             const record = {
                 studentId: studentData.id,
                 studentName: studentData.name,
@@ -333,51 +250,40 @@
                 lectureType: document.getElementById('lectureType').value,
                 date: new Date().toISOString().split('T')[0],
                 time: new Date().toLocaleTimeString('ar-EG'),
-                timestamp: new Date().toISOString(),
-                via_token: token, // Important for Rules
+                timestamp: Date.now(),
+                via_token: token,
                 collectedBy: 'delegate'
             };
 
-            // Push to Firebase
-            const newRef = database.ref('attendanceRecords').push();
-            newRef.set(record).then(() => {
-                showAlert(`✅ تم تسجيل: ${studentData.name}`, 'success');
-                sessionCount++;
-                document.getElementById('count').textContent = sessionCount;
+            await database.ref('attendanceRecords').push(record);
 
-                // Add to list
-                const div = document.createElement('div');
-                div.textContent = `${record.time} - ${studentData.name}`;
-                div.style.padding = '5px';
-                div.style.borderBottom = '1px solid #eee';
-                document.getElementById('recent-scans').prepend(div);
+            showAlert(`✅ تم تسجيل: ${studentData.name}`, 'success');
+            scannedIds.add(studentData.id);
+            sessionCount++;
+            document.getElementById('count').textContent = sessionCount;
 
-                playBeep();
-            }).catch(e => {
-                console.error(e);
-                showAlert('❌ فشل التسجيل - تأكد من الصلاحية', 'error');
-            });
+            const div = document.createElement('div');
+            div.style.padding = '0.75rem';
+            div.style.borderBottom = '1px solid var(--glass-border)';
+            div.innerHTML = `<strong>${studentData.name}</strong> <span style="color: var(--text-muted); font-size: 0.85rem;">${record.time}</span>`;
+            document.getElementById('recent-scans').prepend(div);
         }
 
         function showAlert(msg, type) {
+            const colors = {
+                success: 'var(--success)',
+                danger: 'var(--danger)',
+                warning: 'var(--warning)'
+            };
             const div = document.createElement('div');
-            div.className = `alert alert-${type}`;
+            div.style.padding = '1rem';
+            div.style.background = `rgba(${type === 'success' ? '16, 185, 129' : type === 'danger' ? '239, 68, 68' : '245, 158, 11'}, 0.1)`;
+            div.style.border = `1px solid ${colors[type]}`;
+            div.style.borderRadius = '12px';
+            div.style.color = colors[type];
             div.textContent = msg;
             document.getElementById('alertContainer').innerHTML = '';
             document.getElementById('alertContainer').appendChild(div);
-            // setTimeout(() => div.remove(), 3000);
-        }
-
-        function playBeep() {
-            const ctx = new (window.AudioContext || window.webkitAudioContext)();
-            const osc = ctx.createOscillator();
-            const gain = ctx.createGain();
-            osc.connect(gain);
-            gain.connect(ctx.destination);
-            osc.frequency.value = 800;
-            gain.gain.value = 0.1;
-            osc.start();
-            osc.stop(ctx.currentTime + 0.1);
         }
 
         checkToken();
