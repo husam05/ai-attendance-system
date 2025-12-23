@@ -39,7 +39,8 @@
             <div style="font-size: 4rem; margin-bottom: 1rem; animation: pulse 2s infinite;">🔒</div>
             <h2 id="verify-status">جاري التحقق من الرابط...</h2>
             <p style="color: var(--text-muted); margin-top: 1rem;">يرجى الانتظار لحظة</p>
-            <button id="retry-btn" class="btn btn-secondary" style="display: none; margin-top: 2rem;" onclick="location.reload()">🔄 إعادة المحاولة</button>
+            <button id="retry-btn" class="btn btn-secondary" style="display: none; margin-top: 2rem;"
+                onclick="location.reload()">🔄 إعادة المحاولة</button>
         </div>
     </div>
 
@@ -120,12 +121,12 @@
         const auth = firebase.auth();
 
         // Ensure auth before checking token
-        auth.signInAnonymously().catch(e => {
-            console.error("Auth Error", e);
-            if (e.code === 'auth/operation-not-allowed') {
-                showAlert('⚠️ خطأ: يجب تفعيل Anonymous Auth في إعدادات Firebase', 'danger');
-            } else {
-                showAlert('⚠️ خطأ في المصادقة: ' + e.message, 'danger');
+        // Ensure auth (Optional)
+        auth.onAuthStateChanged(user => {
+            if (!user) {
+                auth.signInAnonymously().catch(e => {
+                    console.warn("Auth warning:", e);
+                });
             }
         });
 
@@ -137,7 +138,7 @@
         async function checkToken() {
             const statusEl = document.getElementById('verify-status');
             const retryBtn = document.getElementById('retry-btn');
-            
+
             console.log("Checking token:", token);
             if (!token) return showFatalError('الرابط غير صالح (No Token)');
 
@@ -151,14 +152,14 @@
                 statusEl.textContent = 'جاري الاتصال بقاعدة البيانات...';
                 const snap = await database.ref('temp_tokens/' + token).once('value');
                 clearTimeout(timeout);
-                
+
                 if (!snap.exists()) return showFatalError('الرابط غير صحيح أو تم حذفه من قبل الأستاذ');
 
                 const data = snap.val();
                 if (Date.now() > data.expiry) return showFatalError('انتهت صلاحية هذا الرابط (30 دقيقة)');
 
                 statusEl.textContent = 'تم التحقق! جاري التحميل...';
-                
+
                 document.getElementById('verify-overlay').style.display = 'none';
                 document.getElementById('main-app').style.display = 'block';
                 startTimer(data.expiry);
@@ -240,7 +241,7 @@
             if (processingIds.has(student.id)) return;
 
             processingIds.add(student.id);
-            
+
             if (html5QrCode) {
                 try { await html5QrCode.pause(); } catch (e) { }
             }

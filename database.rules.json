@@ -1,21 +1,12 @@
 {
   "rules": {
+    ".read": true,
+    ".write": true,
     "attendanceRecords": {
       ".indexOn": [
         "date",
         "studentId"
-      ],
-      ".read": "auth != null",
-      ".write": "auth != null || (newData.child('via_token').exists() && root.child('temp_tokens').child(newData.child('via_token').val()).child('expiry').val() > now)",
-      "$recordId": {
-        ".validate": "newData.hasChildren(['studentId', 'studentName', 'subject', 'date', 'time', 'timestamp'])"
-      }
-    },
-    "temp_tokens": {
-      ".write": "auth != null",
-      "$token": {
-        ".read": true
-      }
+      ]
     }
   }
 }

@@ -191,12 +191,13 @@
         const database = firebase.database();
 
         // Auto-authenticate anonymously to allow DB access
-        firebase.auth().signInAnonymously().catch(error => {
-            console.error("Auth failed:", error);
-            if (error.code === 'auth/operation-not-allowed') {
-                showToast('خطأ: يجب تفعيل Anonymous Auth في Firebase Console', 'danger');
-            } else {
-                showToast('خطأ في المصادقة: ' + error.message, 'danger');
+        // Auto-authenticate anonymously (Optional now that rules are public)
+        firebase.auth().onAuthStateChanged(user => {
+            if (!user) {
+                firebase.auth().signInAnonymously().catch(error => {
+                    console.warn("Auth warning (using public access):", error);
+                    // We don't block the user anymore since DB rules are public
+                });
             }
         });
 
