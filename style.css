@@ -347,6 +347,21 @@ tr:hover td {
     }
 }
 
+/* --- Scanner specific layout --- */
+.scanner-layout {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr;
+    gap: 2rem;
+    align-items: start;
+}
+
+.scanner-controls {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
 /* --- Mobile Responsiveness --- */
 @media screen and (max-width: 768px) {
     .container {
@@ -382,6 +397,11 @@ tr:hover td {
         grid-template-columns: 1fr;
         /* Single column on mobile */
         gap: 1.5rem;
+    }
+
+    .scanner-layout,
+    .scanner-controls {
+        grid-template-columns: 1fr;
     }
 
     .stats-grid {
