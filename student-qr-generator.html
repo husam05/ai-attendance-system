@@ -111,6 +111,9 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
 
+    <!-- html2canvas -->
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+
     <script>
         const localStudents = [
             "يوسف ميثاق طالب عجيل", "حسين علي دوشان كاظم", "نورالحسن باسم عبدالرزاق حسين",
@@ -160,30 +163,84 @@
                     university: "جامعة المصطفى"
                 });
 
+                const cardWrapper = document.createElement('div');
+                cardWrapper.className = 'glass-card'; // Wrapper for layout including button
+
+                // Actual downloadable ID Card
                 const card = document.createElement('div');
+                card.id = `card-${index}`;
                 card.className = 'id-card';
+                card.style.position = 'relative'; // Ensure context for captures
+                card.style.background = '#1e293b'; // Fixing bg for screenshot
                 card.innerHTML = `
                     <div class="id-header">
                         <div style="color: white; font-weight: 900; font-size: 1.5rem;">AI DEPT</div>
                     </div>
-                    <div class="id-body">
+                    <div class="id-body" style="color: white;">
                         <div style="width: 80px; height: 80px; background: rgba(99,102,241,0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; font-size: 2.5rem;">
                             👤
                         </div>
                         <h3 style="margin-bottom: 0.5rem; font-size: 1.1rem;">${student}</h3>
-                        <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem;">قسم علوم الذكاء الاصطناعي</p>
+                        <p style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 1rem;">قسم علوم الذكاء الاصطناعي</p>
                         
-                        <div class="qr-box">
-                            <img src="${generateQRCodeImage(qrData, 200)}" alt="QR" style="width: 200px; height: 200px; display: block; margin: 0 auto;">
+                        <div class="qr-box" style="background: white; padding: 10px; border-radius: 12px; display: inline-block;">
+                            <img src="${generateQRCodeImage(qrData, 200)}" alt="QR" style="width: 200px; height: 200px; display: block;" crossorigin="anonymous">
                         </div>
                         
-                        <div class="badge" style="background: var(--primary); color: white; padding: 0.5rem 1rem; border-radius: 100px; display: inline-block; font-family: monospace;">
-                            ${studentId}
+                        <div style="margin-top: 1rem;">
+                            <div class="badge" style="background: var(--primary); color: white; padding: 0.5rem 1rem; border-radius: 100px; display: inline-block; font-family: monospace;">
+                                ${studentId}
+                            </div>
                         </div>
                     </div>
                 `;
-                grid.appendChild(card);
+
+                // Add card to wrapper
+                cardWrapper.appendChild(card);
+
+                // Add download button below card
+                const btnContainer = document.createElement('div');
+                btnContainer.className = 'no-print';
+                btnContainer.style.padding = '1rem';
+                btnContainer.style.textAlign = 'center';
+                btnContainer.innerHTML = `
+                    <button class="btn btn-secondary" onclick="downloadCard(${index}, '${student}')" style="width: 100%; font-size: 0.9rem;">
+                        ⬇️ تحميل البطاقة
+                    </button>
+                `;
+                cardWrapper.appendChild(btnContainer);
+
+                grid.appendChild(cardWrapper);
             });
+        }
+
+        async function downloadCard(index, studentName) {
+            const cardElement = document.getElementById(`card-${index}`);
+
+            // Visual feedback
+            const btn = event.target;
+            const originalText = btn.innerText;
+            btn.innerText = '⏳ جاري المعالجة...';
+
+            try {
+                const canvas = await html2canvas(cardElement, {
+                    scale: 3, // High quality
+                    useCORS: true, // Allow fetching QR image
+                    backgroundColor: '#1e293b' // Force dark background
+                });
+
+                const link = document.createElement('a');
+                link.download = `ID_${studentName.replace(/\s+/g, '_')}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+
+                btn.innerText = '✅ تم التحميل';
+                setTimeout(() => btn.innerText = originalText, 2000);
+            } catch (err) {
+                console.error(err);
+                alert('فشل تحميل الصورة. حاول مرة أخرى.');
+                btn.innerText = originalText;
+            }
         }
 
         async function fetchStudents() {
