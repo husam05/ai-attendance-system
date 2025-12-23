@@ -111,9 +111,9 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
 
-    <!-- html2canvas & qrcode.js -->
+    <!-- html2canvas & QRious -->
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
 
     <script>
         const localStudents = [
@@ -188,7 +188,7 @@
                         
                         <!-- QR Container -->
                         <div style="background: white; padding: 12px; border-radius: 16px; display: inline-block; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);">
-                            <div id="qr-${index}"></div>
+                            <canvas id="qr-${index}"></canvas>
                         </div>
                         
                         <div style="margin-top: 1.5rem;">
@@ -215,22 +215,18 @@
 
                 grid.appendChild(cardWrapper);
 
-                // Generate QR Code Locally
-                // Wait small tick to ensure DOM is ready
+                // Generate QR Code Locally with QRious
                 setTimeout(() => {
-                    const qrContainer = document.getElementById(`qr-${index}`);
-                    if (qrContainer) {
-                        qrContainer.innerHTML = ''; // Clear prev
-                        new QRCode(qrContainer, {
-                            text: qrData,
-                            width: 180,
-                            height: 180,
-                            colorDark: "#000000",
-                            colorLight: "#ffffff",
-                            correctLevel: QRCode.CorrectLevel.H
+                    const canvas = document.getElementById(`qr-${index}`);
+                    if (canvas) {
+                        new QRious({
+                            element: canvas,
+                            value: qrData,
+                            size: 180,
+                            level: 'H'
                         });
                     }
-                }, 50);
+                }, 0);
             });
         }
 
