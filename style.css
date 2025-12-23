@@ -347,6 +347,69 @@ tr:hover td {
     }
 }
 
+/* --- Mobile Responsiveness --- */
+@media screen and (max-width: 768px) {
+    .container {
+        padding: 1rem;
+    }
+
+    .header-title {
+        font-size: 2.2rem;
+    }
+
+    .nav-content {
+        flex-direction: column;
+        gap: 1rem;
+        padding: 1rem;
+        border-radius: 20px;
+    }
+
+    .nav-links {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 0.8rem;
+    }
+
+    .nav-links a {
+        font-size: 0.85rem;
+        padding: 0.5rem 0.8rem;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 50px;
+    }
+
+    .students-grid {
+        grid-template-columns: 1fr;
+        /* Single column on mobile */
+        gap: 1.5rem;
+    }
+
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .glass-card {
+        padding: 1.5rem !important;
+    }
+
+    .id-card {
+        max-width: 100%;
+        /* Full width cards */
+    }
+
+    .table-container {
+        overflow-x: auto;
+        /* Scrollable tables */
+    }
+
+    td,
+    th {
+        white-space: nowrap;
+        /* Prevent awkward wrapping in tables */
+        padding: 1rem 0.75rem;
+    }
+}
+
 /* --- Print Enhancements --- */
 @media print {
     @page {
