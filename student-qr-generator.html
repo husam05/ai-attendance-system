@@ -106,8 +106,13 @@
         <div class="students-grid" id="studentsGrid"></div>
     </div>
 
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+
     <script>
-        const students = [
+        const localStudents = [
             "يوسف ميثاق طالب عجيل", "حسين علي دوشان كاظم", "نورالحسن باسم عبدالرزاق حسين",
             "مصطفى فؤاد فاضل عبد الامير", "علي جمال خلف فعيل", "مصطفى محمد مردان حسن",
             "ضحى حيدر كمال جوده", "علي محمد جبار حسين", "بنين ديار رحيم صفر",
@@ -115,6 +120,22 @@
             "نبأ جاسم رحمه شايع", "معصومة عبد الحسين جبار عبدالله", "داليا كريم ليلو منصور",
             "مؤمل سعدون جبار لفته", "سبأ محمد صبري سلطان", "رقيه اثير احمد مطلق", "كاظم محمد جاسم"
         ];
+
+        // Firebase Config
+        const firebaseConfig = {
+            apiKey: "AIzaSyDLSX6DY_79BD8ZEYBRYh_jtmP0mHslzkE",
+            authDomain: "ai-attendance-husam.firebaseapp.com",
+            databaseURL: "https://ai-attendance-husam-default-rtdb.firebaseio.com",
+            projectId: "ai-attendance-husam",
+            storageBucket: "ai-attendance-husam.firebasestorage.app",
+            messagingSenderId: "305903941972",
+            appId: "1:305903941972:web:d914431aab5a1cc6b5b0c1",
+            measurementId: "G-EJEKCTT2M9"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        let studentsList = [];
 
         function generateStudentId(index) {
             return `2025-AI-${String(index + 1).padStart(3, '0')}`;
@@ -128,7 +149,9 @@
             const grid = document.getElementById('studentsGrid');
             grid.innerHTML = '';
 
-            students.forEach((student, index) => {
+            const listToUse = studentsList.length > 0 ? studentsList : localStudents;
+
+            listToUse.forEach((student, index) => {
                 const studentId = generateStudentId(index);
                 const qrData = JSON.stringify({
                     id: studentId,
@@ -151,7 +174,7 @@
                         <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem;">قسم علوم الذكاء الاصطناعي</p>
                         
                         <div class="qr-box">
-                            <img src="${generateQRCodeImage(qrData, 150)}" alt="QR" style="width: 150px; height: 150px; display: block; margin: 0 auto;">
+                            <img src="${generateQRCodeImage(qrData, 200)}" alt="QR" style="width: 200px; height: 200px; display: block; margin: 0 auto;">
                         </div>
                         
                         <div class="badge" style="background: var(--primary); color: white; padding: 0.5rem 1rem; border-radius: 100px; display: inline-block; font-family: monospace;">
@@ -163,8 +186,25 @@
             });
         }
 
+        async function fetchStudents() {
+            try {
+                const snap = await db.ref('students_list').once('value');
+                if (snap.exists() && Array.isArray(snap.val())) {
+                    studentsList = snap.val();
+                    console.log("Loaded students from Firebase");
+                } else {
+                    console.log("Using local student list");
+                    studentsList = localStudents;
+                }
+            } catch (error) {
+                console.error("Error loading students:", error);
+                studentsList = localStudents;
+            }
+            generateAllQRCodes();
+        }
+
         window.addEventListener('load', () => {
-            setTimeout(generateAllQRCodes, 300);
+            fetchStudents();
         });
     </script>
 </body>

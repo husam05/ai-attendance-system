@@ -19,6 +19,14 @@ The Firebase configuration in the code uses **placeholder values**. You must rep
 4. Start in **Test Mode** for now (we'll add security rules later)
 5. Click "Enable"
 
+### 2.5 Enable Anonymous Authentication (CRITICAL)
+1. In the left menu, go to **Authentication**
+2. Click the **Sign-in method** tab
+3. Click **Add new provider**
+4. Select **Anonymous** (مجهول)
+5. Toggle the switch to **Enable** and click **Save**
+*Without this step, the scanner will show "Authentication Error" (خطأ في المصادقة).*
+
 ### 3. Get Your Firebase Configuration
 1. In Firebase Console, click the ⚙️ (Settings) icon
 2. Go to "Project settings"
@@ -32,6 +40,7 @@ Open each of these files and replace the Firebase config:
 - `teacher-qr-scanner.html`
 - `attendance-management.html`
 - `attendance-report.html`
+- `temp-scanner.html`
 
 Find this section:
 ```javascript
@@ -109,6 +118,10 @@ git push origin main
 **Problem**: "Permission denied" error
 - **Solution**: Update database rules (step 5)
 - Make sure rules allow read/write
+
+**Problem**: "Authentication Error" (خطأ في المصادقة)
+- **Solution**: Go to Firebase Console → Authentication → Sign-in method and **Enable Anonymous provider**.
+- Check if your API Key is correct in the config.
 
 **Problem**: Old data still showing from localStorage
 - **Solution**: Clear browser cache and localStorage

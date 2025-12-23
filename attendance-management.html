@@ -222,7 +222,7 @@
                 const encodedUri = encodeURI(csvContent);
                 const link = document.createElement("a");
                 link.setAttribute("href", encodedUri);
-                link.setAttribute("download", "attendance_report_" + new Date().toISOString().split('T')[0] + ".csv");
+                link.setAttribute("download", "attendance_report_" + new Date().toLocaleDateString('en-CA') + ".csv");
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
@@ -247,10 +247,50 @@
             document.getElementById('stat-total-students').innerText = currentStudentList.length;
 
             // Live Daily Count
-            const today = new Date().toISOString().split('T')[0];
+            const today = new Date().toLocaleDateString('en-CA');
             db.ref('attendanceRecords').orderByChild('date').equalTo(today).on('value', snap => {
                 document.getElementById('stat-today-scans').innerText = snap.numChildren();
             });
+
+            // Calculate At Risk Students
+            calculateRisk();
+        }
+
+        async function calculateRisk() {
+            try {
+                // Fetch all records once for analysis
+                const snap = await db.ref('attendanceRecords').once('value');
+                const records = [];
+                snap.forEach(child => records.push(child.val()));
+
+                if (records.length === 0) {
+                    document.getElementById('stat-at-risk').innerText = "0";
+                    return;
+                }
+
+                // distinct dates effectively represent "Lecture Days"
+                // Ideally we should group by subject, but for a simple "Global Risk" indicator:
+                const uniqueDates = [...new Set(records.map(r => r.date))];
+                const totalSessions = uniqueDates.length;
+
+                if (totalSessions === 0) return;
+
+                let riskCount = 0;
+                currentStudentList.forEach(student => {
+                    const attended = records.filter(r => r.studentName === student).length;
+                    // Using a simple heuristic: if attendance < 50% of total recorded days (assuming 1 lecture/day/student)
+                    // This is an approximation. A more robust way requires knowing exactly how many lectures happened per subject.
+                    // But for now, we follow the logic in attendance-report.html (using 75% threshold there, maybe 60% here for "Risk" warning)
+                    const percentage = (attended / totalSessions) * 100;
+                    if (percentage < 60) {
+                        riskCount++;
+                    }
+                });
+
+                document.getElementById('stat-at-risk').innerText = riskCount;
+            } catch (e) {
+                console.error("Risk calc error:", e);
+            }
         }
 
         function deleteRecord(id) {

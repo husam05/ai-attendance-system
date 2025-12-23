@@ -9,6 +9,7 @@
     <script src="https://unpkg.com/html5-qrcode"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <style>
         #reader {
             border-radius: var(--radius-md);
@@ -34,9 +35,11 @@
     <!-- Verifying Overlay -->
     <div id="verify-overlay"
         style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-deep); display: flex; align-items: center; justify-content: center; z-index: 9999;">
-        <div style="text-align: center;">
-            <div style="font-size: 4rem; margin-bottom: 1rem;">🔒</div>
-            <h2>جاري التحقق من الرابط...</h2>
+        <div style="text-align: center; padding: 2rem;">
+            <div style="font-size: 4rem; margin-bottom: 1rem; animation: pulse 2s infinite;">🔒</div>
+            <h2 id="verify-status">جاري التحقق من الرابط...</h2>
+            <p style="color: var(--text-muted); margin-top: 1rem;">يرجى الانتظار لحظة</p>
+            <button id="retry-btn" class="btn btn-secondary" style="display: none; margin-top: 2rem;" onclick="location.reload()">🔄 إعادة المحاولة</button>
         </div>
     </div>
 
@@ -114,6 +117,17 @@
 
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
+        const auth = firebase.auth();
+
+        // Ensure auth before checking token
+        auth.signInAnonymously().catch(e => {
+            console.error("Auth Error", e);
+            if (e.code === 'auth/operation-not-allowed') {
+                showAlert('⚠️ خطأ: يجب تفعيل Anonymous Auth في إعدادات Firebase', 'danger');
+            } else {
+                showAlert('⚠️ خطأ في المصادقة: ' + e.message, 'danger');
+            }
+        });
 
         const urlParams = new URLSearchParams(window.location.search);
         const token = urlParams.get('token');
@@ -121,15 +135,30 @@
         let sessionCount = 0;
 
         async function checkToken() {
+            const statusEl = document.getElementById('verify-status');
+            const retryBtn = document.getElementById('retry-btn');
+            
+            console.log("Checking token:", token);
             if (!token) return showFatalError('الرابط غير صالح (No Token)');
 
+            // Timeout after 12 seconds
+            const timeout = setTimeout(() => {
+                statusEl.textContent = 'يبدو أن الاتصال بطيء جداً...';
+                retryBtn.style.display = 'inline-flex';
+            }, 12000);
+
             try {
+                statusEl.textContent = 'جاري الاتصال بقاعدة البيانات...';
                 const snap = await database.ref('temp_tokens/' + token).once('value');
-                if (!snap.exists()) return showFatalError('الرابط غير صحيح أو تم حذفه');
+                clearTimeout(timeout);
+                
+                if (!snap.exists()) return showFatalError('الرابط غير صحيح أو تم حذفه من قبل الأستاذ');
 
                 const data = snap.val();
-                if (Date.now() > data.expiry) return showFatalError('انتهت صلاحية هذا الرابط');
+                if (Date.now() > data.expiry) return showFatalError('انتهت صلاحية هذا الرابط (30 دقيقة)');
 
+                statusEl.textContent = 'تم التحقق! جاري التحميل...';
+                
                 document.getElementById('verify-overlay').style.display = 'none';
                 document.getElementById('main-app').style.display = 'block';
                 startTimer(data.expiry);
@@ -139,8 +168,11 @@
                 if (data.lectureType) document.getElementById('lectureType').value = data.lectureType;
 
             } catch (e) {
+                clearTimeout(timeout);
                 console.error(e);
-                showFatalError('خطأ في الاتصال بقاعدة البيانات');
+                statusEl.textContent = 'فشل التحقق';
+                retryBtn.style.display = 'inline-flex';
+                showFatalError('خطأ في الاتصال: ' + e.message);
             }
         }
 
@@ -176,6 +208,10 @@
             ).then(() => {
                 document.getElementById('startBtn').style.display = 'none';
                 document.getElementById('stopBtn').style.display = 'block';
+                showAlert('✅ الكاميرا تعمل بنجاح', 'success');
+            }).catch(err => {
+                console.error(err);
+                showAlert('❌ فشل تشغيل الكاميرا. تأكد من منح الصلاحيات.', 'danger');
             });
         }
 
@@ -204,11 +240,14 @@
             if (processingIds.has(student.id)) return;
 
             processingIds.add(student.id);
-            html5QrCode.pause(); // Pause scanning while checking
+            
+            if (html5QrCode) {
+                try { await html5QrCode.pause(); } catch (e) { }
+            }
 
             try {
                 const subject = document.getElementById('subject').value;
-                const today = new Date().toISOString().split('T')[0];
+                const today = new Date().toLocaleDateString('en-CA');
 
                 // Check for duplicates in cloud
                 const snapshot = await database.ref('attendanceRecords')
@@ -238,7 +277,9 @@
                 showAlert('خطأ في الاتصال', 'danger');
             } finally {
                 processingIds.delete(student.id);
-                setTimeout(() => html5QrCode.resume(), 1500); // Resume after short delay
+                setTimeout(() => {
+                    if (html5QrCode) html5QrCode.resume();
+                }, 1500);
             }
         }
 
@@ -248,7 +289,7 @@
                 studentName: studentData.name,
                 subject: document.getElementById('subject').value,
                 lectureType: document.getElementById('lectureType').value,
-                date: new Date().toISOString().split('T')[0],
+                date: new Date().toLocaleDateString('en-CA'),
                 time: new Date().toLocaleTimeString('ar-EG'),
                 timestamp: Date.now(),
                 via_token: token,
