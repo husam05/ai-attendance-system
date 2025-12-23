@@ -170,18 +170,21 @@
                 card.style.position = 'relative';
                 // Premium Dark Theme Background with Subtle Gradient
                 card.style.background = 'linear-gradient(180deg, #1e293b 0%, #0f172a 100%)';
+                // Force font family and direction explicitly for the capture
+                card.style.fontFamily = "'Cairo', 'Tajawal', sans-serif";
+
                 card.innerHTML = `
                     <div class="id-header">
                         <div style="color: white; font-weight: 900; font-size: 1.5rem; text-shadow: 0 2px 4px rgba(0,0,0,0.2);">AI DEPT</div>
                     </div>
-                    <div class="id-body" style="color: white; padding-top: 1.5rem;">
+                    <div class="id-body" style="color: white; padding-top: 1.5rem;" dir="rtl" lang="ar">
                         <div style="width: 80px; height: 80px; background: rgba(99,102,241,0.15); border: 2px solid rgba(99,102,241,0.3); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; font-size: 2.5rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
                             👤
                         </div>
                         
                         <!-- Name with improved contrast background -->
-                        <div style="background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent); padding: 0.5rem 0; margin-bottom: 0.5rem;">
-                            <h3 style="margin: 0; font-size: 1.2rem; font-weight: 800; text-shadow: 0 1px 2px rgba(0,0,0,0.5);">${student}</h3>
+                        <div style="padding: 0.5rem 0; margin-bottom: 0.5rem;">
+                            <h3 style="margin: 0; font-size: 1.4rem; font-weight: 700; text-shadow: 0 1px 2px rgba(0,0,0,0.5); font-family: 'Cairo', sans-serif; direction: rtl; unicode-bidi: embed;">${student}</h3>
                         </div>
                         
                         <p style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 1.5rem; letter-spacing: 0.5px;">قسم علوم الذكاء الاصطناعي</p>
