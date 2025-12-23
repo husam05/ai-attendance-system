@@ -111,8 +111,8 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
 
-    <!-- html2canvas & QRious -->
-    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    <!-- html-to-image & QRious -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html-to-image/1.11.11/html-to-image.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
 
     <script>
@@ -127,7 +127,7 @@
 
         // Firebase Config
         const firebaseConfig = {
-            apiKey: "AIzaSyDLSX6DY_79BD8ZEYBRYh_jtmP0mHslzkE",
+            apiKey: "AIzaSyDLSX6DY_79BDZEYBRYh_jtmP0mHslzkE",
             authDomain: "ai-attendance-husam.firebaseapp.com",
             databaseURL: "https://ai-attendance-husam-default-rtdb.firebaseio.com",
             projectId: "ai-attendance-husam",
@@ -184,7 +184,7 @@
                         
                         <!-- Name with improved contrast background -->
                         <div style="padding: 0.5rem 0; margin-bottom: 0.5rem;">
-                            <h3 style="margin: 0; font-size: 1.4rem; font-weight: 700; text-shadow: 0 1px 2px rgba(0,0,0,0.5); font-family: 'Cairo', sans-serif; direction: rtl; unicode-bidi: embed;">${student}</h3>
+                            <h3 style="margin: 0; font-size: 1.4rem; font-weight: 700; text-shadow: 0 1px 2px rgba(0,0,0,0.5); font-family: 'Cairo', sans-serif; direction: rtl; unicode-bidi: normal;">${student}</h3>
                         </div>
                         
                         <p style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 1.5rem; letter-spacing: 0.5px;">قسم علوم الذكاء الاصطناعي</p>
@@ -237,28 +237,22 @@
             const cardElement = document.getElementById(`card-${index}`);
             const btn = event.target;
             const originalText = btn.innerText;
-            btn.innerText = '⏳ جاري المعالجة...'; // Loading state
+            btn.innerText = '⏳ جاري المعالجة...';
 
             try {
-                // Ensure fonts and images are ready
+                // Ensure fonts area ready
                 await document.fonts.ready;
 
-                const canvas = await html2canvas(cardElement, {
-                    scale: 3, // High resolution for print
-                    useCORS: true,
-                    backgroundColor: null, // Transparent base, let CSS handle it
-                    logging: false,
-                    onclone: (clonedDoc) => {
-                        // Optional: Fix specific style issues in clone
-                        const clonedCard = clonedDoc.getElementById(`card-${index}`);
-                        clonedCard.style.transform = 'none'; // reset any hover transforms
-                        clonedCard.style.borderRadius = '0'; // Sharp corners for file? Or keep rounded.
-                    }
+                // Use html-to-image instead of html2canvas
+                const dataUrl = await htmlToImage.toPng(cardElement, {
+                    quality: 1.0,
+                    pixelRatio: 3, // High resolution
+                    backgroundColor: null // Preserve transparency/gradient
                 });
 
                 const link = document.createElement('a');
                 link.download = `ID_${studentName.replace(/\s+/g, '_')}.png`;
-                link.href = canvas.toDataURL('image/png');
+                link.href = dataUrl;
                 link.click();
 
                 btn.innerText = '✅ تم التحميل';
