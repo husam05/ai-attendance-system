@@ -12,7 +12,7 @@ This workflow describes how to manage tasks for the **AI Attendance System** usi
 - **Settings**: https://github.com/users/alkinani05/projects/1/settings
 - **Owner**: @alkinani05
 - **Project**: P001
-- **Linked Repository**: [husam05/ai-attendance-system](https://github.com/husam05/ai-attendance-system)
+- **Linked Repository**: [alkinani05/ai-attendance-system](https://github.com/alkinani05/ai-attendance-system)
 
 ---
 
@@ -152,6 +152,6 @@ firebase deploy
 
 ## 📞 Support
 
-- **Project Repository**: https://github.com/husam05/ai-attendance-system
+- **Project Repository**: https://github.com/alkinani05/ai-attendance-system
 - **Live Demo**: https://ai-attendance-husam.web.app
 - **Department**: قسم علوم الذكاء الاصطناعي - جامعة المصطفى
