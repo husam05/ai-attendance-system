@@ -1,4 +1,0 @@
-cd /home/jet/Desktop/Ai-Dept
-git add .
-git commit -m "Update: description of changes"
-git push

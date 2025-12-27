@@ -1,4 +1,27 @@
 .firebase/
-node_modules/
-*.log
+# Python
+*.pyc
+__pycache__/
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# IDE
 .DS_Store
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Project
+data/database.json
+.enve

@@ -1,108 +1,0 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Deep AI | تسجيل الدخول</title>
-    <link rel="stylesheet" href="style.css">
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
-</head>
-
-<body>
-    <div class="container animate-fade-in"
-        style="display: flex; align-items: center; justify-content: center; min-height: 100vh;">
-        <div class="glass-card" style="width: 100%; max-width: 450px; padding: 3rem; text-align: center;">
-            <div
-                style="width: 100px; height: 100px; background: rgba(99, 102, 241, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 2rem; font-size: 3.5rem; animation: pulse 2s infinite;">
-                🔐
-            </div>
-
-            <h1 style="margin-bottom: 0.5rem; font-size: 2rem;">تسجيل دخول الأساتذة</h1>
-            <p style="color: var(--text-muted); margin-bottom: 2rem;">قسم علوم الذكاء الاصطناعي - جامعة المصطفى</p>
-
-            <div id="errorAlert"
-                style="display: none; padding: 1rem; margin-bottom: 1.5rem; background: rgba(239, 68, 68, 0.1); border: 1px solid var(--danger); border-radius: 12px; color: var(--danger);">
-            </div>
-
-            <form id="loginForm" onsubmit="handleLogin(event)">
-                <div style="margin-bottom: 1.5rem; text-align: right;">
-                    <label
-                        style="display: block; margin-bottom: 0.5rem; color: var(--text-muted); font-size: 0.9rem;">البريد
-                        الإلكتروني</label>
-                    <input type="email" id="email" class="form-control" required placeholder="example@university.edu"
-                        value="teacher@ai-dept.com">
-                </div>
-
-                <div style="margin-bottom: 2rem; text-align: right;">
-                    <label
-                        style="display: block; margin-bottom: 0.5rem; color: var(--text-muted); font-size: 0.9rem;">كلمة
-                        المرور</label>
-                    <input type="password" id="password" class="form-control" required placeholder="••••••••"
-                        value="password123">
-                </div>
-
-                <button type="submit" id="loginBtn" class="btn btn-primary" style="width: 100%; padding: 1rem;">
-                    تسجيل الدخول 🚀
-                </button>
-            </form>
-
-            <div
-                style="margin-top: 2rem; padding: 1rem; background: rgba(99, 102, 241, 0.05); border-radius: 12px; font-size: 0.9rem; border: 1px dashed var(--glass-border);">
-                <strong>للتجربة:</strong> teacher@ai-dept.com / password123
-            </div>
-
-            <div style="margin-top: 1.5rem;">
-                <a href="index.html" style="color: var(--primary); text-decoration: none; font-size: 0.9rem;">← العودة
-                    للصفحة الرئيسية</a>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyDLSX6DY_79BD8ZEYBRYh_jtmP0mHslzkE",
-            authDomain: "ai-attendance-husam.firebaseapp.com",
-            databaseURL: "https://ai-attendance-husam-default-rtdb.firebaseio.com",
-            projectId: "ai-attendance-husam",
-            storageBucket: "ai-attendance-husam.firebasestorage.app",
-            messagingSenderId: "305903941972",
-            appId: "1:305903941972:web:d914431aab5a1cc6b5b0c1",
-            measurementId: "G-EJEKCTT2M9"
-        };
-
-        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-
-        firebase.auth().onAuthStateChanged((user) => {
-            if (user) window.location.href = 'teacher-qr-scanner.html';
-        });
-
-        function handleLogin(e) {
-            e.preventDefault();
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            const btn = document.getElementById('loginBtn');
-            const alert = document.getElementById('errorAlert');
-
-            btn.disabled = true;
-            btn.textContent = 'جاري التحقق...';
-            alert.style.display = 'none';
-
-            firebase.auth().signInWithEmailAndPassword(email, password)
-                .then(() => window.location.href = 'teacher-qr-scanner.html')
-                .catch((error) => {
-                    btn.disabled = false;
-                    btn.textContent = 'تسجيل الدخول 🚀';
-                    alert.style.display = 'block';
-                    let msg = 'حدث خطأ في تسجيل الدخول';
-                    if (error.code === 'auth/wrong-password') msg = 'كلمة المرور غير صحيحة';
-                    if (error.code === 'auth/user-not-found') msg = 'المستخدم غير موجود';
-                    if (error.code === 'auth/invalid-email') msg = 'البريد الإلكتروني غير صالح';
-                    alert.textContent = `❌ ${msg}`;
-                });
-        }
-    </script>
-</body>
-
-</html>

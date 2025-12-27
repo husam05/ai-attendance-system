@@ -7,12 +7,18 @@
     <title>Deep AI | ماسح الحضور (Advanced)</title>
     <link rel="stylesheet" href="style.css">
 
-    <!-- New Ultra-Fast Engine: Nimiq QR Scanner -->
-    <script src="https://unpkg.com/qr-scanner@1.4.2/qr-scanner.umd.min.js"></script>
+    <!-- New Ultra-Fast Engine: Local Nimiq QR Scanner -->
+    <script src="js/qr-scanner.umd.min.js"></script>
+    <script>
+        // Set worker path immediately after load
+        if (typeof QrScanner !== 'undefined') {
+            QrScanner.WORKER_PATH = 'js/qr-scanner-worker.min.js';
+        }
+    </script>
 
     <!-- Firebase -->
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    <!-- Go Backend -->
+    <script src="js/api.js"></script>
 
     <style>
         /* Camera Viewport */
@@ -160,15 +166,19 @@
                 <ul class="nav-links">
                     <li><a href="index.html">الرئيسية</a></li>
                     <li><a href="attendance-management.html">الإدارة</a></li>
+                    <li><a href="attendance-report.html">التقارير</a></li>
                 </ul>
             </div>
         </nav>
 
         <div class="scanner-layout">
             <div class="glass-card" style="padding: 1.5rem;">
-                <h2 style="margin-bottom: 1.5rem; display:flex; justify-content:space-between;">
+                <h2 style="margin-bottom: 1.5rem; display:flex; justify-content:space-between; align-items: center;">
                     <span>📸 الكاميرا الذكية (v3.0)</span>
-                    <span id="scan-counter" class="badge badge-primary">0</span>
+                    <div style="display:flex; gap:10px;">
+                        <span id="connection-status" class="badge badge-danger" title="حالة الاتصال">📡..</span>
+                        <span id="scan-counter" class="badge badge-primary">0</span>
+                    </div>
                 </h2>
 
                 <!-- Settings -->
@@ -178,6 +188,7 @@
                         <option>المعامل</option>
                         <option>الرياضيات I</option>
                         <option>مبادئ الذكاء الاصطناعي</option>
+                        <option>اختبار</option>
                     </select>
                     <select id="lectureType" class="form-control">
                         <option>نظري</option>
@@ -228,18 +239,67 @@
 
     <script>
         // --- Firebase Setup ---
-        const firebaseConfig = {
-            apiKey: "AIzaSyDLSX6DY_79BD8ZEYBRYh_jtmP0mHslzkE",
-            authDomain: "ai-attendance-husam.firebaseapp.com",
-            databaseURL: "https://ai-attendance-husam-default-rtdb.firebaseio.com",
-            projectId: "ai-attendance-husam",
-            storageBucket: "ai-attendance-husam.firebasestorage.app",
-            messagingSenderId: "305903941972",
-            appId: "1:305903941972:web:d914431aab5a1cc6b5b0c1"
-        };
+        // --- Local Setup ---
+        const firebaseConfig = {};
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
+        // --- Anonymous Authentication & Connection Test ---
+        let isAuthenticated = false;
+        let isDbConnected = false;
+        let lastError = "No errors yet";
+        const statusBadge = document.getElementById('connection-status');
+
+        // Debug Click Handler
+        statusBadge.addEventListener('click', () => {
+            alert(`🔍 تشخيص النظام:\n\n👤 مصادقة: ${isAuthenticated ? "تم (ID: " + firebase.auth().currentUser?.uid.slice(0, 5) + "...)" : "❌ غير مسجل"}\n📡 اتصال قاعدة البيانات: ${isDbConnected ? "✅ متصل" : "❌ مقطوع"}\n🌐 حالة المتصفح: ${navigator.onLine ? "Online" : "Offline"}\n⚠️ آخر خطأ: ${lastError}`);
+        });
+
+        function updateStatusUI() {
+            if (isAuthenticated && isDbConnected) {
+                statusBadge.innerText = "✅ متصل";
+                statusBadge.className = "badge badge-success";
+            } else if (!navigator.onLine) {
+                statusBadge.innerText = "⚠️ بلا إنترنت";
+                statusBadge.className = "badge badge-danger";
+            } else if (!isAuthenticated) {
+                statusBadge.innerText = "👤 جاري الدخول...";
+                statusBadge.className = "badge badge-warning";
+            } else {
+                statusBadge.innerText = "📡 جاري الربط...";
+                statusBadge.className = "badge badge-warning";
+            }
+        }
+
+        // 1. Monitor Auth State (More robust than promise)
+        firebase.auth().onAuthStateChanged((user) => {
+            if (user) {
+                console.log("✅ Auth State: Logged in", user.uid);
+                isAuthenticated = true;
+                updateStatusUI();
+            } else {
+                console.log("⚠️ Auth State: Logged out, retrying...");
+                isAuthenticated = false;
+                firebase.auth().signInAnonymously().catch(e => {
+                    lastError = e.message;
+                    updateStatusUI();
+                });
+            }
+        });
+
+        // 2. Continuous Latency Check
+        const connectedRef = firebase.database().ref(".info/connected");
+        connectedRef.on("value", (snap) => {
+            isDbConnected = snap.val() === true;
+            console.log("📡 DB Connection change:", isDbConnected);
+            if (!isDbConnected && isAuthenticated) lastError = "Database disconnected (Timeout/Network)";
+            updateStatusUI();
+        });
+
+        // Initial Error Catch
+        window.addEventListener('error', (event) => {
+            lastError = event.reason || event.message;
+        });
         // --- New Scanner Engine ---
         let qrScanner = null;
         let isScanned = false; // Lock
@@ -254,6 +314,14 @@
 
         // 1. Initialize logic
         async function startCamera() {
+            // Check if QrScanner is available
+            if (typeof QrScanner === 'undefined') {
+                statusText.innerText = "خطأ: مكتبة الماسح غير محملة";
+                statusText.style.color = "#ff4444";
+                alert("خطأ: لم يتم تحميل مكتبة QR Scanner. تأكد من وجود الملف js/qr-scanner.umd.min.js");
+                return;
+            }
+
             if (qrScanner) {
                 qrScanner.start();
                 updateUI(true);
@@ -281,9 +349,20 @@
                     flashBtn.style.display = 'block';
                 }
             } catch (e) {
-                console.error(e);
+                console.error("Camera Error:", e);
                 statusText.innerText = "فشل الوصول للكاميرا";
                 statusText.style.color = "#ff4444";
+
+                // More detailed error message
+                let errorMsg = "لا يمكن الوصول للكاميرا. ";
+                if (e.name === 'NotAllowedError') {
+                    errorMsg += "يرجى السماح بالوصول للكاميرا في إعدادات المتصفح.";
+                } else if (e.name === 'NotFoundError') {
+                    errorMsg += "لم يتم العثور على كاميرا متصلة.";
+                } else {
+                    errorMsg += e.message || e;
+                }
+                alert(errorMsg);
             }
         }
 
@@ -313,8 +392,18 @@
             try {
                 student = JSON.parse(rawText);
             } catch (e) {
-                // Not a JSON QR
-                return;
+                // Not a JSON QR - Attempt Legacy/Plain Text Mode
+                console.log("⚠️ Standard JSON parse failed, attempting plain text...");
+                if (typeof rawText === 'string' && rawText.length > 2) {
+                    // Assume the text ITSELF is the student name or ID
+                    student = {
+                        id: "legacy_" + Math.random().toString(36).substr(2, 9),
+                        name: rawText.trim(), // Use the raw text as name
+                        type: 'legacy_plain'
+                    };
+                } else {
+                    return;
+                }
             }
 
             if (!student.id || !student.name) return;
@@ -357,7 +446,19 @@
                 engine: 'Nimiq_v1'
             };
 
-            db.ref('attendanceRecords').push(record).catch(e => console.error(e));
+            db.ref('attendanceRecords').push(record)
+                .then(() => {
+                    console.log("✅ Saved to Firebase:", record);
+                })
+                .catch(e => {
+                    console.error("❌ Firebase Save Error:", e);
+                    showToast(`⚠️ فشل حفظ البيانات: ${e.message || e}`, "danger");
+                });
+
+            // Also save to localStorage as backup
+            const localRecords = JSON.parse(localStorage.getItem('attendanceRecords') || '[]');
+            localRecords.push({ ...record, timestamp: Date.now() });
+            localStorage.setItem('attendanceRecords', JSON.stringify(localRecords));
 
             // 4. Release Lock
             showToast(`✅ ${student.name}`, 'success');

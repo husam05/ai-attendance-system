@@ -7,9 +7,8 @@
     <title>Deep AI | إدارة السجلات</title>
     <link rel="stylesheet" href="style.css">
     <!-- Firebase -->
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <!-- Go Backend -->
+    <script src="js/api.js"></script>
 </head>
 
 <body>
@@ -117,17 +116,8 @@
         ];
 
         // Firebase Setup
-        const firebaseConfig = {
-            apiKey: "AIzaSyDLSX6DY_79BD8ZEYBRYh_jtmP0mHslzkE",
-            authDomain: "ai-attendance-husam.firebaseapp.com",
-            databaseURL: "https://ai-attendance-husam-default-rtdb.firebaseio.com",
-            projectId: "ai-attendance-husam",
-            storageBucket: "ai-attendance-husam.firebasestorage.app",
-            messagingSenderId: "305903941972",
-            appId: "1:305903941972:web:d914431aab5a1cc6b5b0c1",
-            measurementId: "G-EJEKCTT2M9"
-        };
-
+        // Local Setup
+        const firebaseConfig = {};
         if (!firebase.apps.length) {
             firebase.initializeApp(firebaseConfig);
         }
