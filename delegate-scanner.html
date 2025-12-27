@@ -242,10 +242,19 @@
 
             if (!student.id || !student.name) return;
 
-            // Check duplicate
+            // Check duplicate - PREVENT MULTIPLE SCANS
             if (scannedIds.has(student.id)) {
-                showToast(`⚠️ ${student.name} مسجل مسبقاً`, 'warning');
+                // Visual feedback for duplicate
+                const frame = document.querySelector('.scan-frame');
+                frame.style.borderColor = '#ff4444';
+                setTimeout(() => frame.style.borderColor = 'rgba(255,255,255,0.5)', 500);
+
                 document.getElementById('beepFail').play().catch(() => { });
+                showToast(`⚠️ ${student.name} مسجل مسبقاً في هذه الجلسة`, 'warning');
+
+                // Prevent re-scanning for 2 seconds
+                isScanned = true;
+                setTimeout(() => isScanned = false, 2000);
                 return;
             }
 
@@ -277,9 +286,15 @@
                 sessionToken: sessionToken
             };
 
+            // Log with proper formatting
+            console.log("✅ تم تسجيل الحضور:", {
+                الطالب: student.name,
+                الرقم: student.id,
+                المادة: sessionData.subject
+            });
+
             db.ref('attendanceRecords').push(record)
                 .then(() => {
-                    console.log("✅ Saved:", record);
                     showToast(`✅ ${student.name}`, 'success');
                 })
                 .catch(e => {
