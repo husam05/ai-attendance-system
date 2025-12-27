@@ -408,6 +408,13 @@
 
             if (!student.id || !student.name) return;
 
+            // Log for debugging (properly formatted)
+            console.log("✅ Scanned Student:", {
+                id: student.id,
+                name: student.name,
+                department: student.department || 'N/A'
+            });
+
             // Check Session Duplicate
             if (scannedIds.has(student.id)) {
                 showToast(`⚠️ ${student.name} مسجل مسبقاً`, 'warning');
@@ -469,14 +476,22 @@
             const list = document.getElementById('recent-list');
             const item = document.createElement('div');
             item.className = 'scan-item success';
+
+            // Create a temporary element to decode HTML entities
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = name;
+            const decodedName = tempDiv.textContent || tempDiv.innerText || name;
+
             item.innerHTML = `
                 <div style="display:flex; justify-content:space-between; width:100%;">
-                    <strong>${name}</strong>
+                    <strong>${decodedName}</strong>
                     <small>${new Date().toLocaleTimeString('ar-EG')}</small>
                 </div>
             `;
             // Remove empty msg if exists
-            if (list.children[0]?.innerText.includes('انتظار')) list.innerHTML = '';
+            const emptyMsg = list.querySelector('[style*="text-align:center"]');
+            if (emptyMsg) emptyMsg.remove();
+
             list.prepend(item);
         }
 
