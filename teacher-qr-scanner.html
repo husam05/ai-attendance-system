@@ -4,165 +4,149 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Deep AI | ماسح الحضور الذكي</title>
+    <title>Deep AI | ماسح الحضور (Advanced)</title>
     <link rel="stylesheet" href="style.css">
-    <!-- QR Library & Firebase -->
-    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+
+    <!-- New Ultra-Fast Engine: Nimiq QR Scanner -->
+    <script src="https://unpkg.com/qr-scanner@1.4.2/qr-scanner.umd.min.js"></script>
+
+    <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+
     <style>
-        #reader {
-            width: 100%;
-            min-height: 350px;
-            border-radius: var(--radius-lg);
-            overflow: hidden;
-            border: 2px solid var(--glass-border);
-            background: #000;
+        /* Camera Viewport */
+        .camera-wrapper {
             position: relative;
+            width: 100%;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 0 0 1px #333;
+            background: #000;
+            aspect-ratio: 3/4;
+            /* Mobile-first aspect ratio */
         }
 
-        #reader video {
-            object-fit: cover !important;
-            border-radius: var(--radius-lg);
+        /* The actual video element */
+        #qr-video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
 
-        .scanner-overlay-box {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 280px;
-            height: 280px;
-            border: 2px solid var(--primary);
-            border-radius: 24px;
-            box-shadow: 0 0 0 1000px rgba(0, 0, 0, 0.7);
-            pointer-events: none;
-            z-index: 10;
-        }
-
-        .scanner-line {
+        /* Overlay UI */
+        .scan-overlay {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
-            height: 3px;
-            background: var(--primary);
-            box-shadow: 0 0 20px var(--primary), 0 0 40px var(--secondary);
-            animation: scanMove 2s infinite ease-in-out;
-        }
-
-        @keyframes scanMove {
-            0% {
-                top: 0;
-                opacity: 0;
-            }
-
-            15% {
-                opacity: 1;
-            }
-
-            50% {
-                top: 100%;
-            }
-
-            85% {
-                opacity: 1;
-            }
-
-            100% {
-                top: 0;
-                opacity: 0;
-            }
-        }
-
-        .scan-flash {
-            position: absolute;
-            inset: 0;
-            background: rgba(16, 185, 129, 0.4);
-            z-index: 20;
-            opacity: 0;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            /* Dim surroundings */
+            display: flex;
+            align-items: center;
+            justify-content: center;
             pointer-events: none;
         }
 
-        .flash-active {
-            animation: flashAnim 0.3s ease-out;
+        .scan-frame {
+            width: 70%;
+            aspect-ratio: 1;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            border-radius: 20px;
+            position: relative;
+            box-shadow: 0 0 0 4000px rgba(0, 0, 0, 0.5);
+            /* Hard focus effect */
         }
 
-        @keyframes flashAnim {
+        .scan-frame::after {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            border: 2px solid #00ff88;
+            border-radius: 20px;
+            z-index: 2;
+            opacity: 0.8;
+            animation: pulse-border 2s infinite;
+        }
+
+        .scan-laser {
+            position: absolute;
+            top: 0;
+            left: 5%;
+            width: 90%;
+            height: 2px;
+            background: #00ff88;
+            box-shadow: 0 0 10px #00ff88, 0 0 20px #00ff88;
+            animation: scan-move 2s infinite linear;
+        }
+
+        @keyframes scan-move {
             0% {
+                top: 5%;
+                opacity: 0;
+            }
+
+            10% {
+                opacity: 1;
+            }
+
+            90% {
                 opacity: 1;
             }
 
             100% {
+                top: 95%;
                 opacity: 0;
             }
         }
 
-        .recent-scans {
-            max-height: 400px;
-            overflow-y: auto;
-            padding-right: 0.5rem;
+        @keyframes pulse-border {
+            0% {
+                box-shadow: 0 0 0 0 rgba(0, 255, 136, 0.4);
+            }
+
+            70% {
+                box-shadow: 0 0 0 15px rgba(0, 255, 136, 0);
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(0, 255, 136, 0);
+            }
         }
 
-        .recent-scans::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        .recent-scans::-webkit-scrollbar-track {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 10px;
-        }
-
-        .recent-scans::-webkit-scrollbar-thumb {
-            background: var(--glass-border);
-            border-radius: 10px;
-        }
-
-        .scan-item {
+        /* Status Badge */
+        .status-pill {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 50px;
+            backdrop-filter: blur(5px);
+            font-size: 0.85rem;
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            padding: 1rem;
-            margin-bottom: 0.5rem;
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid var(--glass-border);
-            border-radius: var(--radius-md);
-            animation: slideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            transition: var(--transition);
+            gap: 8px;
+            z-index: 10;
         }
 
-        .scan-item:hover {
-            transform: translateX(-5px);
-            background: rgba(255, 255, 255, 0.05);
-            border-color: var(--primary);
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #ff4444;
+            /* Default off */
         }
 
-        .scan-item.duplicate {
-            border-right: 4px solid var(--warning);
-        }
-
-        .scan-item.success {
-            border-right: 4px solid var(--success);
-        }
-
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateX(30px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
-        }
-
-        @media screen and (max-width: 768px) {
-            .scanner-overlay-box {
-                width: 70vw;
-                height: 70vw;
-            }
+        .status-dot.active {
+            background: #00ff88;
+            box-shadow: 0 0 10px #00ff88;
         }
     </style>
 </head>
@@ -171,103 +155,79 @@
     <div class="container animate-fade-in">
         <nav class="app-nav">
             <div class="nav-content">
-                <div style="font-weight: 900; font-size: 1.5rem; letter-spacing: -1px;">
-                    <span style="color: var(--primary);">DEEP</span> AI
+                <div style="font-weight: 900; font-size: 1.5rem;"><span style="color: var(--primary);">DEEP</span> AI
                 </div>
                 <ul class="nav-links">
                     <li><a href="index.html">الرئيسية</a></li>
-                    <li><a href="teacher-qr-scanner.html" class="active">الماسح</a></li>
                     <li><a href="attendance-management.html">الإدارة</a></li>
-                    <li><a href="attendance-report.html">التقارير</a></li>
                 </ul>
             </div>
         </nav>
 
         <div class="scanner-layout">
-            <div class="glass-card" style="padding: 2rem; position: relative; z-index: 5;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
-                    <h2>📸 جلسة الحضور الذكية</h2>
-                    <div id="connectionStatus" class="badge badge-success" style="display: none;">متصل 🟢</div>
+            <div class="glass-card" style="padding: 1.5rem;">
+                <h2 style="margin-bottom: 1.5rem; display:flex; justify-content:space-between;">
+                    <span>📸 الكاميرا الذكية (v3.0)</span>
+                    <span id="scan-counter" class="badge badge-primary">0</span>
+                </h2>
+
+                <!-- Settings -->
+                <div class="scanner-controls"
+                    style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                    <select id="subject" class="form-control">
+                        <option>المعامل</option>
+                        <option>الرياضيات I</option>
+                        <option>مبادئ الذكاء الاصطناعي</option>
+                    </select>
+                    <select id="lectureType" class="form-control">
+                        <option>نظري</option>
+                        <option>عملي</option>
+                    </select>
                 </div>
 
-                <div class="scanner-controls">
-                    <div>
-                        <label
-                            style="color: var(--text-muted); display: block; margin-bottom: 0.5rem; font-size: 0.85rem;">المادة
-                            الدراسية</label>
-                        <select id="subject" class="form-control">
-                            <option>المعامل</option>
-                            <option>الرياضيات I</option>
-                            <option>مبادئ الذكاء الاصطناعي</option>
-                            <option>الديمقراطية وحقوق الإنسان</option>
-                            <option>أساسيات البرمجة</option>
-                            <option>الإحصاء والاحتمالات</option>
-                        </select>
+                <!-- New Camera System -->
+                <div class="camera-wrapper">
+                    <video id="qr-video"></video>
+
+                    <div class="scan-overlay">
+                        <div class="scan-frame">
+                            <div class="scan-laser"></div>
+                        </div>
                     </div>
-                    <div>
-                        <label
-                            style="color: var(--text-muted); display: block; margin-bottom: 0.5rem; font-size: 0.85rem;">نوع
-                            المحاضرة</label>
-                        <select id="lectureType" class="form-control">
-                            <option>نظري</option>
-                            <option>عملي</option>
-                            <option>إضافي</option>
-                        </select>
+
+                    <div class="status-pill">
+                        <div id="cam-dot" class="status-dot"></div>
+                        <span id="cam-status">الكاميرا متوقفة</span>
                     </div>
                 </div>
 
-                <div style="position: relative; border-radius: var(--radius-lg); overflow: hidden;">
-                    <div id="reader"></div>
-                    <div class="scanner-overlay-box" id="overlayBox" style="display: none;">
-                        <div class="scanner-line"></div>
-                    </div>
-                    <div class="scan-flash" id="scanFlash"></div>
-                </div>
-
-                <div style="margin-top: 2rem; display: flex; gap: 1rem; flex-wrap: wrap;">
-                    <button class="btn btn-primary" onclick="startScanner()" id="startBtn" style="flex: 2;">⚡ بدء
-                        المسح</button>
-                    <button class="btn btn-secondary" onclick="stopScanner()">🛑 إيقاف</button>
-                    <button class="btn btn-secondary" onclick="generateDelegateLink()"
-                        title="إنشاء رابط للطالب المراقب">🔗 تفويض</button>
+                <!-- Controls -->
+                <div style="margin-top: 1.5rem; display: flex; gap: 1rem;">
+                    <button class="btn btn-primary" onclick="startCamera()" style="flex:1;">⚡ تشغيل</button>
+                    <button class="btn btn-secondary" onclick="stopCamera()" style="flex:1;">🛑 إيقاف</button>
+                    <button class="btn btn-secondary" onclick="toggleFlash()" id="flash-btn"
+                        style="display:none;">🔦</button>
                 </div>
             </div>
 
-            <div class="glass-card" style="padding: 2rem; display: flex; flex-direction: column; height: fit-content;">
-                <h3 style="margin-bottom: 1.5rem;">📊 نشاط الجلسة</h3>
-                <div class="stats-grid" style="grid-template-columns: 1fr; gap: 1rem; margin-bottom: 2rem;">
-                    <div
-                        style="text-align: center; padding: 1.5rem; background: rgba(99,102,241,0.1); border-radius: var(--radius-md); border: 1px solid rgba(99,102,241,0.2);">
-                        <div id="scan-count"
-                            style="font-size: 3.5rem; font-weight: 900; color: var(--primary); line-height: 1;">0</div>
-                        <div style="color: var(--text-muted); margin-top: 0.5rem; font-size: 0.9rem;">طالب تم تسجيلهم
-                        </div>
-                    </div>
-                </div>
-                <h4
-                    style="margin-bottom: 1rem; color: var(--text-muted); display: flex; justify-content: space-between;">
-                    <span>آخر المسوحات</span>
-                    <span id="last-scan-time" style="font-size: 0.8rem; font-weight: normal;"></span>
-                </h4>
-                <div id="recent-list" class="recent-scans">
-                    <div id="empty-state" style="text-align: center; padding: 3rem 1rem; color: var(--text-muted);">
-                        <div style="font-size: 2rem; margin-bottom: 1rem; opacity: 0.5;">📡</div>
-                        <p>بانتظار بدء عملية المسح...</p>
+            <!-- List -->
+            <div class="glass-card" style="padding: 1.5rem;">
+                <h3>سجل الحضور اللحظي</h3>
+                <div id="recent-list" class="recent-scans" style="margin-top:1rem; min-height:200px;">
+                    <div style="text-align:center; color:var(--text-muted); margin-top:3rem;">
+                        في انتظار المسح...
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <audio id="beepSuccess" preload="auto">
-        <source src="https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3" type="audio/mpeg">
-    </audio>
-    <audio id="beepError" preload="auto">
-        <source src="https://assets.mixkit.co/active_storage/sfx/2572/2572-preview.mp3" type="audio/mpeg">
-    </audio>
+    <!-- Audios -->
+    <audio id="beepOk" src="https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3"></audio>
+    <audio id="beepFail" src="https://assets.mixkit.co/active_storage/sfx/2572/2572-preview.mp3"></audio>
 
     <script>
-        // Firebase Config
+        // --- Firebase Setup ---
         const firebaseConfig = {
             apiKey: "AIzaSyDLSX6DY_79BD8ZEYBRYh_jtmP0mHslzkE",
             authDomain: "ai-attendance-husam.firebaseapp.com",
@@ -275,244 +235,161 @@
             projectId: "ai-attendance-husam",
             storageBucket: "ai-attendance-husam.firebasestorage.app",
             messagingSenderId: "305903941972",
-            appId: "1:305903941972:web:d914431aab5a1cc6b5b0c1",
-            measurementId: "G-EJEKCTT2M9"
+            appId: "1:305903941972:web:d914431aab5a1cc6b5b0c1"
         };
-
-        if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
+        firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // State
-        let html5QrCode = null;
+        // --- New Scanner Engine ---
+        let qrScanner = null;
+        let isScanned = false; // Lock
         let scanCount = 0;
-        let scannedIds = new Set();
-        const processingIds = new Set();
-        let validStudentsList = []; // Kept for reference, but validation is disabled
-        let isScannerRunning = false;
+        let scannedIds = new Set(); // Session duplicates
 
-        // UI Elements
-        const successBeep = document.getElementById('beepSuccess');
-        const errorBeep = document.getElementById('beepError');
-        const overlayBox = document.getElementById('overlayBox');
-        const scanFlash = document.getElementById('scanFlash');
+        // Elements
+        const videoElem = document.getElementById('qr-video');
+        const statusText = document.getElementById('cam-status');
+        const statusDot = document.getElementById('cam-dot');
+        const flashBtn = document.getElementById('flash-btn');
 
-        // --- Initialization ---
-        window.addEventListener('load', async () => {
-            document.getElementById('connectionStatus').style.display = 'block';
-
-            // Load Students List (Just for logging)
-            try {
-                const snap = await db.ref('students_list').once('value');
-                if (snap.exists()) {
-                    const val = snap.val();
-                    validStudentsList = Array.isArray(val) ? val : Object.values(val);
-                    validStudentsList = validStudentsList.map(s => String(s).trim());
-                    console.log(`Loaded ${validStudentsList.length} students.`);
-                }
-            } catch (e) { console.warn("List load error:", e); }
-        });
-
-        // --- Scanner Logic ---
-        async function startScanner() {
-            if (isScannerRunning) return;
-
-            scanCount = 0;
-            scannedIds = new Set();
-            document.getElementById('scan-count').innerText = "0";
-            document.getElementById('startBtn').disabled = true;
-            document.getElementById('startBtn').innerText = '⏳ جاري التشغيل...';
-
-            const cameraFacingMode = "environment";
-            const scannerConfig = {
-                fps: 10,
-                qrbox: { width: 250, height: 250 },
-                aspectRatio: 1.0
-            };
-
-            html5QrCode = new Html5Qrcode("reader");
-
-            try {
-                await html5QrCode.start(
-                    { facingMode: cameraFacingMode },
-                    scannerConfig,
-                    onScanSuccess,
-                    onScanFailure
-                );
-                isScannerRunning = true;
-                document.getElementById('startBtn').innerHTML = '<span style="width:10px; height:10px; display:inline-block; border-radius:50%; background: lime; animation: pulse 1s infinite;"></span> الماسح نشط';
-                overlayBox.style.display = 'block';
-                showToast('✅ تم تشغيل الكاميرا بنجاح', 'success');
-            } catch (err) {
-                console.error("Camera Error:", err);
-                document.getElementById('startBtn').disabled = false;
-                document.getElementById('startBtn').innerText = '⚡ بدء المسح';
-                showToast(`❌ فشل تشغيل الكاميرا: ${err.message || err}`, 'danger');
+        // 1. Initialize logic
+        async function startCamera() {
+            if (qrScanner) {
+                qrScanner.start();
+                updateUI(true);
+                return;
             }
-        }
 
-        async function onScanSuccess(decodedText) {
-            if (processingIds.size > 0) return;
+            // Create Scanner Instance
+            qrScanner = new QrScanner(
+                videoElem,
+                result => processResult(result),
+                {
+                    highlightScanRegion: true,
+                    highlightCodeOutline: true,
+                    maxScansPerSecond: 5, // Throttle
+                    returnDetailedScanResult: true // Get full object
+                }
+            );
 
-            let student;
             try {
-                student = JSON.parse(decodedText);
+                await qrScanner.start();
+                updateUI(true);
+
+                // Check flash support
+                if (await qrScanner.hasFlash()) {
+                    flashBtn.style.display = 'block';
+                }
             } catch (e) {
-                // Fail silently for non-JSON content
-                return;
-            }
-
-            if (!student.id || !student.name) {
-                console.log("Invalid QR structure");
-                return;
-            }
-
-            const studentName = String(student.name).trim();
-
-            // --- DISABLED STRICT VALIDATION ---
-            // Trust the QR code content. This fixes "Student Not Registered" issues.
-            /*
-            if (validStudentsList.length > 0 && !validStudentsList.includes(studentName)) {
-                processError(`الطالب غير مسجل: ${studentName}`, true);
-                return;
-            }
-            */
-
-            // Check duplicate in current session
-            if (scannedIds.has(student.id)) {
-                processError(`تم تسجيل ${studentName} مسبقاً`, true);
-                return;
-            }
-
-            processingIds.add(student.id);
-
-            try {
-                const subject = document.getElementById('subject').value;
-                const lectureType = document.getElementById('lectureType').value;
-                const today = new Date().toLocaleDateString('en-CA');
-
-                // Cloud Duplicate Check
-                let isCloudDuplicate = false;
-                try {
-                    const snap = await db.ref('attendanceRecords')
-                        .orderByChild('date')
-                        .equalTo(today)
-                        .once('value');
-
-                    if (snap.exists()) {
-                        snap.forEach(child => {
-                            const rec = child.val();
-                            // Check ID match for same subject
-                            if (rec.studentId == student.id && rec.subject === subject) {
-                                isCloudDuplicate = true;
-                            }
-                        });
-                    }
-                } catch (err) { console.warn("Cloud check skipped:", err.message); }
-
-                if (isCloudDuplicate) {
-                    scannedIds.add(student.id);
-                    processError(`مسجل مسبقاً: ${studentName}`, true);
-                    return;
-                }
-
-                // Write Record
-                await db.ref('attendanceRecords').push({
-                    studentId: student.id,
-                    studentName: studentName,
-                    subject: subject,
-                    lectureType: lectureType,
-                    date: today,
-                    time: new Date().toLocaleTimeString('ar-EG'),
-                    timestamp: firebase.database.ServerValue.TIMESTAMP,
-                    device: 'TeacherScanner_v2.7_Open'
-                });
-
-                handleSuccessfulScan(student);
-
-            } catch (err) {
-                console.error("Processing error:", err);
-                showToast('خطأ أثناء المعالجة', 'danger');
-            } finally {
-                setTimeout(() => processingIds.delete(student.id), 2000); // 2s lock
+                console.error(e);
+                statusText.innerText = "فشل الوصول للكاميرا";
+                statusText.style.color = "#ff4444";
             }
         }
 
-        function onScanFailure(error) { /* Ignore */ }
+        function stopCamera() {
+            if (qrScanner) {
+                qrScanner.stop();
+                updateUI(false);
+            }
+        }
 
-        function handleSuccessfulScan(student) {
+        function toggleFlash() {
+            if (qrScanner) qrScanner.toggleFlash();
+        }
+
+        function updateUI(active) {
+            statusText.innerText = active ? "جاري المسح..." : "الكاميرا متوقفة";
+            statusDot.className = active ? "status-dot active" : "status-dot";
+        }
+
+        // 2. Process Scan (Logic Only)
+        async function processResult(result) {
+            if (isScanned) return; // Debounce lock
+
+            const rawText = result.data;
+            let student = null;
+
+            try {
+                student = JSON.parse(rawText);
+            } catch (e) {
+                // Not a JSON QR
+                return;
+            }
+
+            if (!student.id || !student.name) return;
+
+            // Check Session Duplicate
+            if (scannedIds.has(student.id)) {
+                showToast(`⚠️ ${student.name} مسجل مسبقاً`, 'warning');
+                isScanned = true;
+                setTimeout(() => isScanned = false, 2000); // 2s Cooldown
+                return;
+            }
+
+            // --- Success Path ---
+            isScanned = true;
+            confirmScan(student);
+        }
+
+        function confirmScan(student) {
+            // 1. Visual/Audio Feedback
+            document.getElementById('beepOk').play().catch(() => { });
+            const frame = document.querySelector('.scan-frame');
+            frame.style.borderColor = '#00ff88';
+            setTimeout(() => frame.style.borderColor = 'rgba(255,255,255,0.5)', 500);
+
+            // 2. Add to Local List
             scannedIds.add(student.id);
             scanCount++;
-            document.getElementById('scan-count').innerText = scanCount;
-            addToList(student.name, 'success');
-            triggerFeedback('success');
-            showToast(`✅ تم التحضير: ${student.name}`, 'success');
+            document.getElementById('scan-counter').innerText = scanCount;
+            addToList(student.name);
+
+            // 3. Save to Firebase
+            const record = {
+                studentId: student.id,
+                studentName: student.name,
+                subject: document.getElementById('subject').value,
+                lectureType: document.getElementById('lectureType').value,
+                date: new Date().toLocaleDateString('en-CA'),
+                time: new Date().toLocaleTimeString('ar-EG'),
+                timestamp: firebase.database.ServerValue.TIMESTAMP,
+                engine: 'Nimiq_v1'
+            };
+
+            db.ref('attendanceRecords').push(record).catch(e => console.error(e));
+
+            // 4. Release Lock
+            showToast(`✅ ${student.name}`, 'success');
+            setTimeout(() => isScanned = false, 1500); // 1.5s delay before next scan
         }
 
-        function processError(msg, isWarning = false) {
-            if (isWarning) { triggerFeedback('warning'); showToast(`⚠️ ${msg}`, 'warning'); }
-        }
-
-        function triggerFeedback(type) {
-            if (navigator.vibrate) { type === 'success' ? navigator.vibrate([50, 50, 50]) : navigator.vibrate(200); }
-            if (type === 'success') {
-                scanFlash.classList.add('flash-active');
-                setTimeout(() => scanFlash.classList.remove('flash-active'), 300);
-                successBeep.currentTime = 0; successBeep.play().catch(() => { });
-            }
-            if (type === 'warning') { errorBeep.currentTime = 0; errorBeep.play().catch(() => { }); }
-        }
-
-        function addToList(name, status) {
+        function addToList(name) {
             const list = document.getElementById('recent-list');
-            const emptyState = document.getElementById('empty-state');
-            if (emptyState) emptyState.remove();
             const item = document.createElement('div');
-            item.className = `scan-item ${status}`;
-            item.innerHTML = `<div style="display:flex; align-items:center; gap:0.5rem;"><div style="width:8px; height:8px; background:var(--${status === 'success' ? 'success' : 'warning'}); border-radius:50%;"></div><span style="font-weight:700;">${name}</span></div><span style="font-size:0.75rem; color:var(--text-muted);">${new Date().toLocaleTimeString('ar-EG')}</span>`;
+            item.className = 'scan-item success';
+            item.innerHTML = `
+                <div style="display:flex; justify-content:space-between; width:100%;">
+                    <strong>${name}</strong>
+                    <small>${new Date().toLocaleTimeString('ar-EG')}</small>
+                </div>
+            `;
+            // Remove empty msg if exists
+            if (list.children[0]?.innerText.includes('انتظار')) list.innerHTML = '';
             list.prepend(item);
         }
 
-        function stopScanner() {
-            if (html5QrCode && isScannerRunning) {
-                html5QrCode.stop().then(() => {
-                    isScannerRunning = false;
-                    document.getElementById('startBtn').disabled = false;
-                    document.getElementById('startBtn').innerHTML = '⚡ بدء المسح';
-                    overlayBox.style.display = 'none';
-                    showToast('تم إيقاف الكاميرا', 'secondary');
-                }).catch(e => console.error("Stop error:", e));
-            }
-        }
-
-        function generateDelegateLink() {
-            const subject = document.getElementById('subject').value;
-            const input = prompt("حدد مدة صلاحية الرابط بالدقائق:", "15");
-            if (input === null) return;
-            let minutes = parseInt(input);
-            if (isNaN(minutes) || minutes <= 0) minutes = 15;
-
-            const token = 'dlg_' + Math.random().toString(36).substr(2, 9);
-            const expiry = Date.now() + (minutes * 60 * 1000);
-
-            db.ref('temp_tokens/' + token).set({
-                expiry, subject,
-                lectureType: document.getElementById('lectureType').value,
-                createdAt: firebase.database.ServerValue.TIMESTAMP
-            }).then(() => {
-                const url = `https://husam05.github.io/ai-attendance-system/temp-scanner.html?token=${token}`;
-                navigator.clipboard.writeText(url);
-                showToast(`📋 تم نسخ رابط (${minutes} دقيقة)`, 'success');
-            }).catch(err => { console.error(err); showToast('فشل إنشاء الرابط', 'danger'); });
-        }
-
         function showToast(msg, type) {
-            const toast = document.createElement('div');
-            toast.className = `badge badge-${type}`;
-            Object.assign(toast.style, { position: 'fixed', bottom: '2rem', left: '50%', transform: 'translateX(-50%)', padding: '1rem 2rem', zIndex: '9999', fontSize: '1rem', boxShadow: '0 10px 30px rgba(0,0,0,0.5)', whiteSpace: 'nowrap', border: '1px solid currentColor' });
-            toast.innerHTML = msg;
-            document.body.appendChild(toast);
-            toast.animate([{ opacity: 0, transform: 'translate(-50%, 20px)' }, { opacity: 1, transform: 'translate(-50%, 0)' }], { duration: 300, fill: 'forwards' });
-            setTimeout(() => { toast.animate([{ opacity: 1, transform: 'translate(-50%, 0)' }, { opacity: 0, transform: 'translate(-50%, 20px)' }], { duration: 300, fill: 'forwards' }).onfinish = () => toast.remove(); }, 3000);
+            const t = document.createElement('div');
+            t.className = `badge badge-${type}`;
+            t.style.position = 'fixed';
+            t.style.top = '100px';
+            t.style.left = '50%';
+            t.style.transform = 'translateX(-50%)';
+            t.style.zIndex = 999;
+            t.innerText = msg;
+            document.body.appendChild(t);
+            setTimeout(() => t.remove(), 2500);
         }
     </script>
 </body>
