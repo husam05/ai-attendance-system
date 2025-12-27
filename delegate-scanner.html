@@ -310,9 +310,17 @@
             const item = document.createElement('div');
             item.className = 'scan-item success';
 
-            const tempDiv = document.createElement('div');
+            // Decode HTML entities and handle Unicode
+            const tempDiv = document.createElement('textarea');
             tempDiv.innerHTML = name;
-            const decodedName = tempDiv.textContent || tempDiv.innerText || name;
+            let decodedName = tempDiv.value;
+
+            // If still looks encoded, try textContent
+            if (decodedName.includes('&') || decodedName.includes('#')) {
+                const tempDiv2 = document.createElement('div');
+                tempDiv2.innerHTML = name;
+                decodedName = tempDiv2.textContent || tempDiv2.innerText || name;
+            }
 
             item.innerHTML = `
                 <div style="display:flex; justify-content:space-between; width:100%;">
