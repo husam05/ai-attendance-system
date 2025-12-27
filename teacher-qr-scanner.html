@@ -322,7 +322,10 @@
             try {
                 const snap = await db.ref('students_list').once('value');
                 if (snap.exists()) {
-                    validStudentsList = snap.val();
+                    const val = snap.val();
+                    // Robust handling: Firebase might return Array or Object
+                    validStudentsList = Array.isArray(val) ? val : Object.values(val);
+                    validStudentsList = validStudentsList.map(s => s.trim()); // Normalize
                     console.log(`Loaded ${validStudentsList.length} students for validation.`);
                 }
             } catch (e) {
@@ -341,9 +344,9 @@
             document.getElementById('scan-count').innerText = "0";
 
             html5QrCode = new Html5Qrcode("reader");
+            // Improved Config: No specific qrbox means full width scanning (easier)
             const config = {
                 fps: 10,
-                qrbox: { width: 250, height: 250 },
                 aspectRatio: 1.0
             };
 
@@ -367,10 +370,12 @@
 
             let student;
             try {
-                student = JSON.parse(decodedText);
+                // Handle occasional double-encoded JSON
+                const cleanText = decodedText.replace(/\\"/g, '"');
+                student = JSON.parse(cleanText);
             } catch (e) {
-                // Ignore non-JSON (likely not our QR)
                 console.warn("Non-JSON QR scanned", decodedText);
+                // processError("رمز QR غير صالح (ليس بطاقة طالب)"); // Optional
                 return;
             }
 
@@ -380,15 +385,19 @@
                 return;
             }
 
+            const studentName = student.name.trim();
+
             // 2. Centralized List Validation (Security)
-            if (validStudentsList.length > 0 && !validStudentsList.includes(student.name)) {
-                processError(`الطالب غير مسجل في القائمة الرسمية: ${student.name}`);
+            // Robust check: Only validate if list is actually loaded
+            // Using includes on trimmed strings
+            if (validStudentsList.length > 0 && !validStudentsList.includes(studentName)) {
+                processError(`الطالب غير مسجل في القائمة الرسمية: ${studentName}`, true);
                 return;
             }
 
             // 3. Local De-bounce (Fastest check)
             if (scannedIds.has(student.id)) {
-                processError(`تم تسجيل ${student.name} مسبقاً في هذه الجلسة`, true);
+                processError(`تم تسجيل ${studentName} مسبقاً في هذه الجلسة`, true);
                 return;
             }
 
@@ -403,7 +412,6 @@
 
                 // 5. Cloud Duplicate Check (Async)
                 // We fetch records for today to ensure no cross-device duplicates
-                // Optimizing by ordering by date if index exists, else relying on client filtering
                 let isCloudDuplicate = false;
 
                 try {
@@ -415,7 +423,8 @@
                     if (snap.exists()) {
                         snap.forEach(child => {
                             const rec = child.val();
-                            if (rec.studentId === student.id && rec.subject === subject) {
+                            // Loose comparison for robustness
+                            if (rec.studentId == student.id && rec.subject === subject) {
                                 isCloudDuplicate = true;
                             }
                         });
@@ -427,20 +436,20 @@
 
                 if (isCloudDuplicate) {
                     scannedIds.add(student.id); // Add to local ignore to prevent retry
-                    processError(`مسجل مسبقاً في السحابة: ${student.name} - ${subject}`, true);
+                    processError(`مسجل مسبقاً في السحابة: ${studentName} - ${subject}`, true);
                     return;
                 }
 
                 // 6. Write to Firebase
                 const record = {
                     studentId: student.id,
-                    studentName: student.name,
+                    studentName: studentName,
                     subject: subject,
                     lectureType: lectureType,
                     date: today,
                     time: new Date().toLocaleTimeString('ar-EG'),
                     timestamp: firebase.database.ServerValue.TIMESTAMP,
-                    device: 'TeacherScanner_v2.5'
+                    device: 'TeacherScanner_v2.5.4'
                 };
 
                 await db.ref('attendanceRecords').push(record);
@@ -453,7 +462,7 @@
                 showToast('خطأ غير متوقع أثناء المعالجة', 'danger');
             } finally {
                 // Variable lock release
-                setTimeout(() => processingIds.delete(student.id), 2000); // 2s cooldown
+                setTimeout(() => processingIds.delete(student.id), 2500); // 2.5s cooldown
             }
         }
 
@@ -468,8 +477,9 @@
 
             // UI Update
             document.getElementById('scan-count').innerText = scanCount;
-            document.getElementById('scan-count').classList.add('animate-pulse');
-            setTimeout(() => document.getElementById('scan-count').classList.remove('animate-pulse'), 500);
+            const counter = document.getElementById('scan-count');
+            counter.style.transform = "scale(1.2)";
+            setTimeout(() => counter.style.transform = "scale(1)", 200);
 
             addToList(student.name, 'success');
 
@@ -479,18 +489,11 @@
         }
 
         function processError(msg, isWarning = false) {
-            // Only vibrate/beep for meaningful errors, not just random QRs
             if (isWarning) {
                 triggerFeedback('warning');
                 showToast(`⚠️ ${msg}`, 'warning');
             } else {
                 console.log("Ignored invalid scan:", msg);
-            }
-
-            // Unlock immediately if error
-            if (msg.includes('مسبقاً')) {
-                // Keep lock for duplicate warnings to prevent spamming the warning
-                setTimeout(() => processingIds.delete(msg.split(':')[1]?.trim() || 'unknown'), 2000);
             }
         }
 
@@ -555,11 +558,8 @@
             const input = prompt("حدد مدة صلاحية الرابط بالدقائق:", "15");
             if (input === null) return; // User cancelled
 
-            const minutes = parseInt(input);
-            if (isNaN(minutes) || minutes <= 0) {
-                showToast('⚠️ يرجى إدخال مدة صحيحة', 'warning');
-                return;
-            }
+            let minutes = parseInt(input);
+            if (isNaN(minutes) || minutes <= 0) minutes = 15;
 
             const token = 'dlg_' + Math.random().toString(36).substr(2, 9);
             const expiry = Date.now() + (minutes * 60 * 1000);
@@ -577,7 +577,7 @@
 
                 const url = `${baseUrl}?token=${token}`;
                 navigator.clipboard.writeText(url);
-                showToast(`📋 تم نسخ رابط فعال لمدة ${minutes} دقيقة`, 'success');
+                showToast(`📋 تم نسخ رابط (${minutes} دقيقة) بنجاح`, 'success');
             }).catch(error => {
                 console.error(error);
                 showToast('❌ فشل إنشاء الرابط', 'danger');
