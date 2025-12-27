@@ -18,22 +18,24 @@
             overflow: hidden;
             border: 2px solid var(--glass-border);
             background: #000;
+            position: relative;
         }
 
-        #reader__scan_region video {
+        #reader video {
             object-fit: cover !important;
+            border-radius: var(--radius-lg);
         }
 
-        .scanner-overlay {
+        .scanner-overlay-box {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 250px;
-            height: 250px;
+            width: 280px;
+            height: 280px;
             border: 2px solid var(--primary);
-            border-radius: 20px;
-            box-shadow: 0 0 0 1000px rgba(0, 0, 0, 0.5);
+            border-radius: 24px;
+            box-shadow: 0 0 0 1000px rgba(0, 0, 0, 0.7);
             pointer-events: none;
             z-index: 10;
         }
@@ -43,29 +45,78 @@
             top: 0;
             left: 0;
             width: 100%;
-            height: 2px;
+            height: 3px;
             background: var(--primary);
-            box-shadow: 0 0 15px var(--primary);
-            animation: scanMove 2s infinite linear;
+            box-shadow: 0 0 20px var(--primary), 0 0 40px var(--secondary);
+            animation: scanMove 2s infinite ease-in-out;
         }
 
         @keyframes scanMove {
             0% {
                 top: 0;
+                opacity: 0;
+            }
+
+            15% {
+                opacity: 1;
             }
 
             50% {
                 top: 100%;
             }
 
+            85% {
+                opacity: 1;
+            }
+
             100% {
                 top: 0;
+                opacity: 0;
+            }
+        }
+
+        .scan-flash {
+            position: absolute;
+            inset: 0;
+            background: rgba(16, 185, 129, 0.4);
+            z-index: 20;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .flash-active {
+            animation: flashAnim 0.3s ease-out;
+        }
+
+        @keyframes flashAnim {
+            0% {
+                opacity: 1;
+            }
+
+            100% {
+                opacity: 0;
             }
         }
 
         .recent-scans {
-            max-height: 300px;
+            max-height: 400px;
             overflow-y: auto;
+            padding-right: 0.5rem;
+        }
+
+        /* Custom Scrollbar */
+        .recent-scans::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .recent-scans::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+        }
+
+        .recent-scans::-webkit-scrollbar-thumb {
+            background: var(--glass-border);
+            border-radius: 10px;
         }
 
         .scan-item {
@@ -73,19 +124,44 @@
             justify-content: space-between;
             align-items: center;
             padding: 1rem;
-            border-bottom: 1px solid var(--glass-border);
-            animation: slideIn 0.3s ease-out;
+            margin-bottom: 0.5rem;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-md);
+            animation: slideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: var(--transition);
+        }
+
+        .scan-item:hover {
+            transform: translateX(-5px);
+            background: rgba(255, 255, 255, 0.05);
+            border-color: var(--primary);
+        }
+
+        .scan-item.duplicate {
+            border-right: 4px solid var(--warning);
+        }
+
+        .scan-item.success {
+            border-right: 4px solid var(--success);
         }
 
         @keyframes slideIn {
             from {
                 opacity: 0;
-                transform: translateX(20px);
+                transform: translateX(30px);
             }
 
             to {
                 opacity: 1;
                 transform: translateX(0);
+            }
+        }
+
+        @media screen and (max-width: 768px) {
+            .scanner-overlay-box {
+                width: 70vw;
+                height: 70vw;
             }
         }
     </style>
@@ -95,7 +171,8 @@
     <div class="container animate-fade-in">
         <nav class="app-nav">
             <div class="nav-content">
-                <div style="font-weight: 900; font-size: 1.5rem;"><span style="color: var(--primary);">DEEP</span> AI
+                <div style="font-weight: 900; font-size: 1.5rem; letter-spacing: -1px;">
+                    <span style="color: var(--primary);">DEEP</span> AI
                 </div>
                 <ul class="nav-links">
                     <li><a href="index.html">الرئيسية</a></li>
@@ -108,13 +185,16 @@
 
         <div class="scanner-layout">
             <!-- Main Scanner Panel -->
-            <div class="glass-card" style="padding: 2rem;">
-                <h2 style="margin-bottom: 2rem;">📸 جلسة الحضور الذكية</h2>
+            <div class="glass-card" style="padding: 2rem; position: relative; z-index: 5;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                    <h2>📸 جلسة الحضور الذكية</h2>
+                    <div id="connectionStatus" class="badge badge-success" style="display: none;">متصل 🟢</div>
+                </div>
 
                 <div class="scanner-controls">
                     <div>
                         <label
-                            style="color: var(--text-muted); display: block; margin-bottom: 0.5rem; font-size: 0.8rem;">المادة
+                            style="color: var(--text-muted); display: block; margin-bottom: 0.5rem; font-size: 0.85rem;">المادة
                             الدراسية</label>
                         <select id="subject" class="form-control">
                             <option>المعامل</option>
@@ -127,7 +207,7 @@
                     </div>
                     <div>
                         <label
-                            style="color: var(--text-muted); display: block; margin-bottom: 0.5rem; font-size: 0.8rem;">نوع
+                            style="color: var(--text-muted); display: block; margin-bottom: 0.5rem; font-size: 0.85rem;">نوع
                             المحاضرة</label>
                         <select id="lectureType" class="form-control">
                             <option>نظري</option>
@@ -137,33 +217,48 @@
                     </div>
                 </div>
 
-                <div style="position: relative;">
+                <div style="position: relative; border-radius: var(--radius-lg); overflow: hidden;">
                     <div id="reader"></div>
-                    <div class="scanner-overlay" id="overlay">
+                    <div class="scanner-overlay-box" id="overlayBox" style="display: none;">
                         <div class="scanner-line"></div>
                     </div>
+                    <div class="scan-flash" id="scanFlash"></div>
                 </div>
 
-                <div style="margin-top: 2rem; display: flex; gap: 1rem;">
-                    <button class="btn btn-primary" onclick="startScanner()" id="startBtn" style="flex: 1;">⚡ بدء
+                <div style="margin-top: 2rem; display: flex; gap: 1rem; flex-wrap: wrap;">
+                    <button class="btn btn-primary" onclick="startScanner()" id="startBtn" style="flex: 2;">⚡ بدء
                         المسح</button>
                     <button class="btn btn-secondary" onclick="stopScanner()">🛑 إيقاف</button>
-                    <button class="btn btn-secondary" onclick="generateDelegateLink()">🔗 تفويض طالب</button>
+                    <button class="btn btn-secondary" onclick="generateDelegateLink()"
+                        title="إنشاء رابط للطالب المراقب">🔗 تفويض</button>
                 </div>
             </div>
 
             <!-- Side Panel: Stats & Activity -->
-            <div class="glass-card" style="padding: 2rem;">
-                <h3>📊 نشاط الجلسة</h3>
-                <div style="text-align: center; margin: 2rem 0;">
-                    <div id="scan-count" style="font-size: 4rem; font-weight: 900; color: var(--primary);">0</div>
-                    <div style="color: var(--text-muted);">طالب سجلوا حضورهم</div>
+            <div class="glass-card" style="padding: 2rem; display: flex; flex-direction: column; height: fit-content;">
+                <h3 style="margin-bottom: 1.5rem;">📊 نشاط الجلسة</h3>
+
+                <div class="stats-grid" style="grid-template-columns: 1fr; gap: 1rem; margin-bottom: 2rem;">
+                    <div
+                        style="text-align: center; padding: 1.5rem; background: rgba(99,102,241,0.1); border-radius: var(--radius-md); border: 1px solid rgba(99,102,241,0.2);">
+                        <div id="scan-count"
+                            style="font-size: 3.5rem; font-weight: 900; color: var(--primary); line-height: 1;">0</div>
+                        <div style="color: var(--text-muted); margin-top: 0.5rem; font-size: 0.9rem;">طالب تم تسجيلهم
+                        </div>
+                    </div>
                 </div>
 
-                <h4 style="margin-bottom: 1rem; color: var(--text-muted);">آخر المسوحات</h4>
+                <h4
+                    style="margin-bottom: 1rem; color: var(--text-muted); display: flex; justify-content: space-between;">
+                    <span>آخر المسوحات</span>
+                    <span id="last-scan-time" style="font-size: 0.8rem; font-weight: normal;"></span>
+                </h4>
+
                 <div id="recent-list" class="recent-scans">
-                    <div style="text-align: center; padding: 2rem; color: var(--text-muted); font-size: 0.9rem;">بانتظار
-                        مسح أول طالب...</div>
+                    <div id="empty-state" style="text-align: center; padding: 3rem 1rem; color: var(--text-muted);">
+                        <div style="font-size: 2rem; margin-bottom: 1rem; opacity: 0.5;">📡</div>
+                        <p>بانتظار بدء عملية المسح...</p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -172,6 +267,9 @@
     <!-- Audio Feedback Assets -->
     <audio id="beepSuccess" preload="auto">
         <source src="https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="beepError" preload="auto">
+        <source src="https://assets.mixkit.co/active_storage/sfx/2572/2572-preview.mp3" type="audio/mpeg">
     </audio>
 
     <script>
@@ -186,186 +284,319 @@
             appId: "1:305903941972:web:d914431aab5a1cc6b5b0c1",
             measurementId: "G-EJEKCTT2M9"
         };
-        firebase.initializeApp(firebaseConfig);
-        const database = firebase.database();
 
-        // Auto-authenticate anonymously to allow DB access
-        // Auto-authenticate anonymously (Optional now that rules are public)
-        firebase.auth().onAuthStateChanged(user => {
-            if (!user) {
-                firebase.auth().signInAnonymously().catch(error => {
-                    console.warn("Auth warning (using public access):", error);
-                    // We don't block the user anymore since DB rules are public
-                });
+        // Initialize Firebase
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        const db = firebase.database();
+        const auth = firebase.auth();
+
+        // State Management
+        let html5QrCode;
+        let scanCount = 0;
+        let scannedIds = new Set(); // Session-based lock
+        const processingIds = new Set(); // Transient lock
+        let validStudentsList = []; // Centralized validation list
+        let isScannerRunning = false;
+
+        // UI Elements
+        const successBeep = document.getElementById('beepSuccess');
+        const errorBeep = document.getElementById('beepError');
+        const overlayBox = document.getElementById('overlayBox');
+        const scanFlash = document.getElementById('scanFlash');
+
+        // --- Initialization ---
+
+        window.addEventListener('load', async () => {
+            // 1. Silent Auth
+            auth.onAuthStateChanged(user => {
+                if (user) {
+                    document.getElementById('connectionStatus').style.display = 'block';
+                } else {
+                    auth.signInAnonymously().catch(console.error);
+                }
+            });
+
+            // 2. Load Students List for Validation
+            try {
+                const snap = await db.ref('students_list').once('value');
+                if (snap.exists()) {
+                    validStudentsList = snap.val();
+                    console.log(`Loaded ${validStudentsList.length} students for validation.`);
+                }
+            } catch (e) {
+                console.warn("Could not load centralized student list. Validation will be skipped.", e);
             }
         });
 
-        let html5QrCode;
-        let scanCount = 0;
-        const scannedIds = new Set();
-        const processingIds = new Set();
-
-        const successBeep = document.getElementById('beepSuccess');
+        // --- Scanner Logic ---
 
         function startScanner() {
-            html5QrCode = new Html5Qrcode("reader");
-            // Reduce FPS to 10 to prevent overheating and race conditions
-            const config = { fps: 10, qrbox: { width: 250, height: 250 } };
+            if (isScannerRunning) return;
 
-            html5QrCode.start({ facingMode: "environment" }, config, onScanSuccess)
+            // Reset Session
+            scanCount = 0;
+            scannedIds = new Set();
+            document.getElementById('scan-count').innerText = "0";
+
+            html5QrCode = new Html5Qrcode("reader");
+            const config = {
+                fps: 10,
+                qrbox: { width: 250, height: 250 },
+                aspectRatio: 1.0
+            };
+
+            html5QrCode.start({ facingMode: "environment" }, config, onScanSuccess, onScanFailure)
                 .then(() => {
+                    isScannerRunning = true;
                     document.getElementById('startBtn').disabled = true;
-                    document.getElementById('startBtn').innerText = 'الماسح نشط 🟢';
+                    document.getElementById('startBtn').innerHTML = '<span class="scan-flash" style="position:static; width:10px; height:10px; display:inline-block; border-radius:50%; background: lime;"></span> الماسح نشط';
+                    overlayBox.style.display = 'block';
                     showToast('تم تشغيل الكاميرا بنجاح', 'success');
                 })
                 .catch(err => {
-                    console.error(err);
-                    showToast('فشل تشغيل الكاميرا. تأكد من منح الصلاحيات.', 'danger');
+                    console.error("Camera Error: ", err);
+                    showToast('فشل تشغيل الكاميرا. يرجى التحقق من الصلاحيات.', 'danger');
                 });
         }
 
         async function onScanSuccess(decodedText) {
+            // Prevent spam scanning
+            if (processingIds.size > 0) return;
+
             let student;
             try {
                 student = JSON.parse(decodedText);
-                if (!student.id || !student.name) return; // Silent return for invalid data to reduce noise
             } catch (e) {
-                // Ignore non-JSON garbage scans
+                // Ignore non-JSON (likely not our QR)
+                console.warn("Non-JSON QR scanned", decodedText);
                 return;
             }
 
-            // 1. Local Debounce & Lock
-            if (scannedIds.has(student.id)) return;
-            if (processingIds.has(student.id)) return;
-
-            // Lock processing for this student
-            processingIds.add(student.id);
-
-            // Pause scanner to improve performance and UX
-            if (html5QrCode) {
-                try { await html5QrCode.pause(); } catch (e) { }
+            // 1. Structure Validation
+            if (!student.id || !student.name) {
+                processError("بيانات QR غير صالحة");
+                return;
             }
+
+            // 2. Centralized List Validation (Security)
+            if (validStudentsList.length > 0 && !validStudentsList.includes(student.name)) {
+                processError(`الطالب غير مسجل في القائمة الرسمية: ${student.name}`);
+                return;
+            }
+
+            // 3. Local De-bounce (Fastest check)
+            if (scannedIds.has(student.id)) {
+                processError(`تم تسجيل ${student.name} مسبقاً في هذه الجلسة`, true);
+                return;
+            }
+
+            // 4. Lock & Process
+            processingIds.add(student.id);
+            triggerFeedback('processing'); // Visual cue
 
             try {
                 const subject = document.getElementById('subject').value;
-                // Use local date to avoid UTC issues
-                const today = new Date().toLocaleDateString('en-CA');
+                const lectureType = document.getElementById('lectureType').value;
+                const today = new Date().toLocaleDateString('en-CA'); // ISO-like YYYY-MM-DD
 
-                // 2. Cloud Duplicate Check (Prevent Cross-Device Duplicates)
-                // We use ordering by date to limit the query scope
-                const snapshot = await database.ref('attendanceRecords')
-                    .orderByChild('date')
-                    .equalTo(today)
-                    .once('value');
+                // 5. Cloud Duplicate Check (Async)
+                // We fetch records for today to ensure no cross-device duplicates
+                // Optimizing by ordering by date if index exists, else relying on client filtering
+                let isCloudDuplicate = false;
 
-                let isDuplicate = false;
-                if (snapshot.exists()) {
-                    snapshot.forEach(child => {
-                        const rec = child.val();
-                        if (rec.studentId === student.id && rec.subject === subject) {
-                            isDuplicate = true;
-                        }
-                    });
+                try {
+                    const snap = await db.ref('attendanceRecords')
+                        .orderByChild('date')
+                        .equalTo(today)
+                        .once('value');
+
+                    if (snap.exists()) {
+                        snap.forEach(child => {
+                            const rec = child.val();
+                            if (rec.studentId === student.id && rec.subject === subject) {
+                                isCloudDuplicate = true;
+                            }
+                        });
+                    }
+                } catch (err) {
+                    console.warn("Cloud duplicate check skipped (offline/rules):", err);
+                    // Proceed optimistically if check fails
                 }
 
-                if (isDuplicate) {
-                    showToast(`⚠️ ${student.name} مسجل مسبقاً لمادة ${subject}`, 'warning');
-                    scannedIds.add(student.id); // Add to local ignore list so we don't query again
+                if (isCloudDuplicate) {
+                    scannedIds.add(student.id); // Add to local ignore to prevent retry
+                    processError(`مسجل مسبقاً في السحابة: ${student.name} - ${subject}`, true);
                     return;
                 }
 
-                // 3. Add to Firebase
+                // 6. Write to Firebase
                 const record = {
                     studentId: student.id,
                     studentName: student.name,
                     subject: subject,
-                    lectureType: document.getElementById('lectureType').value,
+                    lectureType: lectureType,
                     date: today,
                     time: new Date().toLocaleTimeString('ar-EG'),
-                    timestamp: Date.now()
+                    timestamp: firebase.database.ServerValue.TIMESTAMP,
+                    device: 'TeacherScanner_v2.5'
                 };
 
-                await database.ref('attendanceRecords').push(record);
+                await db.ref('attendanceRecords').push(record);
 
-                // Success UI
-                // Use .catch to prevent errors if browser blocks autoplay
-                successBeep.play().catch(e => console.log('Audio blocked', e));
+                // 7. Success!
+                handleSuccessfulScan(student);
 
-                scannedIds.add(student.id);
-                scanCount++;
-                document.getElementById('scan-count').innerText = scanCount;
-                addToList(student.name);
-                showToast(`تم تسجيل ${student.name} ✅`, 'success');
-
-            } catch (e) {
-                console.error(e);
-                showToast('خطأ في الاتصال بالسيرفر', 'danger');
+            } catch (err) {
+                console.error("Scan processing error:", err);
+                showToast('خطأ غير متوقع أثناء المعالجة', 'danger');
             } finally {
-                // Unlock processing for this student
-                processingIds.delete(student.id);
-                // Resume scanner after a short delay
-                setTimeout(() => {
-                    if (html5QrCode) html5QrCode.resume();
-                }, 1500);
+                // Variable lock release
+                setTimeout(() => processingIds.delete(student.id), 2000); // 2s cooldown
             }
         }
 
-        function addToList(name) {
+        function onScanFailure(error) {
+            // Too noisy to log everything, just ignore
+        }
+
+        function handleSuccessfulScan(student) {
+            // State
+            scannedIds.add(student.id);
+            scanCount++;
+
+            // UI Update
+            document.getElementById('scan-count').innerText = scanCount;
+            document.getElementById('scan-count').classList.add('animate-pulse');
+            setTimeout(() => document.getElementById('scan-count').classList.remove('animate-pulse'), 500);
+
+            addToList(student.name, 'success');
+
+            // Feedback
+            triggerFeedback('success');
+            showToast(`✅ تم التحضير: ${student.name}`, 'success');
+        }
+
+        function processError(msg, isWarning = false) {
+            // Only vibrate/beep for meaningful errors, not just random QRs
+            if (isWarning) {
+                triggerFeedback('warning');
+                showToast(`⚠️ ${msg}`, 'warning');
+            } else {
+                console.log("Ignored invalid scan:", msg);
+            }
+
+            // Unlock immediately if error
+            if (msg.includes('مسبقاً')) {
+                // Keep lock for duplicate warnings to prevent spamming the warning
+                setTimeout(() => processingIds.delete(msg.split(':')[1]?.trim() || 'unknown'), 2000);
+            }
+        }
+
+        // --- UI Feedback System ---
+
+        function triggerFeedback(type) {
+            // Haptic (Mobile Only)
+            if (navigator.vibrate) {
+                if (type === 'success') navigator.vibrate([50, 50, 50]);
+                if (type === 'warning') navigator.vibrate(200);
+            }
+
+            // Visual
+            if (type === 'success') {
+                scanFlash.classList.add('flash-active');
+                setTimeout(() => scanFlash.classList.remove('flash-active'), 300);
+
+                // Audio
+                successBeep.currentTime = 0;
+                successBeep.play().catch(() => { });
+            }
+
+            if (type === 'warning') {
+                errorBeep.currentTime = 0;
+                errorBeep.play().catch(() => { });
+            }
+        }
+
+        function addToList(name, status) {
             const list = document.getElementById('recent-list');
-            if (scannedIds.size === 1) list.innerHTML = '';
+            const emptyState = document.getElementById('empty-state');
+            if (emptyState) emptyState.remove();
 
             const item = document.createElement('div');
-            item.className = 'scan-item';
+            item.className = `scan-item ${status}`;
             item.innerHTML = `
-                <span style="font-weight:700;">${name}</span>
-                <span style="font-size:0.8rem; color:var(--text-muted);">${new Date().toLocaleTimeString('ar-EG')}</span>
+                <div style="display:flex; align-items:center; gap:0.5rem;">
+                    <div style="width:8px; height:8px; background:var(--${status === 'success' ? 'success' : 'warning'}); border-radius:50%;"></div>
+                    <span style="font-weight:700;">${name}</span>
+                </div>
+                <span style="font-size:0.75rem; color:var(--text-muted); font-family:'Courier New', monospace;">${new Date().toLocaleTimeString('ar-EG')}</span>
             `;
             list.prepend(item);
         }
 
         function stopScanner() {
-            if (html5QrCode) {
+            if (html5QrCode && isScannerRunning) {
                 html5QrCode.stop().then(() => {
+                    isScannerRunning = false;
                     document.getElementById('startBtn').disabled = false;
-                    document.getElementById('startBtn').innerText = '⚡ بدء المسح';
+                    document.getElementById('startBtn').innerHTML = '⚡ بدء المسح';
+                    overlayBox.style.display = 'none';
+                    showToast('تم إيقاف الكاميرا', 'secondary');
                 });
             }
         }
 
+        function generateDelegateLink() {
+            const subject = document.getElementById('subject').value;
+            const token = 'dlg_' + Math.random().toString(36).substr(2, 9);
+            const expiry = Date.now() + 1800000; // 30 mins
+
+            db.ref('temp_tokens/' + token).set({
+                expiry,
+                subject,
+                lectureType: document.getElementById('lectureType').value,
+                createdAt: firebase.database.ServerValue.TIMESTAMP
+            }).then(() => {
+                const url = `${window.location.origin}/temp-scanner.html?token=${token}`;
+                navigator.clipboard.writeText(url);
+                showToast('📋 تم نسخ رابط التفويض للحافظة', 'success');
+            }).catch(error => {
+                showToast('❌ فشل إنشاء الرابط', 'danger');
+            });
+        }
+
         function showToast(msg, type) {
-            // Quick visual feedback
             const toast = document.createElement('div');
             toast.className = `badge badge-${type}`;
             toast.style.position = 'fixed';
             toast.style.bottom = '2rem';
-            toast.style.left = '2rem';
+            toast.style.left = '50%';
+            toast.style.transform = 'translateX(-50%)';
             toast.style.padding = '1rem 2rem';
             toast.style.zIndex = '9999';
-            toast.style.fontSize = '1.1rem';
-            toast.style.boxShadow = 'var(--shadow-premium)';
-            toast.innerText = msg;
+            toast.style.fontSize = '1rem';
+            toast.style.boxShadow = '0 10px 30px rgba(0,0,0,0.5)';
+            toast.style.whiteSpace = 'nowrap';
+            toast.style.border = '1px solid currentColor';
+
+            toast.innerHTML = msg;
+
             document.body.appendChild(toast);
-            setTimeout(() => toast.remove(), 3000);
-        }
 
-        function generateDelegateLink() {
-            const token = 'dlg_' + Math.random().toString(36).substr(2, 9) + Date.now().toString(36);
-            const expiry = Date.now() + 1800000; // 30 minutes
-            const subject = document.getElementById('subject').value;
+            // Animate in
+            toast.animate([
+                { opacity: 0, transform: 'translate(-50%, 20px)' },
+                { opacity: 1, transform: 'translate(-50%, 0)' }
+            ], { duration: 300, fill: 'forwards', easing: 'cubic-bezier(0.4, 0, 0.2, 1)' });
 
-            database.ref('temp_tokens/' + token).set({
-                expiry,
-                subject,
-                lectureType: document.getElementById('lectureType').value,
-                createdAt: Date.now()
-            }).then(() => {
-                const url = window.location.origin + `/temp-scanner.html?token=${token}`;
-                navigator.clipboard.writeText(url);
-                alert('🔗 تم نسخ رابط التفويض! متاح لمدة 30 دقيقة لمادة ' + subject + ' - أرسله لمراقب الشعبة');
-            }).catch(error => {
-                console.error("Token generation failed:", error);
-                alert('❌ فشل إنشاء الرابط. تحقق من اتصالك أو الصلاحيات.');
-            });
+            setTimeout(() => {
+                toast.animate([
+                    { opacity: 1, transform: 'translate(-50%, 0)' },
+                    { opacity: 0, transform: 'translate(-50%, 20px)' }
+                ], { duration: 300, fill: 'forwards' }).onfinish = () => toast.remove();
+            }, 3000);
         }
     </script>
 </body>

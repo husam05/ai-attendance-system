@@ -57,12 +57,25 @@ The board uses **3 columns** for task management:
 1. **Drag & Drop**: Click and drag a task card to move it between columns
 2. **Right-click Menu**: Right-click on a task and select "Move to column"
 
+## 🔄 How to Arrange Your Workflow
+
+To add "Processing" (work in progress) to your original work:
+
+1.  **Original Work (Todo)**: This column contains all your planned tasks.
+2.  **Add Processing (In Progress)**: When you start coding a feature:
+    *   Click and hold the task card in **Todo**
+    *   Drag it to the **In Progress** column
+    *   *Alternatively*: Click the task, and change status to "In Progress"
+
+This signals to everyone that you are actively working on this task.
+
 ### Task Progression Flow
 
 ```
-Todo → In Progress → Done
- ↓         ↓          ↓
-Start   Working    Complete
+Original Work       Processing          Finished
+(Todo)      →     (In Progress)   →   (Done)
+   ↓                    ↓                 ↓
+Ideas/Plans        Coding Now         Completed
 ```
 
 ---
