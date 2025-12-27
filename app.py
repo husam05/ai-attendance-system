@@ -140,7 +140,7 @@ class SessionCreate(BaseModel):
     expiresInMinutes: int = 30
 
 @app.post("/api/session/create")
-async def create_session(session: SessionCreate):
+async def create_session(session: SessionCreate, request: Request):
     import secrets
     
     # Generate unique token
@@ -158,8 +158,8 @@ async def create_session(session: SessionCreate):
     }
     db.save()
     
-    # Return session info with URL
-    base_url = os.environ.get("BASE_URL", "http://localhost:8080")
+    # Auto-detect base URL from request
+    base_url = str(request.base_url).rstrip('/')
     delegate_url = f"{base_url}/delegate-scanner.html?token={token}"
     
     return {
