@@ -16,6 +16,11 @@
             overflow: hidden;
             border: 2px solid var(--glass-border);
             background: #000;
+            position: relative;
+        }
+
+        #reader video {
+            object-fit: cover !important;
         }
 
         .timer-badge {
@@ -27,6 +32,29 @@
             font-weight: 700;
             display: inline-block;
             margin-top: 1rem;
+        }
+
+        .scan-flash {
+            position: absolute;
+            inset: 0;
+            background: rgba(16, 185, 129, 0.4);
+            z-index: 20;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .flash-active {
+            animation: flashAnim 0.3s ease-out;
+        }
+
+        @keyframes flashAnim {
+            0% {
+                opacity: 1;
+            }
+
+            100% {
+                opacity: 0;
+            }
         }
     </style>
 </head>
@@ -47,9 +75,10 @@
     <!-- Error View -->
     <div id="error-view"
         style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-deep); align-items: center; justify-content: center; z-index: 9999;">
-        <div style="text-align: center;">
+        <div style="text-align: center; padding: 2rem;">
             <div style="font-size: 5rem; margin-bottom: 1rem;">⛔</div>
             <h1 id="error-msg">الرابط غير صالح أو منتهي الصلاحية</h1>
+            <p style="color: var(--text-muted); margin-top: 1rem;">يرجى طلب رابط جديد من الأستاذ</p>
         </div>
     </div>
 
@@ -57,54 +86,71 @@
     <div id="main-app" style="display: none;">
         <div class="container animate-fade-in">
             <div class="glass-card" style="padding: 2.5rem; text-align: center; margin-bottom: 2rem;">
-                <h1 style="margin-bottom: 1rem;">📸 ماسح الحضور (وضع مفوض)</h1>
-                <div class="badge badge-success">طالب مساعد</div>
+                <h1 style="margin-bottom: 1rem;">📸 ماسح الحضور (مفوض)</h1>
+                <div class="badge badge-success">جلسة طالب مساعد</div>
                 <div class="timer-badge" id="expiry-timer">ينتهي خلال: --:--</div>
             </div>
 
             <div class="glass-card" style="padding: 2rem; margin-bottom: 2rem;">
-                <div style="margin-bottom: 1.5rem;">
-                    <label style="display: block; margin-bottom: 0.5rem; color: var(--text-muted);">المادة
-                        الدراسية</label>
-                    <select id="subject" class="form-control">
-                        <option value="">اختر المادة...</option>
-                        <option>المعامل</option>
-                        <option>الرياضيات I</option>
-                        <option>مبادئ الذكاء الاصطناعي</option>
-                        <option>الديمقراطية وحقوق الإنسان</option>
-                        <option>أساسيات البرمجة</option>
-                        <option>الإحصاء والاحتمالات</option>
-                    </select>
-                </div>
-
-                <div style="margin-bottom: 1.5rem;">
-                    <label style="display: block; margin-bottom: 0.5rem; color: var(--text-muted);">نوع المحاضرة</label>
-                    <select id="lectureType" class="form-control">
-                        <option>نظري</option>
-                        <option>عملي</option>
-                    </select>
+                <!-- Controls -->
+                <div class="scanner-controls"
+                    style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+                    <div>
+                        <label
+                            style="display: block; margin-bottom: 0.5rem; color: var(--text-muted); font-size: 0.85rem;">المادة
+                            الدراسية</label>
+                        <select id="subject" class="form-control" disabled>
+                            <option value="">جارِ التحميل...</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label
+                            style="display: block; margin-bottom: 0.5rem; color: var(--text-muted); font-size: 0.85rem;">نوع
+                            المحاضرة</label>
+                        <select id="lectureType" class="form-control" disabled>
+                            <option>نظري</option>
+                            <option>عملي</option>
+                        </select>
+                    </div>
                 </div>
 
                 <div id="alertContainer" style="margin-bottom: 1rem;"></div>
 
-                <div id="reader" style="margin-bottom: 1.5rem;"></div>
+                <div style="position: relative; border-radius: var(--radius-md); overflow: hidden;">
+                    <div id="reader" style="width: 100%;"></div>
+                    <div class="scan-flash" id="scanFlash"></div>
+                </div>
 
-                <div style="display: flex; gap: 1rem;">
-                    <button id="startBtn" class="btn btn-primary" onclick="startScanner()" style="flex: 1;">بدء
+                <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+                    <button id="startBtn" class="btn btn-primary" onclick="startScanner()" style="flex: 1;">⚡ بدء
                         المسح</button>
                     <button id="stopBtn" class="btn btn-secondary" onclick="stopScanner()"
-                        style="flex: 1; display: none;">إيقاف</button>
+                        style="flex: 1; display: none;">🛑 إيقاف</button>
                 </div>
             </div>
 
             <div class="glass-card" style="padding: 2rem;">
-                <h3>✅ تم تسجيلهم: <span id="count">0</span></h3>
-                <div id="recent-scans" style="margin-top: 1rem; max-height: 200px; overflow-y: auto;"></div>
+                <h3>✅ تم تسجيلهم: <span id="count" style="color: var(--primary); font-weight: 900;">0</span></h3>
+                <div id="recent-scans" style="margin-top: 1rem; max-height: 250px; overflow-y: auto;">
+                    <div id="empty-state"
+                        style="text-align: center; padding: 2rem; color: var(--text-muted); font-size: 0.9rem;">
+                        لم يتم تسجيل أي طالب بعد
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
+    <!-- Audio Feedback Assets -->
+    <audio id="beepSuccess" preload="auto">
+        <source src="https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="beepError" preload="auto">
+        <source src="https://assets.mixkit.co/active_storage/sfx/2572/2572-preview.mp3" type="audio/mpeg">
+    </audio>
+
     <script>
+        // --- Configuration ---
         const firebaseConfig = {
             apiKey: "AIzaSyDLSX6DY_79BD8ZEYBRYh_jtmP0mHslzkE",
             authDomain: "ai-attendance-husam.firebaseapp.com",
@@ -120,60 +166,83 @@
         const database = firebase.database();
         const auth = firebase.auth();
 
-        // Ensure auth before checking token
-        // Ensure auth (Optional)
-        auth.onAuthStateChanged(user => {
-            if (!user) {
-                auth.signInAnonymously().catch(e => {
-                    console.warn("Auth warning:", e);
-                });
-            }
-        });
-
+        // --- State ---
         const urlParams = new URLSearchParams(window.location.search);
         const token = urlParams.get('token');
         let html5QrCode = null;
         let sessionCount = 0;
+        let validStudentsList = []; // Centralized Validation
+
+        // Locks
+        const scannedIds = new Set();
+        const processingIds = new Set();
+
+        // UI
+        const successBeep = document.getElementById('beepSuccess');
+        const errorBeep = document.getElementById('beepError');
+        const scanFlash = document.getElementById('scanFlash');
+
+        // --- Initialization ---
+
+        window.onload = init;
+
+        async function init() {
+            // 1. Silent Auth
+            auth.onAuthStateChanged(user => {
+                if (!user) auth.signInAnonymously().catch(console.warn);
+            });
+
+            // 2. Load Validation List
+            try {
+                const snap = await database.ref('students_list').once('value');
+                if (snap.exists()) validStudentsList = snap.val();
+            } catch (e) { console.warn("List load error", e); }
+
+            // 3. Validate Token
+            await checkToken();
+        }
 
         async function checkToken() {
             const statusEl = document.getElementById('verify-status');
             const retryBtn = document.getElementById('retry-btn');
 
-            console.log("Checking token:", token);
-            if (!token) return showFatalError('الرابط غير صالح (No Token)');
+            if (!token) return showFatalError('الرابط غير صالح (No Token Code)');
 
-            // Timeout after 12 seconds
+            // Timeout safety
             const timeout = setTimeout(() => {
-                statusEl.textContent = 'يبدو أن الاتصال بطيء جداً...';
+                statusEl.textContent = 'الاتصال بطيء...';
                 retryBtn.style.display = 'inline-flex';
-            }, 12000);
+            }, 10000);
 
             try {
                 statusEl.textContent = 'جاري الاتصال بقاعدة البيانات...';
                 const snap = await database.ref('temp_tokens/' + token).once('value');
                 clearTimeout(timeout);
 
-                if (!snap.exists()) return showFatalError('الرابط غير صحيح أو تم حذفه من قبل الأستاذ');
+                if (!snap.exists()) return showFatalError('الرابط غير صحيح أو تم إبطاله');
 
                 const data = snap.val();
                 if (Date.now() > data.expiry) return showFatalError('انتهت صلاحية هذا الرابط (30 دقيقة)');
 
-                statusEl.textContent = 'تم التحقق! جاري التحميل...';
-
+                // Success
                 document.getElementById('verify-overlay').style.display = 'none';
                 document.getElementById('main-app').style.display = 'block';
                 startTimer(data.expiry);
 
-                // Pre-fill subject if provided
-                if (data.subject) document.getElementById('subject').value = data.subject;
-                if (data.lectureType) document.getElementById('lectureType').value = data.lectureType;
+                // Setup Context & Lock Filters
+                const subjSelect = document.getElementById('subject');
+                subjSelect.innerHTML = `<option value="${data.subject}">${data.subject}</option>`;
+
+                if (data.lectureType) {
+                    const typeSelect = document.getElementById('lectureType');
+                    typeSelect.value = data.lectureType;
+                }
 
             } catch (e) {
                 clearTimeout(timeout);
-                console.error(e);
                 statusEl.textContent = 'فشل التحقق';
                 retryBtn.style.display = 'inline-flex';
-                showFatalError('خطأ في الاتصال: ' + e.message);
+                showFatalError('خطأ في الاتصال بالسيرفر');
             }
         }
 
@@ -187,7 +256,7 @@
             setInterval(() => {
                 const diff = expiryTime - Date.now();
                 if (diff <= 0) {
-                    showFatalError('انتهت صلاحية الرابط');
+                    showFatalError('انتهت صلاحية الرابط أثناء الجلسة');
                     stopScanner();
                     return;
                 }
@@ -197,23 +266,156 @@
             }, 1000);
         }
 
+        // --- Scanning Logic (Robust Engine) ---
+
         function startScanner() {
             const subject = document.getElementById('subject').value;
-            if (!subject) return showAlert('⚠️ يرجى اختيار المادة أولاً', 'warning');
+            if (!subject) return showToast('⚠️ يرجى انتظار تحميل المادة', 'warning');
 
             html5QrCode = new Html5Qrcode("reader");
-            html5QrCode.start(
-                { facingMode: "environment" },
-                { fps: 10, qrbox: { width: 250, height: 250 } },
-                onScanSuccess
-            ).then(() => {
-                document.getElementById('startBtn').style.display = 'none';
-                document.getElementById('stopBtn').style.display = 'block';
-                showAlert('✅ الكاميرا تعمل بنجاح', 'success');
-            }).catch(err => {
-                console.error(err);
-                showAlert('❌ فشل تشغيل الكاميرا. تأكد من منح الصلاحيات.', 'danger');
-            });
+            const config = { fps: 10, qrbox: { width: 250, height: 250 }, aspectRatio: 1.0 };
+
+            html5QrCode.start({ facingMode: "environment" }, config, onScanSuccess)
+                .then(() => {
+                    document.getElementById('startBtn').style.display = 'none';
+                    document.getElementById('stopBtn').style.display = 'block';
+                    showToast('✅ الكاميرا تعمل بنجاح', 'success');
+                }).catch(err => {
+                    console.error(err);
+                    showToast('❌ فشل تشغيل الكاميرا', 'danger');
+                });
+        }
+
+        async function onScanSuccess(decodedText) {
+            if (processingIds.size > 0) return;
+
+            let student;
+            try {
+                student = JSON.parse(decodedText);
+            } catch (e) { return; } // Ignore non-JSON
+
+            // 1. Validation
+            if (!student.id || !student.name) return;
+
+            // Central Validation Check
+            if (validStudentsList.length > 0 && !validStudentsList.includes(student.name)) {
+                processError(`الطالب غير مسجل: ${student.name}`, true);
+                return;
+            }
+
+            if (scannedIds.has(student.id)) {
+                processError(`تم تسجيل ${student.name} مسبقاً`, true);
+                return;
+            }
+
+            // 2. Lock
+            processingIds.add(student.id);
+            triggerFeedback('processing');
+
+            try {
+                const subject = document.getElementById('subject').value;
+                const today = new Date().toLocaleDateString('en-CA');
+
+                // 3. Cloud Duplicate Check
+                let isCloudDuplicate = false;
+                try {
+                    const snap = await database.ref('attendanceRecords')
+                        .orderByChild('date')
+                        .equalTo(today)
+                        .once('value');
+
+                    if (snap.exists()) {
+                        snap.forEach(child => {
+                            const rec = child.val();
+                            if (rec.studentId === student.id && rec.subject === subject) isCloudDuplicate = true;
+                        });
+                    }
+                } catch (e) { console.warn("Offline duplicate check skipped"); }
+
+                if (isCloudDuplicate) {
+                    scannedIds.add(student.id);
+                    processError(`مسجل مسبقاً بالسحابة: ${student.name}`, true);
+                    return;
+                }
+
+                // 4. Record
+                const record = {
+                    studentId: student.id,
+                    studentName: student.name,
+                    subject: subject,
+                    lectureType: document.getElementById('lectureType').value,
+                    date: today,
+                    time: new Date().toLocaleTimeString('ar-EG'),
+                    timestamp: firebase.database.ServerValue.TIMESTAMP,
+                    via_token: token,
+                    collectedBy: 'delegate'
+                };
+
+                await database.ref('attendanceRecords').push(record);
+
+                // 5. Success
+                handleSuccess(student);
+
+            } catch (e) {
+                console.error(e);
+                showToast('خطأ في الاتصال', 'danger');
+            } finally {
+                setTimeout(() => processingIds.delete(student.id), 2000);
+            }
+        }
+
+        function handleSuccess(student) {
+            scannedIds.add(student.id);
+            sessionCount++;
+            document.getElementById('count').textContent = sessionCount;
+
+            // List Update
+            const emptyState = document.getElementById('empty-state');
+            if (emptyState) emptyState.remove();
+
+            const div = document.createElement('div');
+            div.className = 'scan-item';
+            div.style.padding = '0.75rem';
+            div.style.borderBottom = '1px solid var(--glass-border)';
+            div.style.display = 'flex';
+            div.style.justifyContent = 'space-between';
+            div.innerHTML = `
+                <div style="display:flex; align-items:center; gap:0.5rem;">
+                    <div style="width:8px; height:8px; background:var(--success); border-radius:50%;"></div>
+                    <strong>${student.name}</strong>
+                </div>
+                <span style="color:var(--text-muted); font-size:0.8rem;">${new Date().toLocaleTimeString('ar-EG')}</span>
+            `;
+            const list = document.getElementById('recent-scans');
+            list.insertBefore(div, list.firstChild);
+
+            triggerFeedback('success');
+            showToast(`✅ تم تسجيل: ${student.name}`, 'success');
+        }
+
+        function processError(msg, warn = false) {
+            if (warn) {
+                triggerFeedback('warning');
+                showToast(`⚠️ ${msg}`, 'warning');
+            }
+        }
+
+        function triggerFeedback(type) {
+            if (navigator.vibrate) {
+                if (type === 'success') navigator.vibrate([50, 50, 50]);
+                if (type === 'warning') navigator.vibrate(200);
+            }
+            if (type === 'success') {
+                scanFlash.classList.add('flash-active');
+                setTimeout(() => scanFlash.classList.remove('flash-active'), 300);
+
+                successBeep.currentTime = 0;
+                successBeep.play().catch(() => { });
+            }
+            if (type === 'warning') {
+                errorBeep.currentTime = 0;
+                errorBeep.play().catch(() => { });
+            }
         }
 
         function stopScanner() {
@@ -221,114 +423,27 @@
                 html5QrCode.stop().then(() => {
                     document.getElementById('startBtn').style.display = 'block';
                     document.getElementById('stopBtn').style.display = 'none';
+                    showToast('تم إيقاف الكاميرا', 'secondary');
                 });
             }
         }
 
-        const scannedIds = new Set();
-        const processingIds = new Set();
+        function showToast(msg, type) {
+            const toast = document.createElement('div');
+            toast.className = `badge badge-${type}`;
+            toast.style.position = 'fixed';
+            toast.style.bottom = '2rem';
+            toast.style.left = '50%';
+            toast.style.transform = 'translateX(-50%)';
+            toast.style.padding = '1rem 2rem';
+            toast.style.zIndex = '9999';
+            toast.style.boxShadow = '0 10px 30px rgba(0,0,0,0.5)';
+            toast.style.whiteSpace = 'nowrap';
+            toast.innerText = msg;
 
-        async function onScanSuccess(decodedText) {
-            let student;
-            try {
-                student = JSON.parse(decodedText);
-                if (!student.id || !student.name) return;
-            } catch (e) {
-                return;
-            }
-
-            if (scannedIds.has(student.id)) return;
-            if (processingIds.has(student.id)) return;
-
-            processingIds.add(student.id);
-
-            if (html5QrCode) {
-                try { await html5QrCode.pause(); } catch (e) { }
-            }
-
-            try {
-                const subject = document.getElementById('subject').value;
-                const today = new Date().toLocaleDateString('en-CA');
-
-                // Check for duplicates in cloud
-                const snapshot = await database.ref('attendanceRecords')
-                    .orderByChild('date')
-                    .equalTo(today)
-                    .once('value');
-
-                let isDuplicate = false;
-                if (snapshot.exists()) {
-                    snapshot.forEach(child => {
-                        const rec = child.val();
-                        if (rec.studentId === student.id && rec.subject === subject) {
-                            isDuplicate = true;
-                        }
-                    });
-                }
-
-                if (isDuplicate) {
-                    showAlert(`⚠️ ${student.name} مسجل مسبقاً لهذه المادة`, 'warning');
-                    scannedIds.add(student.id);
-                } else {
-                    await recordAttendance(student);
-                }
-
-            } catch (e) {
-                console.error(e);
-                showAlert('خطأ في الاتصال', 'danger');
-            } finally {
-                processingIds.delete(student.id);
-                setTimeout(() => {
-                    if (html5QrCode) html5QrCode.resume();
-                }, 1500);
-            }
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
         }
-
-        async function recordAttendance(studentData) {
-            const record = {
-                studentId: studentData.id,
-                studentName: studentData.name,
-                subject: document.getElementById('subject').value,
-                lectureType: document.getElementById('lectureType').value,
-                date: new Date().toLocaleDateString('en-CA'),
-                time: new Date().toLocaleTimeString('ar-EG'),
-                timestamp: Date.now(),
-                via_token: token,
-                collectedBy: 'delegate'
-            };
-
-            await database.ref('attendanceRecords').push(record);
-
-            showAlert(`✅ تم تسجيل: ${studentData.name}`, 'success');
-            scannedIds.add(studentData.id);
-            sessionCount++;
-            document.getElementById('count').textContent = sessionCount;
-
-            const div = document.createElement('div');
-            div.style.padding = '0.75rem';
-            div.style.borderBottom = '1px solid var(--glass-border)';
-            div.innerHTML = `<strong>${studentData.name}</strong> <span style="color: var(--text-muted); font-size: 0.85rem;">${record.time}</span>`;
-            document.getElementById('recent-scans').prepend(div);
-        }
-
-        function showAlert(msg, type) {
-            const colors = {
-                success: 'var(--success)',
-                danger: 'var(--danger)',
-                warning: 'var(--warning)'
-            };
-            const div = document.createElement('div');
-            div.style.padding = '1rem';
-            div.style.background = `rgba(${type === 'success' ? '16, 185, 129' : type === 'danger' ? '239, 68, 68' : '245, 158, 11'}, 0.1)`;
-            div.style.border = `1px solid ${colors[type]}`;
-            div.style.borderRadius = '12px';
-            div.style.color = colors[type];
-            div.textContent = msg;
-            document.getElementById('alertContainer').innerHTML = '';
-            document.getElementById('alertContainer').appendChild(div);
-        }
-
-        checkToken();
     </script>
 </body>
 
