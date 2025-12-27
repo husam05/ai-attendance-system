@@ -548,10 +548,21 @@
             }
         }
 
+        // --- UPDATED DELEGATION LOGIC ---
         function generateDelegateLink() {
             const subject = document.getElementById('subject').value;
+            // Ask for duration (Default 15 mins)
+            const input = prompt("حدد مدة صلاحية الرابط بالدقائق:", "15");
+            if (input === null) return; // User cancelled
+
+            const minutes = parseInt(input);
+            if (isNaN(minutes) || minutes <= 0) {
+                showToast('⚠️ يرجى إدخال مدة صحيحة', 'warning');
+                return;
+            }
+
             const token = 'dlg_' + Math.random().toString(36).substr(2, 9);
-            const expiry = Date.now() + 1800000; // 30 mins
+            const expiry = Date.now() + (minutes * 60 * 1000);
 
             db.ref('temp_tokens/' + token).set({
                 expiry,
@@ -559,10 +570,16 @@
                 lectureType: document.getElementById('lectureType').value,
                 createdAt: firebase.database.ServerValue.TIMESTAMP
             }).then(() => {
-                const url = `${window.location.origin}/temp-scanner.html?token=${token}`;
+                // Use a reliable base URL logic
+                const baseUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+                    ? window.location.origin + window.location.pathname.replace('teacher-qr-scanner.html', 'temp-scanner.html')
+                    : 'https://husam05.github.io/ai-attendance-system/temp-scanner.html';
+
+                const url = `${baseUrl}?token=${token}`;
                 navigator.clipboard.writeText(url);
-                showToast('📋 تم نسخ رابط التفويض للحافظة', 'success');
+                showToast(`📋 تم نسخ رابط فعال لمدة ${minutes} دقيقة`, 'success');
             }).catch(error => {
+                console.error(error);
                 showToast('❌ فشل إنشاء الرابط', 'danger');
             });
         }
