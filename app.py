@@ -38,6 +38,7 @@ class Store:
         self.lock = Lock()
         self.students: List[str] = []
         self.records: Dict[str, Dict] = {}
+        self.sessions: Dict[str, Dict] = {}  # Temporary session tokens
         self.load()
 
     def load(self):
@@ -50,6 +51,7 @@ class Store:
                     data = json.load(f)
                     self.students = data.get("students", [])
                     self.records = data.get("records", {})
+                    self.sessions = data.get("sessions", {})
             except Exception as e:
                 print(f"Error loading DB: {e}")
         else:
@@ -70,7 +72,8 @@ class Store:
                 with open(DB_FILE, 'w', encoding='utf-8') as f:
                     json.dump({
                         "students": self.students,
-                        "records": self.records
+                        "records": self.records,
+                        "sessions": self.sessions
                     }, f, ensure_ascii=False, indent=2)
             except Exception as e:
                 print(f"Error saving DB: {e}")
@@ -129,6 +132,58 @@ async def delete_attendance(record_id: str):
         db.save()
         return {"status": "deleted"}
     raise HTTPException(status_code=404, detail="Record not found")
+
+# --- Session Management for Delegate Scanner ---
+class SessionCreate(BaseModel):
+    subject: str
+    lectureType: str
+    expiresInMinutes: int = 30
+
+@app.post("/api/session/create")
+async def create_session(session: SessionCreate):
+    import secrets
+    
+    # Generate unique token
+    token = secrets.token_urlsafe(16)
+    
+    # Calculate expiration
+    expires_at = int(time.time() * 1000) + (session.expiresInMinutes * 60 * 1000)
+    
+    # Store session
+    db.sessions[token] = {
+        "subject": session.subject,
+        "lectureType": session.lectureType,
+        "expiresAt": expires_at,
+        "createdAt": int(time.time() * 1000)
+    }
+    db.save()
+    
+    # Return session info with URL
+    base_url = os.environ.get("BASE_URL", "http://localhost:8080")
+    delegate_url = f"{base_url}/delegate-scanner.html?token={token}"
+    
+    return {
+        "token": token,
+        "url": delegate_url,
+        "expiresAt": expires_at,
+        "expiresInMinutes": session.expiresInMinutes
+    }
+
+@app.get("/api/session/{token}")
+async def get_session(token: str):
+    if token not in db.sessions:
+        raise HTTPException(status_code=404, detail="Session not found")
+    
+    session = db.sessions[token]
+    
+    # Check if expired
+    if time.time() * 1000 > session["expiresAt"]:
+        # Clean up expired session
+        del db.sessions[token]
+        db.save()
+        raise HTTPException(status_code=410, detail="Session expired")
+    
+    return session
 
 # --- Static File Serving (SPA Fallback) ---
 # Serve root files directly is tricky with StaticFiles if they are mixed

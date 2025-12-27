@@ -219,6 +219,13 @@
                     <button class="btn btn-secondary" onclick="toggleFlash()" id="flash-btn"
                         style="display:none;">🔦</button>
                 </div>
+
+                <!-- Delegate Link Button -->
+                <div style="margin-top: 1rem;">
+                    <button class="btn btn-primary" onclick="generateDelegateLink()" style="width: 100%;">
+                        📤 إنشاء رابط للطلاب
+                    </button>
+                </div>
             </div>
 
             <!-- List -->
@@ -506,6 +513,47 @@
             t.innerText = msg;
             document.body.appendChild(t);
             setTimeout(() => t.remove(), 2500);
+        }
+
+        // Generate Delegate Scanner Link
+        async function generateDelegateLink() {
+            const subject = document.getElementById('subject').value;
+            const lectureType = document.getElementById('lectureType').value;
+
+            const expiresInMinutes = prompt('مدة صلاحية الرابط بالدقائق:', '30');
+            if (!expiresInMinutes) return;
+
+            try {
+                const response = await fetch('/api/session/create', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        subject: subject,
+                        lectureType: lectureType,
+                        expiresInMinutes: parseInt(expiresInMinutes)
+                    })
+                });
+
+                if (!response.ok) throw new Error('فشل إنشاء الرابط');
+
+                const data = await response.json();
+
+                // Show link in modal/alert
+                const expiresDate = new Date(data.expiresAt);
+                const message = `✅ تم إنشاء الرابط!\n\nالرابط:\n${data.url}\n\nينتهي في: ${expiresDate.toLocaleString('ar-EG')}\n\nانسخ الرابط وأرسله للطلاب`;
+
+                // Copy to clipboard
+                navigator.clipboard.writeText(data.url).then(() => {
+                    alert(message + '\n\n✅ تم نسخ الرابط تلقائياً!');
+                    showToast('✅ تم نسخ الرابط', 'success');
+                }).catch(() => {
+                    alert(message);
+                });
+
+            } catch (e) {
+                console.error('Error generating link:', e);
+                showToast('❌ فشل إنشاء الرابط', 'danger');
+            }
         }
     </script>
 </body>

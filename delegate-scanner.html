@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deep AI | مسح الحضور المؤقت</title>
+    <link rel="stylesheet" href="style.css">
+
+    <!-- Local Nimiq QR Scanner -->
+    <script src="js/qr-scanner.umd.min.js"></script>
+    <script>
+        if (typeof QrScanner !== 'undefined') {
+            QrScanner.WORKER_PATH = 'js/qr-scanner-worker.min.js';
+        }
+    </script>
+
+    <!-- Go Backend -->
+    <script src="js/api.js"></script>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎓 مسح الحضور - طالب مفوض</h1>
+            <div id="session-info" class="badge badge-warning">جاري التحقق...</div>
+        </div>
+
+        <div class="grid" style="grid-template-columns: 1fr;">
+            <!-- Session Info -->
+            <div class="glass-card" id="session-card" style="padding: 1.5rem; display: none;">
+                <h3>معلومات الجلسة</h3>
+                <div style="margin-top: 1rem;">
+                    <p><strong>المادة:</strong> <span id="session-subject">-</span></p>
+                    <p><strong>النوع:</strong> <span id="session-type">-</span></p>
+                    <p><strong>تنتهي في:</strong> <span id="session-expires">-</span></p>
+                    <p><strong>المسجلين:</strong> <span id="scan-counter">0</span></p>
+                </div>
+            </div>
+
+            <!-- Scanner -->
+            <div class="glass-card" id="scanner-card" style="padding: 1.5rem; display: none;">
+                <h3>الماسح الضوئي</h3>
+                <div class="camera-wrapper" style="margin-top: 1rem;">
+                    <video id="qr-video"></video>
+                    <div class="scan-overlay">
+                        <div class="scan-frame">
+                            <div class="scan-laser"></div>
+                        </div>
+                    </div>
+                    <div class="status-pill">
+                        <div id="cam-dot" class="status-dot"></div>
+                        <span id="cam-status">الكاميرا متوقفة</span>
+                    </div>
+                </div>
+                <div style="margin-top: 1.5rem; display: flex; gap: 1rem;">
+                    <button class="btn btn-primary" onclick="startCamera()" style="flex:1;">⚡ تشغيل</button>
+                    <button class="btn btn-secondary" onclick="stopCamera()" style="flex:1;">🛑 إيقاف</button>
+                </div>
+            </div>
+
+            <!-- Recent Scans -->
+            <div class="glass-card" id="list-card" style="padding: 1.5rem; display: none;">
+                <h3>سجل الحضور</h3>
+                <div id="recent-list" class="recent-scans" style="margin-top:1rem; min-height:200px;">
+                    <div style="text-align:center; color:var(--text-muted); margin-top:3rem;">
+                        في انتظار المسح...
+                    </div>
+                </div>
+            </div>
+
+            <!-- Error Message -->
+            <div class="glass-card" id="error-card" style="padding: 2rem; text-align: center; display: none;">
+                <h2 style="color: #ff4444;">⚠️ انتهت صلاحية الرابط</h2>
+                <p style="margin-top: 1rem; color: var(--text-muted);">
+                    هذا الرابط لم يعد صالحاً. يرجى طلب رابط جديد من المعلم.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Audios -->
+    <audio id="beepOk" src="https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3"></audio>
+    <audio id="beepFail" src="https://assets.mixkit.co/active_storage/sfx/2572/2572-preview.mp3"></audio>
+
+    <script>
+        // Firebase Setup
+        const firebaseConfig = {};
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        // Get session token from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const sessionToken = urlParams.get('token');
+
+        let sessionData = null;
+        let qrScanner = null;
+        let scannedIds = new Set();
+        let scanCount = 0;
+        let isScanned = false;
+
+        // Validate session on load
+        window.addEventListener('DOMContentLoaded', async () => {
+            if (!sessionToken) {
+                showError('رابط غير صالح');
+                return;
+            }
+
+            try {
+                // Get session data from backend
+                const response = await fetch(`/api/session/${sessionToken}`);
+                if (!response.ok) {
+                    showError('انتهت صلاحية الرابط');
+                    return;
+                }
+
+                sessionData = await response.json();
+
+                // Check expiration
+                if (Date.now() > sessionData.expiresAt) {
+                    showError('انتهت صلاحية الرابط');
+                    return;
+                }
+
+                // Show session info
+                showSession();
+                startExpirationTimer();
+            } catch (e) {
+                console.error('Session validation error:', e);
+                showError('خطأ في التحقق من الجلسة');
+            }
+        });
+
+        function showSession() {
+            document.getElementById('session-info').innerText = '✅ جلسة نشطة';
+            document.getElementById('session-info').className = 'badge badge-success';
+
+            document.getElementById('session-subject').innerText = sessionData.subject;
+            document.getElementById('session-type').innerText = sessionData.lectureType;
+
+            const expiresDate = new Date(sessionData.expiresAt);
+            document.getElementById('session-expires').innerText = expiresDate.toLocaleString('ar-EG');
+
+            document.getElementById('session-card').style.display = 'block';
+            document.getElementById('scanner-card').style.display = 'block';
+            document.getElementById('list-card').style.display = 'block';
+        }
+
+        function showError(message) {
+            document.getElementById('session-info').innerText = '❌ غير صالح';
+            document.getElementById('session-info').className = 'badge badge-danger';
+            document.getElementById('error-card').style.display = 'block';
+        }
+
+        function startExpirationTimer() {
+            setInterval(() => {
+                if (Date.now() > sessionData.expiresAt) {
+                    showError('انتهت صلاحية الرابط');
+                    if (qrScanner) qrScanner.stop();
+                }
+            }, 5000); // Check every 5 seconds
+        }
+
+        // Camera functions
+        async function startCamera() {
+            if (typeof QrScanner === 'undefined') {
+                alert("خطأ: مكتبة الماسح غير محملة");
+                return;
+            }
+
+            if (qrScanner) {
+                qrScanner.start();
+                updateUI(true);
+                return;
+            }
+
+            const videoElem = document.getElementById('qr-video');
+            qrScanner = new QrScanner(
+                videoElem,
+                result => processResult(result),
+                {
+                    highlightScanRegion: true,
+                    highlightCodeOutline: true,
+                    maxScansPerSecond: 5,
+                    returnDetailedScanResult: true
+                }
+            );
+
+            try {
+                await qrScanner.start();
+                updateUI(true);
+            } catch (e) {
+                console.error("Camera Error:", e);
+                alert("لا يمكن الوصول للكاميرا. يرجى السماح بالوصول للكاميرا في إعدادات المتصفح.");
+            }
+        }
+
+        function stopCamera() {
+            if (qrScanner) {
+                qrScanner.stop();
+                updateUI(false);
+            }
+        }
+
+        function updateUI(active) {
+            const statusText = document.getElementById('cam-status');
+            const statusDot = document.getElementById('cam-dot');
+
+            if (active) {
+                statusText.innerText = 'الكاميرا نشطة';
+                statusDot.style.backgroundColor = '#00ff88';
+            } else {
+                statusText.innerText = 'الكاميرا متوقفة';
+                statusDot.style.backgroundColor = '#ff4444';
+            }
+        }
+
+        async function processResult(result) {
+            if (isScanned) return;
+            if (Date.now() > sessionData.expiresAt) {
+                showError('انتهت صلاحية الرابط');
+                stopCamera();
+                return;
+            }
+
+            const rawText = result.data;
+            let student = null;
+
+            try {
+                student = JSON.parse(rawText);
+            } catch (e) {
+                if (typeof rawText === 'string' && rawText.length > 2) {
+                    student = {
+                        id: "legacy_" + Math.random().toString(36).substr(2, 9),
+                        name: rawText.trim(),
+                        type: 'legacy_plain'
+                    };
+                } else {
+                    return;
+                }
+            }
+
+            if (!student.id || !student.name) return;
+
+            // Check duplicate
+            if (scannedIds.has(student.id)) {
+                showToast(`⚠️ ${student.name} مسجل مسبقاً`, 'warning');
+                document.getElementById('beepFail').play().catch(() => { });
+                return;
+            }
+
+            isScanned = true;
+            confirmScan(student);
+        }
+
+        function confirmScan(student) {
+            document.getElementById('beepOk').play().catch(() => { });
+            const frame = document.querySelector('.scan-frame');
+            frame.style.borderColor = '#00ff88';
+            setTimeout(() => frame.style.borderColor = 'rgba(255,255,255,0.5)', 500);
+
+            scannedIds.add(student.id);
+            scanCount++;
+            document.getElementById('scan-counter').innerText = scanCount;
+            addToList(student.name);
+
+            // Save to backend
+            const record = {
+                studentId: student.id,
+                studentName: student.name,
+                subject: sessionData.subject,
+                lectureType: sessionData.lectureType,
+                date: new Date().toLocaleDateString('en-CA'),
+                time: new Date().toLocaleTimeString('ar-EG'),
+                timestamp: Date.now(),
+                engine: 'Delegate_v1',
+                sessionToken: sessionToken
+            };
+
+            db.ref('attendanceRecords').push(record)
+                .then(() => {
+                    console.log("✅ Saved:", record);
+                    showToast(`✅ ${student.name}`, 'success');
+                })
+                .catch(e => {
+                    console.error("❌ Save Error:", e);
+                    showToast(`⚠️ فشل حفظ البيانات`, "danger");
+                });
+
+            setTimeout(() => isScanned = false, 1500);
+        }
+
+        function addToList(name) {
+            const list = document.getElementById('recent-list');
+            const item = document.createElement('div');
+            item.className = 'scan-item success';
+
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = name;
+            const decodedName = tempDiv.textContent || tempDiv.innerText || name;
+
+            item.innerHTML = `
+                <div style="display:flex; justify-content:space-between; width:100%;">
+                    <strong>${decodedName}</strong>
+                    <small>${new Date().toLocaleTimeString('ar-EG')}</small>
+                </div>
+            `;
+
+            const emptyMsg = list.querySelector('[style*="text-align:center"]');
+            if (emptyMsg) emptyMsg.remove();
+
+            list.prepend(item);
+        }
+
+        function showToast(message, type) {
+            // Simple toast implementation
+            const toast = document.createElement('div');
+            toast.className = `badge badge-${type}`;
+            toast.innerText = message;
+            toast.style.position = 'fixed';
+            toast.style.top = '20px';
+            toast.style.right = '20px';
+            toast.style.zIndex = '9999';
+            toast.style.padding = '1rem 1.5rem';
+            toast.style.fontSize = '1rem';
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+    </script>
+</body>
+
+</html>
