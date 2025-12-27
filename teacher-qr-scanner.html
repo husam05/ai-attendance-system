@@ -15,7 +15,6 @@
         #reader {
             width: 100%;
             min-height: 350px;
-            /* Ensure a minimum height for visibility */
             border-radius: var(--radius-lg);
             overflow: hidden;
             border: 2px solid var(--glass-border);
@@ -288,7 +287,7 @@
         let scanCount = 0;
         let scannedIds = new Set();
         const processingIds = new Set();
-        let validStudentsList = [];
+        let validStudentsList = []; // Kept for reference, but validation is disabled
         let isScannerRunning = false;
 
         // UI Elements
@@ -299,9 +298,9 @@
 
         // --- Initialization ---
         window.addEventListener('load', async () => {
-            document.getElementById('connectionStatus').style.display = 'block'; // Firebase available
+            document.getElementById('connectionStatus').style.display = 'block';
 
-            // Load Students List
+            // Load Students List (Just for logging)
             try {
                 const snap = await db.ref('students_list').once('value');
                 if (snap.exists()) {
@@ -310,12 +309,10 @@
                     validStudentsList = validStudentsList.map(s => String(s).trim());
                     console.log(`Loaded ${validStudentsList.length} students.`);
                 }
-            } catch (e) {
-                console.warn("Could not load student list:", e.message);
-            }
+            } catch (e) { console.warn("List load error:", e); }
         });
 
-        // --- Scanner Logic (FIXED) ---
+        // --- Scanner Logic ---
         async function startScanner() {
             if (isScannerRunning) return;
 
@@ -325,9 +322,7 @@
             document.getElementById('startBtn').disabled = true;
             document.getElementById('startBtn').innerText = '⏳ جاري التشغيل...';
 
-            // CRITICAL FIX: Use string "environment" directly, not an object with multiple keys
             const cameraFacingMode = "environment";
-
             const scannerConfig = {
                 fps: 10,
                 qrbox: { width: 250, height: 250 },
@@ -338,7 +333,7 @@
 
             try {
                 await html5QrCode.start(
-                    { facingMode: cameraFacingMode }, // CORRECT: Single-key object
+                    { facingMode: cameraFacingMode },
                     scannerConfig,
                     onScanSuccess,
                     onScanFailure
@@ -362,7 +357,7 @@
             try {
                 student = JSON.parse(decodedText);
             } catch (e) {
-                console.warn("Non-JSON QR:", decodedText.substring(0, 50));
+                // Fail silently for non-JSON content
                 return;
             }
 
@@ -373,11 +368,16 @@
 
             const studentName = String(student.name).trim();
 
+            // --- DISABLED STRICT VALIDATION ---
+            // Trust the QR code content. This fixes "Student Not Registered" issues.
+            /*
             if (validStudentsList.length > 0 && !validStudentsList.includes(studentName)) {
                 processError(`الطالب غير مسجل: ${studentName}`, true);
                 return;
             }
+            */
 
+            // Check duplicate in current session
             if (scannedIds.has(student.id)) {
                 processError(`تم تسجيل ${studentName} مسبقاً`, true);
                 return;
@@ -393,10 +393,15 @@
                 // Cloud Duplicate Check
                 let isCloudDuplicate = false;
                 try {
-                    const snap = await db.ref('attendanceRecords').orderByChild('date').equalTo(today).once('value');
+                    const snap = await db.ref('attendanceRecords')
+                        .orderByChild('date')
+                        .equalTo(today)
+                        .once('value');
+
                     if (snap.exists()) {
                         snap.forEach(child => {
                             const rec = child.val();
+                            // Check ID match for same subject
                             if (rec.studentId == student.id && rec.subject === subject) {
                                 isCloudDuplicate = true;
                             }
@@ -410,7 +415,7 @@
                     return;
                 }
 
-                // Write
+                // Write Record
                 await db.ref('attendanceRecords').push({
                     studentId: student.id,
                     studentName: studentName,
@@ -419,7 +424,7 @@
                     date: today,
                     time: new Date().toLocaleTimeString('ar-EG'),
                     timestamp: firebase.database.ServerValue.TIMESTAMP,
-                    device: 'TeacherScanner_v2.6'
+                    device: 'TeacherScanner_v2.7_Open'
                 });
 
                 handleSuccessfulScan(student);
@@ -428,7 +433,7 @@
                 console.error("Processing error:", err);
                 showToast('خطأ أثناء المعالجة', 'danger');
             } finally {
-                setTimeout(() => processingIds.delete(student.id), 2500);
+                setTimeout(() => processingIds.delete(student.id), 2000); // 2s lock
             }
         }
 
