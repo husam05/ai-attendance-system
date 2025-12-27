@@ -343,24 +343,58 @@
             scannedIds = new Set();
             document.getElementById('scan-count').innerText = "0";
 
+            // Update Start Button State
+            document.getElementById('startBtn').disabled = true;
+            document.getElementById('startBtn').innerText = '⏳ جاري التشغيل...';
+
             html5QrCode = new Html5Qrcode("reader");
-            // Improved Config: No specific qrbox means full width scanning (easier)
-            const config = {
-                fps: 10,
-                aspectRatio: 1.0
+
+            // High-Resolution & Responsive Config
+            const cameraConfig = {
+                facingMode: "environment",
+                width: { min: 640, ideal: 1280, max: 1920 },
+                height: { min: 480, ideal: 720, max: 1080 }
             };
 
-            html5QrCode.start({ facingMode: "environment" }, config, onScanSuccess, onScanFailure)
+            const config = {
+                fps: 10,
+                // Responsive scanning box (70% of the screen min dimension)
+                qrbox: (viewfinderWidth, viewfinderHeight) => {
+                    const minEdge = Math.min(viewfinderWidth, viewfinderHeight);
+                    return {
+                        width: Math.floor(minEdge * 0.7),
+                        height: Math.floor(minEdge * 0.7)
+                    };
+                },
+                aspectRatio: 1.0,
+                disableFlip: false // Sometimes helpful for front cameras, but we prioritize env
+            };
+
+            html5QrCode.start(cameraConfig, config, onScanSuccess, onScanFailure)
                 .then(() => {
                     isScannerRunning = true;
-                    document.getElementById('startBtn').disabled = true;
-                    document.getElementById('startBtn').innerHTML = '<span class="scan-flash" style="position:static; width:10px; height:10px; display:inline-block; border-radius:50%; background: lime;"></span> الماسح نشط';
+                    // document.getElementById('startBtn').disabled = true; // Already disabled
+                    document.getElementById('startBtn').innerHTML = '<span class="scan-flash" style="position:static; width:10px; height:10px; display:inline-block; border-radius:50%; background: lime;"></span> الماسح نشط (HD)';
                     overlayBox.style.display = 'block';
-                    showToast('تم تشغيل الكاميرا بنجاح', 'success');
+                    showToast('تم تشغيل الكاميرا بدقة عالية', 'success');
                 })
                 .catch(err => {
-                    console.error("Camera Error: ", err);
-                    showToast('فشل تشغيل الكاميرا. يرجى التحقق من الصلاحيات.', 'danger');
+                    console.warn("High-Res Camera Failed, trying fallback...", err);
+
+                    // FALLBACK: Simple Config
+                    html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, onScanSuccess, onScanFailure)
+                        .then(() => {
+                            isScannerRunning = true;
+                            document.getElementById('startBtn').innerHTML = '<span class="scan-flash" style="position:static; width:10px; height:10px; display:inline-block; border-radius:50%; background: orange;"></span> الماسح نشط (SD)';
+                            overlayBox.style.display = 'block';
+                            showToast('تم تشغيل الكاميرا (دقة قياسية)', 'warning');
+                        })
+                        .catch(err2 => {
+                            console.error("All Camera Attempts Failed", err2);
+                            document.getElementById('startBtn').disabled = false;
+                            document.getElementById('startBtn').innerText = '⚡ بدء المسح';
+                            showToast('فشل تشغيل الكاميرا. يرجى التحقق من الأذونات.', 'danger');
+                        });
                 });
         }
 
@@ -375,7 +409,6 @@
                 student = JSON.parse(cleanText);
             } catch (e) {
                 console.warn("Non-JSON QR scanned", decodedText);
-                // processError("رمز QR غير صالح (ليس بطاقة طالب)"); // Optional
                 return;
             }
 
@@ -388,8 +421,6 @@
             const studentName = student.name.trim();
 
             // 2. Centralized List Validation (Security)
-            // Robust check: Only validate if list is actually loaded
-            // Using includes on trimmed strings
             if (validStudentsList.length > 0 && !validStudentsList.includes(studentName)) {
                 processError(`الطالب غير مسجل في القائمة الرسمية: ${studentName}`, true);
                 return;
@@ -449,7 +480,7 @@
                     date: today,
                     time: new Date().toLocaleTimeString('ar-EG'),
                     timestamp: firebase.database.ServerValue.TIMESTAMP,
-                    device: 'TeacherScanner_v2.5.4'
+                    device: 'TeacherScanner_v2.5.5'
                 };
 
                 await db.ref('attendanceRecords').push(record);
