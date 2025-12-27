@@ -6,10 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Deep AI | ماسح مؤقت</title>
     <link rel="stylesheet" href="style.css">
-    <script src="https://unpkg.com/html5-qrcode"></script>
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <style>
         #reader {
             border-radius: var(--radius-md);
@@ -17,6 +16,7 @@
             border: 2px solid var(--glass-border);
             background: #000;
             position: relative;
+            min-height: 300px;
         }
 
         #reader video {
@@ -92,7 +92,6 @@
             </div>
 
             <div class="glass-card" style="padding: 2rem; margin-bottom: 2rem;">
-                <!-- Controls -->
                 <div class="scanner-controls"
                     style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
                     <div>
@@ -141,7 +140,7 @@
         </div>
     </div>
 
-    <!-- Audio Feedback Assets -->
+    <!-- Audio -->
     <audio id="beepSuccess" preload="auto">
         <source src="https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3" type="audio/mpeg">
     </audio>
@@ -150,7 +149,7 @@
     </audio>
 
     <script>
-        // --- Configuration ---
+        // Firebase Config
         const firebaseConfig = {
             apiKey: "AIzaSyDLSX6DY_79BD8ZEYBRYh_jtmP0mHslzkE",
             authDomain: "ai-attendance-husam.firebaseapp.com",
@@ -164,41 +163,36 @@
 
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
-        const auth = firebase.auth();
 
-        // --- State ---
+        // State
         const urlParams = new URLSearchParams(window.location.search);
         const token = urlParams.get('token');
         let html5QrCode = null;
         let sessionCount = 0;
-        let validStudentsList = []; // Centralized Validation
+        let validStudentsList = [];
 
-        // Locks
         const scannedIds = new Set();
         const processingIds = new Set();
 
-        // UI
         const successBeep = document.getElementById('beepSuccess');
         const errorBeep = document.getElementById('beepError');
         const scanFlash = document.getElementById('scanFlash');
 
         // --- Initialization ---
-
         window.onload = init;
 
         async function init() {
-            // 1. Silent Auth
-            auth.onAuthStateChanged(user => {
-                if (!user) auth.signInAnonymously().catch(console.warn);
-            });
-
-            // 2. Load Validation List
+            // Load Validation List (FIXED: Handle Object AND Array)
             try {
                 const snap = await database.ref('students_list').once('value');
-                if (snap.exists()) validStudentsList = snap.val();
+                if (snap.exists()) {
+                    const val = snap.val();
+                    validStudentsList = Array.isArray(val) ? val : Object.values(val);
+                    validStudentsList = validStudentsList.map(s => String(s).trim()); // Normalize
+                    console.log(`Loaded ${validStudentsList.length} students.`);
+                }
             } catch (e) { console.warn("List load error", e); }
 
-            // 3. Validate Token
             await checkToken();
         }
 
@@ -206,9 +200,8 @@
             const statusEl = document.getElementById('verify-status');
             const retryBtn = document.getElementById('retry-btn');
 
-            if (!token) return showFatalError('الرابط غير صالح (No Token Code)');
+            if (!token) return showFatalError('الرابط غير صالح (No Token)');
 
-            // Timeout safety
             const timeout = setTimeout(() => {
                 statusEl.textContent = 'الاتصال بطيء...';
                 retryBtn.style.display = 'inline-flex';
@@ -222,20 +215,17 @@
                 if (!snap.exists()) return showFatalError('الرابط غير صحيح أو تم إبطاله');
 
                 const data = snap.val();
-                if (Date.now() > data.expiry) return showFatalError('انتهت صلاحية هذا الرابط (30 دقيقة)');
+                if (Date.now() > data.expiry) return showFatalError('انتهت صلاحية هذا الرابط');
 
-                // Success
                 document.getElementById('verify-overlay').style.display = 'none';
                 document.getElementById('main-app').style.display = 'block';
                 startTimer(data.expiry);
 
-                // Setup Context & Lock Filters
                 const subjSelect = document.getElementById('subject');
                 subjSelect.innerHTML = `<option value="${data.subject}">${data.subject}</option>`;
 
                 if (data.lectureType) {
-                    const typeSelect = document.getElementById('lectureType');
-                    typeSelect.value = data.lectureType;
+                    document.getElementById('lectureType').value = data.lectureType;
                 }
 
             } catch (e) {
@@ -266,8 +256,7 @@
             }, 1000);
         }
 
-        // --- Scanning Logic (Robust Engine) ---
-
+        // --- Scanning Logic (FIXED v2.6) ---
         function startScanner() {
             const subject = document.getElementById('subject').value;
             if (!subject) return showToast('⚠️ يرجى انتظار تحميل المادة', 'warning');
@@ -282,7 +271,7 @@
                     showToast('✅ الكاميرا تعمل بنجاح', 'success');
                 }).catch(err => {
                     console.error(err);
-                    showToast('❌ فشل تشغيل الكاميرا', 'danger');
+                    showToast('❌ فشل تشغيل الكاميرا: ' + (err.message || err), 'danger');
                 });
         }
 
@@ -292,23 +281,23 @@
             let student;
             try {
                 student = JSON.parse(decodedText);
-            } catch (e) { return; } // Ignore non-JSON
+            } catch (e) { return; }
 
-            // 1. Validation
             if (!student.id || !student.name) return;
 
-            // Central Validation Check
-            if (validStudentsList.length > 0 && !validStudentsList.includes(student.name)) {
-                processError(`الطالب غير مسجل: ${student.name}`, true);
+            const studentName = String(student.name).trim(); // FIXED: Trim names
+
+            // FIXED: Robust validation check
+            if (validStudentsList.length > 0 && !validStudentsList.includes(studentName)) {
+                processError(`الطالب غير مسجل: ${studentName}`, true);
                 return;
             }
 
             if (scannedIds.has(student.id)) {
-                processError(`تم تسجيل ${student.name} مسبقاً`, true);
+                processError(`تم تسجيل ${studentName} مسبقاً`, true);
                 return;
             }
 
-            // 2. Lock
             processingIds.add(student.id);
             triggerFeedback('processing');
 
@@ -316,44 +305,35 @@
                 const subject = document.getElementById('subject').value;
                 const today = new Date().toLocaleDateString('en-CA');
 
-                // 3. Cloud Duplicate Check
                 let isCloudDuplicate = false;
                 try {
-                    const snap = await database.ref('attendanceRecords')
-                        .orderByChild('date')
-                        .equalTo(today)
-                        .once('value');
-
+                    const snap = await database.ref('attendanceRecords').orderByChild('date').equalTo(today).once('value');
                     if (snap.exists()) {
                         snap.forEach(child => {
                             const rec = child.val();
-                            if (rec.studentId === student.id && rec.subject === subject) isCloudDuplicate = true;
+                            if (rec.studentId == student.id && rec.subject === subject) isCloudDuplicate = true;
                         });
                     }
                 } catch (e) { console.warn("Offline duplicate check skipped"); }
 
                 if (isCloudDuplicate) {
                     scannedIds.add(student.id);
-                    processError(`مسجل مسبقاً بالسحابة: ${student.name}`, true);
+                    processError(`مسجل مسبقاً بالسحابة: ${studentName}`, true);
                     return;
                 }
 
-                // 4. Record
-                const record = {
+                await database.ref('attendanceRecords').push({
                     studentId: student.id,
-                    studentName: student.name,
+                    studentName: studentName,
                     subject: subject,
                     lectureType: document.getElementById('lectureType').value,
                     date: today,
                     time: new Date().toLocaleTimeString('ar-EG'),
                     timestamp: firebase.database.ServerValue.TIMESTAMP,
                     via_token: token,
-                    collectedBy: 'delegate'
-                };
+                    collectedBy: 'delegate_v2.6'
+                });
 
-                await database.ref('attendanceRecords').push(record);
-
-                // 5. Success
                 handleSuccess(student);
 
             } catch (e) {
@@ -369,16 +349,12 @@
             sessionCount++;
             document.getElementById('count').textContent = sessionCount;
 
-            // List Update
             const emptyState = document.getElementById('empty-state');
             if (emptyState) emptyState.remove();
 
             const div = document.createElement('div');
             div.className = 'scan-item';
-            div.style.padding = '0.75rem';
-            div.style.borderBottom = '1px solid var(--glass-border)';
-            div.style.display = 'flex';
-            div.style.justifyContent = 'space-between';
+            div.style.cssText = 'padding: 0.75rem; border-bottom: 1px solid var(--glass-border); display: flex; justify-content: space-between;';
             div.innerHTML = `
                 <div style="display:flex; align-items:center; gap:0.5rem;">
                     <div style="width:8px; height:8px; background:var(--success); border-radius:50%;"></div>
@@ -402,19 +378,15 @@
 
         function triggerFeedback(type) {
             if (navigator.vibrate) {
-                if (type === 'success') navigator.vibrate([50, 50, 50]);
-                if (type === 'warning') navigator.vibrate(200);
+                type === 'success' ? navigator.vibrate([50, 50, 50]) : navigator.vibrate(200);
             }
             if (type === 'success') {
                 scanFlash.classList.add('flash-active');
                 setTimeout(() => scanFlash.classList.remove('flash-active'), 300);
-
-                successBeep.currentTime = 0;
-                successBeep.play().catch(() => { });
+                successBeep.currentTime = 0; successBeep.play().catch(() => { });
             }
             if (type === 'warning') {
-                errorBeep.currentTime = 0;
-                errorBeep.play().catch(() => { });
+                errorBeep.currentTime = 0; errorBeep.play().catch(() => { });
             }
         }
 
@@ -424,23 +396,15 @@
                     document.getElementById('startBtn').style.display = 'block';
                     document.getElementById('stopBtn').style.display = 'none';
                     showToast('تم إيقاف الكاميرا', 'secondary');
-                });
+                }).catch(e => console.error(e));
             }
         }
 
         function showToast(msg, type) {
             const toast = document.createElement('div');
             toast.className = `badge badge-${type}`;
-            toast.style.position = 'fixed';
-            toast.style.bottom = '2rem';
-            toast.style.left = '50%';
-            toast.style.transform = 'translateX(-50%)';
-            toast.style.padding = '1rem 2rem';
-            toast.style.zIndex = '9999';
-            toast.style.boxShadow = '0 10px 30px rgba(0,0,0,0.5)';
-            toast.style.whiteSpace = 'nowrap';
+            Object.assign(toast.style, { position: 'fixed', bottom: '2rem', left: '50%', transform: 'translateX(-50%)', padding: '1rem 2rem', zIndex: '9999', boxShadow: '0 10px 30px rgba(0,0,0,0.5)', whiteSpace: 'nowrap' });
             toast.innerText = msg;
-
             document.body.appendChild(toast);
             setTimeout(() => toast.remove(), 3000);
         }
