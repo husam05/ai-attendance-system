@@ -215,6 +215,13 @@
             }
         }
 
+        // Helper function to decode HTML entities
+        function decodeHTMLEntities(text) {
+            const textarea = document.createElement('textarea');
+            textarea.innerHTML = text;
+            return textarea.value;
+        }
+
         async function processResult(result) {
             if (isScanned) return;
             if (Date.now() > sessionData.expiresAt) {
@@ -223,16 +230,33 @@
                 return;
             }
 
-            const rawText = result.data;
+            let rawText = result.data;
+
+            // Decode HTML entities if present (fixes Arabic encoding issues)
+            if (rawText.includes('&')) {
+                rawText = decodeHTMLEntities(rawText);
+            }
+
             let student = null;
 
             try {
                 student = JSON.parse(rawText);
+
+                // Decode HTML entities in student data
+                if (student.name && student.name.includes('&')) {
+                    student.name = decodeHTMLEntities(student.name);
+                }
+                if (student.department && student.department.includes('&')) {
+                    student.department = decodeHTMLEntities(student.department);
+                }
+                if (student.university && student.university.includes('&')) {
+                    student.university = decodeHTMLEntities(student.university);
+                }
             } catch (e) {
                 if (typeof rawText === 'string' && rawText.length > 2) {
                     student = {
                         id: "legacy_" + Math.random().toString(36).substr(2, 9),
-                        name: rawText.trim(),
+                        name: decodeHTMLEntities(rawText.trim()),
                         type: 'legacy_plain'
                     };
                 } else {

@@ -389,15 +389,39 @@
             statusDot.className = active ? "status-dot active" : "status-dot";
         }
 
+        // Helper function to decode HTML entities
+        function decodeHTMLEntities(text) {
+            const textarea = document.createElement('textarea');
+            textarea.innerHTML = text;
+            return textarea.value;
+        }
+
         // 2. Process Scan (Logic Only)
         async function processResult(result) {
             if (isScanned) return; // Debounce lock
 
-            const rawText = result.data;
+            let rawText = result.data;
+
+            // Decode HTML entities if present (fixes Arabic encoding issues)
+            if (rawText.includes('&')) {
+                rawText = decodeHTMLEntities(rawText);
+            }
+
             let student = null;
 
             try {
                 student = JSON.parse(rawText);
+
+                // Decode HTML entities in student data
+                if (student.name && student.name.includes('&')) {
+                    student.name = decodeHTMLEntities(student.name);
+                }
+                if (student.department && student.department.includes('&')) {
+                    student.department = decodeHTMLEntities(student.department);
+                }
+                if (student.university && student.university.includes('&')) {
+                    student.university = decodeHTMLEntities(student.university);
+                }
             } catch (e) {
                 // Not a JSON QR - Attempt Legacy/Plain Text Mode
                 console.log("⚠️ Standard JSON parse failed, attempting plain text...");
@@ -405,7 +429,7 @@
                     // Assume the text ITSELF is the student name or ID
                     student = {
                         id: "legacy_" + Math.random().toString(36).substr(2, 9),
-                        name: rawText.trim(), // Use the raw text as name
+                        name: decodeHTMLEntities(rawText.trim()), // Use the raw text as name
                         type: 'legacy_plain'
                     };
                 } else {
