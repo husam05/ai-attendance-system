@@ -144,9 +144,12 @@
 
             listToUse.forEach((student, index) => {
                 const studentId = generateStudentId(index);
+
+                // Create QR data with PURE TEXT (no HTML encoding)
+                // This must be done BEFORE any HTML insertion
                 const qrData = JSON.stringify({
                     id: studentId,
-                    name: student,
+                    name: student,  // Pure text, not HTML-encoded
                     department: "الذكاء الاصطناعي",
                     university: "جامعة المصطفى"
                 });
@@ -175,7 +178,7 @@
                         
                         <!-- Name with improved contrast background -->
                         <div style="padding: 0.5rem 0; margin-bottom: 0.5rem;">
-                            <h3 style="margin: 0; font-size: 1.4rem; font-weight: 700; text-shadow: 0 1px 2px rgba(0,0,0,0.5); font-family: 'Cairo', sans-serif; direction: rtl; unicode-bidi: normal;">${student}</h3>
+                            <h3 id="student-name-${index}" style="margin: 0; font-size: 1.4rem; font-weight: 700; text-shadow: 0 1px 2px rgba(0,0,0,0.5); font-family: 'Cairo', sans-serif; direction: rtl; unicode-bidi: normal;"></h3>
                         </div>
                         
                         <p style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 1.5rem; letter-spacing: 0.5px;">قسم علوم الذكاء الاصطناعي</p>
@@ -192,6 +195,12 @@
                         </div>
                     </div>
                 `;
+
+                // Set student name using textContent to avoid HTML encoding
+                const nameElement = card.querySelector(`#student-name-${index}`);
+                if (nameElement) {
+                    nameElement.textContent = student;
+                }
 
                 cardWrapper.appendChild(card);
 
