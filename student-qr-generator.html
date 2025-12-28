@@ -218,13 +218,20 @@
 
                 grid.appendChild(cardWrapper);
 
+
                 // Generate QR Code Locally with QRious
+                // CRITICAL: QRious doesn't support UTF-8 (Arabic) by default
+                // We must encode the data as UTF-8 bytes before passing to QRious
                 setTimeout(() => {
                     const canvas = document.getElementById(`qr-${index}`);
                     if (canvas) {
+                        // UTF-8 encoding workaround for Arabic text
+                        // This converts the UTF-8 string to a byte sequence that QRious can handle
+                        const utf8EncodedData = unescape(encodeURIComponent(qrData));
+
                         new QRious({
                             element: canvas,
-                            value: qrData,
+                            value: utf8EncodedData,  // Use UTF-8 encoded data
                             size: 300, // Increased size for High-Res
                             level: 'H'
                         });

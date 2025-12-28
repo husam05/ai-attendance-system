@@ -222,6 +222,17 @@
             return textarea.value;
         }
 
+        // Helper function to decode UTF-8 encoded QR data
+        function decodeUTF8(text) {
+            try {
+                // Reverse the unescape(encodeURIComponent()) encoding used in QR generation
+                return decodeURIComponent(escape(text));
+            } catch (e) {
+                // If decoding fails, return original text
+                return text;
+            }
+        }
+
         async function processResult(result) {
             if (isScanned) return;
             if (Date.now() > sessionData.expiresAt) {
@@ -232,7 +243,10 @@
 
             let rawText = result.data;
 
-            // Decode HTML entities if present (fixes Arabic encoding issues)
+            // STEP 1: Decode UTF-8 (from QRious encoding workaround)
+            rawText = decodeUTF8(rawText);
+
+            // STEP 2: Decode HTML entities if present (for legacy QR codes)
             if (rawText.includes('&')) {
                 rawText = decodeHTMLEntities(rawText);
             }
@@ -242,7 +256,7 @@
             try {
                 student = JSON.parse(rawText);
 
-                // Decode HTML entities in student data
+                // Decode HTML entities in student data (for legacy QR codes)
                 if (student.name && student.name.includes('&')) {
                     student.name = decodeHTMLEntities(student.name);
                 }
